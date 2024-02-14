@@ -2,3 +2,7 @@ name: BAirDropX
 version: '${project.version}'
 main: org.by1337.bairx.BAirDropX
 api-version: '1.16'
+depend:
+  - BLib
+  - WorldGuard
+  - WorldEdit
