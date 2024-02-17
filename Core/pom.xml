@@ -66,6 +66,10 @@
             <id>sk89q-repo</id>
             <url>https://maven.enginehub.org/repo/</url>
         </repository>
+        <repository>
+            <id>minecraft-repo</id>
+            <url>https://libraries.minecraft.net/</url>
+        </repository>
     </repositories>
 
     <dependencies>
@@ -74,6 +78,19 @@
             <artifactId>spigot-api</artifactId>
             <version>1.16.5-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
+        </dependency>
+        <!--compile-->
+        <dependency>
+            <groupId>org.by1337.bairx.nbt.parser</groupId>
+            <artifactId>NbtParser</artifactId>
+            <version>1.0</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.by1337.bairx.nbt.nms</groupId>
+            <artifactId>NMSUtil</artifactId>
+            <version>1.0</version>
+            <scope>compile</scope>
         </dependency>
         <!--libs-->
         <dependency>
@@ -98,6 +115,12 @@
             <groupId>com.sk89q.worldedit</groupId>
             <artifactId>worldedit-bukkit</artifactId>
             <version>7.2.15</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.mojang</groupId>
+            <artifactId>authlib</artifactId>
+            <version>1.5.21</version>
             <scope>provided</scope>
         </dependency>
         <!-- tests -->

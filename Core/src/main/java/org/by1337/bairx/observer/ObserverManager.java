@@ -61,7 +61,7 @@ public class ObserverManager {
                 BAirDropX.getMessage().error("unknown listener! " + observerName.getName());
                 return;
             }
-            if (observer.getEventType() == event.getEventType() || ignoreType) {
+            if (observer.getEventType().equals(event.getEventType()) || ignoreType) {
                 observer.update(event);
             }
         } else {
@@ -77,7 +77,7 @@ public class ObserverManager {
                 BAirDropX.getMessage().error("unknown listener! " + observerName.getName());
             } else if (observerMap.size() == 1) {
                 Observer observer = observerMap.values().iterator().next();
-                if (observer.getEventType() == event.getEventType() || ignoreType) {
+                if (observer.getEventType().equals(event.getEventType()) || ignoreType) {
                     observer.update(event);
                 }
 

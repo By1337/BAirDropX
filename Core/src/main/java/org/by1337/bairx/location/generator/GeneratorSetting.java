@@ -6,7 +6,7 @@ import com.sk89q.worldguard.protection.flags.FlagContext;
 import com.sk89q.worldguard.protection.regions.ProtectedCuboidRegion;
 import org.bukkit.Material;
 import org.bukkit.block.Biome;
-import org.by1337.bairx.airdrop.AirDrop;
+import org.by1337.bairx.airdrop.ClassicAirDrop;
 import org.by1337.bairx.BAirDropX;
 import org.by1337.blib.world.BlockPosition;
 import org.by1337.blib.world.Vector2D;
@@ -49,7 +49,7 @@ public class GeneratorSetting {
       flags.put(WorldGuard.getInstance().getFlagRegistry().get("greeting"), "&lEntering &r{air-name}&r&l area");
    }
    @SuppressWarnings("unchecked")
-   public <T> void applyFlags(ProtectedCuboidRegion rg, AirDrop airDrop){
+   public <T> void applyFlags(ProtectedCuboidRegion rg, ClassicAirDrop airDrop){
       try {
          for (Map.Entry<Flag<?>, String> entry : flags.entrySet()) {
             Flag<T> flag = (Flag<T>) entry.getKey();

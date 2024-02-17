@@ -1,6 +1,7 @@
 package org.by1337.bairx.event;
 
 import org.by1337.blib.util.NameKey;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -23,15 +24,19 @@ public final class EventType {
         this.nameKey = nameKey;
     }
 
+    @NotNull
     public static EventType register(String nameKey) {
         return register(new NameKey(nameKey));
     }
 
+    @NotNull
     public static EventType register(NameKey nameKey) {
         if (byName.containsKey(nameKey)) {
             throw new IllegalStateException("event type already exist!");
         }
-        return byName.put(nameKey, new EventType(nameKey));
+        var v = new EventType(nameKey);
+        byName.put(nameKey, v);
+        return v;
     }
 
     public static EventType getByName(String nameKey) {
@@ -51,7 +56,7 @@ public final class EventType {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         EventType eventType = (EventType) o;
-        return Objects.equals(nameKey, eventType.nameKey);
+        return nameKey.equals(eventType.nameKey);
     }
 
     @Override

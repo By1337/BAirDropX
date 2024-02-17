@@ -2,6 +2,7 @@ package org.by1337.bairx.location.generator;
 
 import org.bukkit.Location;
 import org.by1337.bairx.airdrop.AirDrop;
+import org.by1337.bairx.airdrop.ClassicAirDrop;
 import org.by1337.bairx.location.generator.impl.*;
 import org.jetbrains.annotations.Nullable;
 

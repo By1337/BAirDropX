@@ -4,6 +4,7 @@ import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.by1337.bairx.airdrop.AirDrop;
+import org.by1337.bairx.airdrop.ClassicAirDrop;
 import org.by1337.blib.world.BlockPosition;
 
 public abstract class LocationGenerator {
