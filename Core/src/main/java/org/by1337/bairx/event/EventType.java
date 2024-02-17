@@ -11,6 +11,9 @@ public final class EventType {
     private final NameKey nameKey;
 
     public static final EventType START = register("start");
+    public static final EventType OPEN = register("open");
+    public static final EventType END = register("end");
+    public static final EventType TICK = register("tick");
 
     private EventType(String nameKey) {
         this(new NameKey(nameKey));

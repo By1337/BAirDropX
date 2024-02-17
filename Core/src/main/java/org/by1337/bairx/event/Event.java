@@ -1,7 +1,7 @@
 package org.by1337.bairx.event;
 
 import org.bukkit.entity.Player;
-import org.by1337.bairx.AirDrop;
+import org.by1337.bairx.airdrop.AirDrop;
 import org.by1337.bairx.BAirDropX;
 import org.by1337.bairx.util.Placeholder;
 import org.by1337.blib.math.MathParser;

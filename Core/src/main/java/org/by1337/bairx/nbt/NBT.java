@@ -1,10 +1,20 @@
 package org.by1337.bairx.nbt;
 
+import org.by1337.bairx.serialize.ByteBuffer;
+
 public abstract class NBT {
     public abstract String toString();
+
     public abstract NbtType getType();
+
     public abstract String toStringBeautifier(int lvl);
+
     public abstract Object getAsObject();
+
+    public void write(ByteBuffer buffer) {
+        getType().write(buffer, this);
+    }
+
     public String quoteAndEscape(String raw) {
         StringBuilder var1 = new StringBuilder(" ");
         int var2 = 0;

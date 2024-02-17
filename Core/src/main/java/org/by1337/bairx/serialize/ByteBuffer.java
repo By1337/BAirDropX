@@ -1,4 +1,4 @@
-package org.by1337.bairx.nbt;
+package org.by1337.bairx.serialize;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;

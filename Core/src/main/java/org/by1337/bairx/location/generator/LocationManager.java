@@ -1,13 +1,9 @@
 package org.by1337.bairx.location.generator;
 
 import org.bukkit.Location;
-import org.bukkit.World;
-import org.by1337.bairx.AirDrop;
+import org.by1337.bairx.airdrop.AirDrop;
 import org.by1337.bairx.location.generator.impl.*;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.ArrayList;
 
 public class LocationManager   {
     private final GeneratorSetting setting;

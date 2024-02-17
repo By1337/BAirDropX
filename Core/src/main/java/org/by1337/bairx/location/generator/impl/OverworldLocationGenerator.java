@@ -3,7 +3,7 @@ package org.by1337.bairx.location.generator.impl;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
-import org.by1337.bairx.AirDrop;
+import org.by1337.bairx.airdrop.AirDrop;
 import org.by1337.bairx.location.generator.GeneratorSetting;
 import org.by1337.bairx.location.generator.LocationGenerator;
 import org.by1337.blib.world.BlockPosition;

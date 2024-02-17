@@ -3,6 +3,7 @@ package org.by1337.bairx.nbt;
 
 
 import org.by1337.bairx.nbt.impl.*;
+import org.by1337.bairx.serialize.ByteBuffer;
 
 import java.util.ArrayList;
 import java.util.List;

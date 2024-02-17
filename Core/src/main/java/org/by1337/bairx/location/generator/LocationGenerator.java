@@ -3,14 +3,8 @@ package org.by1337.bairx.location.generator;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.by1337.bairx.AirDrop;
+import org.by1337.bairx.airdrop.AirDrop;
 import org.by1337.blib.world.BlockPosition;
-import org.jetbrains.annotations.NotNull;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 
 public abstract class LocationGenerator {
     protected final GeneratorSetting setting;

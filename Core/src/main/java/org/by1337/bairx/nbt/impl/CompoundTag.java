@@ -90,6 +90,9 @@ public class CompoundTag extends NBT {
         return (String) v.getAsObject();
     }
 
+    public boolean isEmpty(){
+        return tags.isEmpty();
+    }
     @Override
 
     public Object getAsObject() {
