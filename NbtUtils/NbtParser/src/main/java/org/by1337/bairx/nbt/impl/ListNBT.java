@@ -89,7 +89,8 @@ public class ListNBT extends NBT implements Iterable<NBT> {
         for (NBT v : list) {
             sb.append(space).append(v.toStringBeautifier(lvl + 4)).append(",\n");
         }
-        sb.setLength(sb.length() - 2);
+        if (!list.isEmpty())
+            sb.setLength(sb.length() - 2);
         return sb.append("\n").append(" ".repeat(lvl)).append("]").toString();
     }
 

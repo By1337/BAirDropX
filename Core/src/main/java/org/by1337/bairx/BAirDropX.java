@@ -1,5 +1,9 @@
 package org.by1337.bairx;
 
+import org.bukkit.Bukkit;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.by1337.bairx.airdrop.AirDrop;
@@ -7,24 +11,28 @@ import org.by1337.bairx.airdrop.ClassicAirDrop;
 import org.by1337.bairx.config.adapter.AdapterGeneratorSetting;
 import org.by1337.bairx.config.adapter.AdapterObserver;
 import org.by1337.bairx.config.adapter.AdapterRequirement;
+import org.by1337.bairx.exception.PluginInitializationException;
 import org.by1337.bairx.location.generator.GeneratorSetting;
-import org.by1337.bairx.menu.MenuItemBuilder;
-import org.by1337.bairx.menu.MenuLoader;
-import org.by1337.bairx.menu.adapter.AdapterCustomItemStack;
-import org.by1337.bairx.menu.adapter.AdapterIRequirement;
-import org.by1337.bairx.menu.adapter.AdapterRequirements;
-import org.by1337.bairx.menu.requirement.IRequirement;
-import org.by1337.bairx.menu.requirement.Requirements;
+import org.by1337.bairx.menu.ListenersMenu;
 import org.by1337.bairx.observer.Observer;
 import org.by1337.bairx.observer.ObserverManager;
 import org.by1337.bairx.observer.requirement.Requirement;
+import org.by1337.bairx.timer.TimerManager;
+import org.by1337.bairx.util.ConfigUtil;
 import org.by1337.blib.chat.util.Message;
+import org.by1337.blib.configuration.YamlConfig;
 import org.by1337.blib.configuration.adapter.AdapterRegistry;
 import org.by1337.blib.util.NameKey;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
+import javax.naming.Name;
 import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.function.Supplier;
+import java.util.logging.Level;
 
 public final class BAirDropX extends JavaPlugin {
 
@@ -32,40 +40,50 @@ public final class BAirDropX extends JavaPlugin {
     private Message message;
     private ObserverManager observerManager;
     private static boolean debug = true;
-    private MenuLoader menuLoader;
+    private TimerManager timerManager;
+
+    private final Map<NameKey, AirDrop> airDropMap = new HashMap<>();
 
     @Override
     public void onLoad() {
         setInstance(this);
         message = new Message(getLogger());
+        getDataFolder().mkdir();
     }
 
     @Override
     public void onEnable() {
-        getDataFolder().mkdir();
-        if (!new File(getDataFolder() + "listeners/default.yml").exists()){
-            saveResource("listeners/default.yml", false);
-        }
+        try {
+            ConfigUtil.trySave("listeners/default.yml");
+            ConfigUtil.trySave("config.yml");
+            timerManager = new TimerManager();
 
-        AdapterRegistry.registerAdapter(GeneratorSetting.class, new AdapterGeneratorSetting());
-        AdapterRegistry.registerAdapter(Requirement.class, new AdapterRequirement());
-        AdapterRegistry.registerAdapter(Observer.class, new AdapterObserver());
-        AdapterRegistry.registerAdapter(MenuItemBuilder.class, new AdapterCustomItemStack());
-        AdapterRegistry.registerAdapter(IRequirement.class, new AdapterIRequirement());
-        AdapterRegistry.registerAdapter(Requirements.class, new AdapterRequirements());
+            AdapterRegistry.registerAdapter(GeneratorSetting.class, new AdapterGeneratorSetting());
+            AdapterRegistry.registerAdapter(Requirement.class, new AdapterRequirement());
+            AdapterRegistry.registerAdapter(Observer.class, new AdapterObserver());
 
+            observerManager = new ObserverManager();
 
-        menuLoader = new MenuLoader(this);
+            timerManager.load(new YamlConfig(new File(getDataFolder() + "/config.yml")));
 
-        observerManager = new ObserverManager();
-        AirDrop airDrop = ClassicAirDrop.createNew(new NameKey("default"), new File(getDataFolder() + "/default"));
+            Bukkit.getScheduler().runTaskTimer(this, this::tick, 0, 1);
 
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                airDrop.tick();
+        } catch (Exception e) {
+            Throwable t;
+            if (e instanceof PluginInitializationException) {
+                t = e;
+            } else {
+                t = new PluginInitializationException(e);
             }
-        }.runTaskTimer(this, 10, 10);
+            getLogger().log(Level.SEVERE, "failed to enable plugin!", t);
+            Bukkit.getPluginManager().disablePlugin(this);
+        }
+    }
+
+    private long currentTick;
+    private void tick() {
+        timerManager.tick(currentTick);
+        currentTick++;
     }
 
     @Override
@@ -73,9 +91,16 @@ public final class BAirDropX extends JavaPlugin {
         AdapterRegistry.unregisterAdapter(GeneratorSetting.class);
         AdapterRegistry.unregisterAdapter(Requirement.class);
         AdapterRegistry.unregisterAdapter(Observer.class);
-        AdapterRegistry.unregisterAdapter(MenuItemBuilder.class);
-        AdapterRegistry.unregisterAdapter(IRequirement.class);
-        AdapterRegistry.unregisterAdapter(Requirements.class);
+    }
+
+    @Override
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
+        Player player = (Player) sender;
+
+        ListenersMenu listenersMenu = new ListenersMenu(airDropMap.get("default"), player, null);
+        player.openInventory(listenersMenu.getMenu().getInventory());
+        listenersMenu.generateMenu();
+        return true;
     }
 
     public static Message getMessage() {
@@ -88,7 +113,7 @@ public final class BAirDropX extends JavaPlugin {
 
     public static void setInstance(BAirDropX instance) {
         Objects.requireNonNull(instance);
-        if (BAirDropX.instance != null){
+        if (BAirDropX.instance != null) {
             throw new UnsupportedOperationException();
         }
         BAirDropX.instance = instance;
@@ -98,9 +123,14 @@ public final class BAirDropX extends JavaPlugin {
         return instance.observerManager;
     }
 
-    public static void debug(Supplier<String> message){
-        if (debug){
+    public static void debug(Supplier<String> message) {
+        if (debug) {
             getMessage().logger(message.get());
         }
+    }
+
+    @Nullable
+    public static AirDrop getAirdropById(NameKey nameKey) {
+        return instance.airDropMap.get(nameKey);
     }
 }

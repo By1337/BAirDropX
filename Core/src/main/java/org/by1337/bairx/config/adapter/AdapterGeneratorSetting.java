@@ -31,6 +31,7 @@ public class AdapterGeneratorSetting implements ClassAdapter<GeneratorSetting> {
         context.set("max-y", obj.maxY);
         context.set("min-y", obj.minY);
         context.set("region-radius", obj.regionRadius);
+        context.set("check-region", obj.checkRegion);
 
         List<String> list = new ArrayList<>();
 
@@ -57,6 +58,7 @@ public class AdapterGeneratorSetting implements ClassAdapter<GeneratorSetting> {
         generatorSetting.maxY = context.getAsInteger("max-y");
         generatorSetting.minY = context.getAsInteger("min-y");
         generatorSetting.regionRadius = context.getAs("region-radius", BlockPosition.class);
+        generatorSetting.checkRegion = context.getAsBoolean("check-region");
         var flags = context.getList("flags", String.class, new ArrayList<>());
 
         generatorSetting.flags = new HashMap<>();

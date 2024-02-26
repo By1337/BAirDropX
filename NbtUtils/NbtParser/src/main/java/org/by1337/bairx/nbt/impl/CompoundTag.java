@@ -1,13 +1,10 @@
 package org.by1337.bairx.nbt.impl;
 
-import org.by1337.bairx.nbt.NBT;
+import org.by1337.bairx.nbt.*;
 import org.by1337.bairx.nbt.NbtType;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 public class CompoundTag extends NBT {
     private final Map<String, NBT> tags = new HashMap<>();
@@ -27,6 +24,47 @@ public class CompoundTag extends NBT {
     public void putBoolean(String id, boolean v) {
         tags.put(id, ByteNBT.valueOf((byte) (v ? 1 : 0)));
     }
+
+    public void putByteArray(String id, byte[] byteArray) {
+        tags.put(id, new ByteArrNBT(byteArray));
+    }
+
+    public void putByte(String id, byte v) {
+        tags.put(id, ByteNBT.valueOf(v));
+    }
+
+    public void putDouble(String id, double v) {
+        tags.put(id, new DoubleNBT(v));
+    }
+
+    public void putFloat(String id, float v) {
+        tags.put(id, new FloatNBT(v));
+    }
+
+    public void putIntArray(String id, int[] intArray) {
+        tags.put(id, new IntArrNBT(intArray));
+    }
+
+    public void putInt(String id, int v) {
+        tags.put(id, IntNBT.valueOf(v));
+    }
+
+    public void putList(String id, List<NBT> list) {
+        tags.put(id, new ListNBT(list));
+    }
+
+    public void putLongArray(String id, long[] longArray) {
+        tags.put(id, new LongArrNBT(longArray));
+    }
+
+    public void putLong(String id, long v) {
+        tags.put(id, LongNBT.valueOf(v));
+    }
+
+    public void putShort(String id, short v) {
+        tags.put(id, ShortNBT.valueOf(v));
+    }
+
 
     public boolean has(String name){
         return get(name) != null;
@@ -87,6 +125,11 @@ public class CompoundTag extends NBT {
         if (v == null) throw new NullPointerException("unknown tag " + name);
         return (String) v.getAsObject();
     }
+    public CompoundTag getAsCompoundTag(String name) {
+        var v = get(name);
+        if (v == null) throw new NullPointerException("unknown tag " + name);
+        return (CompoundTag) v;
+    }
 
     public boolean isEmpty(){
         return tags.isEmpty();
@@ -113,7 +156,6 @@ public class CompoundTag extends NBT {
     }
 
     public String toStringBeautifier(int lvl) {
-        String space = " ".repeat(lvl * 2);
         StringBuilder sb = new StringBuilder("{\n");
 
         for (Map.Entry<String, NBT> entry : tags.entrySet()) {

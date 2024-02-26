@@ -37,6 +37,7 @@ public class GeneratorSetting {
    public int minY = 30;
    public BlockPosition regionRadius = new BlockPosition(15, 15, 15);
    public Map<Flag<?>, String> flags;
+   public boolean checkRegion;
 
 
    public void applyDefaultFlags(){

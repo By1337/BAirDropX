@@ -26,7 +26,8 @@ public class ByteArrNBT extends NBT {
         for (Byte b : value) {
             sb.append(b).append("B,");
         }
-        sb.setLength(sb.length() - 1);
+        if (value.length != 0)
+            sb.setLength(sb.length() - 1);
         return sb.append("]").toString();
     }
 

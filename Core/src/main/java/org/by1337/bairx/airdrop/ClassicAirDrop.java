@@ -10,6 +10,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import org.by1337.bairx.BAirDropX;
 import org.by1337.bairx.event.Event;
+import org.by1337.bairx.event.EventListenerManager;
 import org.by1337.bairx.event.EventType;
 import org.by1337.bairx.location.generator.GeneratorSetting;
 import org.by1337.bairx.location.generator.LocationManager;
@@ -18,6 +19,7 @@ import org.by1337.bairx.nbt.io.ByteBuffer;
 import org.by1337.bairx.util.Placeholder;
 import org.by1337.blib.configuration.YamlConfig;
 import org.by1337.blib.util.NameKey;
+import org.by1337.blib.util.SpacedNameKey;
 import org.by1337.blib.world.BlockPosition;
 import org.jetbrains.annotations.Nullable;
 
@@ -25,7 +27,9 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class ClassicAirDrop extends Placeholder implements AirDrop {
     private final NameKey id;
@@ -47,7 +51,7 @@ public class ClassicAirDrop extends Placeholder implements AirDrop {
     private Material materialWhenClosed;
     private Material materialWhenOpened;
     private int requiredNumberOfPlayersOnline;
-    private List<String> signedListeners;
+    private Set<SpacedNameKey> signedListeners;
     private AirDropMetaData metaData;
     private boolean enable;
     private boolean started;
@@ -151,8 +155,8 @@ public class ClassicAirDrop extends Placeholder implements AirDrop {
         materialWhenClosed = Material.RESPAWN_ANCHOR;
         materialWhenOpened = Material.ENDER_CHEST;
         requiredNumberOfPlayersOnline = 1;
-        signedListeners = new ArrayList<>();
-        signedListeners.add("default:test");
+        signedListeners = new HashSet<>();
+        signedListeners.add(new SpacedNameKey("default:test"));
         enable = true;
         started = false;
         opened = false;
@@ -220,8 +224,9 @@ public class ClassicAirDrop extends Placeholder implements AirDrop {
 
     public void callEvent(@Nullable Player player, EventType eventType) {
         Event event = new Event(this, player, eventType);
+        EventListenerManager.call(event, this);
 
-        for (String listener : signedListeners) {
+        for (SpacedNameKey listener : signedListeners) {
             BAirDropX.getObserverManager().invoke(listener, event);
         }
     }
@@ -268,5 +273,20 @@ public class ClassicAirDrop extends Placeholder implements AirDrop {
         registerPlaceholder("{x}", () -> location == null ? "?" : location.getBlockX());
         registerPlaceholder("{y}", () -> location == null ? "?" : location.getBlockY());
         registerPlaceholder("{z}", () -> location == null ? "?" : location.getBlockZ());
+    }
+
+    @Override
+    public Set<SpacedNameKey> getSignedListeners() {
+        return signedListeners;
+    }
+
+    @Override
+    public boolean isStarted() {
+        return started;
+    }
+
+    @Override
+    public int hashCode() {
+        return id.hashCode();
     }
 }

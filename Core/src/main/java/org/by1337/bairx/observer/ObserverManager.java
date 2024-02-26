@@ -4,6 +4,9 @@ import org.bukkit.configuration.InvalidConfigurationException;
 import org.by1337.bairx.BAirDropX;
 import org.by1337.bairx.event.Event;
 import org.by1337.blib.util.NameKey;
+import org.by1337.blib.util.SpacedNameKey;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
@@ -25,7 +28,7 @@ public class ObserverManager {
             try {
                 if (file.getName().endsWith(".yml")) {
                     NameKey nameKey = new NameKey(file.getName().replace(".yml", ""));
-                    ObserverLoader loader = new ObserverLoader(file);
+                    ObserverLoader loader = new ObserverLoader(file, nameKey);
                     loaders.put(nameKey, loader);
                 }
             } catch (Throwable e) {
@@ -34,31 +37,27 @@ public class ObserverManager {
         }
     }
 
-    public void invoke(String listener, Event event) {
-        invoke(listener, event, false);
+    public void invoke(@NotNull String listener, @NotNull Event event) {
+        invoke(null, new NameKey(listener), event, false);
     }
 
-    public void invoke(String listener, Event event, boolean ignoreType) {
-        final NameKey loaderName;
-        final NameKey observerName;
-        if (listener.contains(":")) {
-            String[] arr = listener.split(":");
-            loaderName = new NameKey(arr[0]);
-            observerName = new NameKey(arr[1]);
-        } else {
-            loaderName = null;
-            observerName = new NameKey(listener);
-        }
+    public void invoke(@NotNull SpacedNameKey listener, @NotNull Event event) {
+        invoke(listener, event, false);
+    }
+    public void invoke(@NotNull SpacedNameKey listener, @NotNull Event event, boolean ignoreType) {
+        invoke(listener.getSpace(), listener.getName(), event, ignoreType);
+    }
 
-        if (loaderName != null) {
-            var loader = loaders.get(loaderName);
+    public void invoke(@Nullable NameKey space, @NotNull NameKey listener, @NotNull Event event, boolean ignoreType) {
+        if (space != null) {
+            var loader = loaders.get(space);
             if (loader == null) {
-                BAirDropX.getMessage().error("unknown listener loader! " + loaderName);
+                BAirDropX.getMessage().error("unknown listener loader! " + space.getName());
                 return;
             }
-            var observer = loader.getByName(observerName);
+            var observer = loader.getByName(listener);
             if (observer == null) {
-                BAirDropX.getMessage().error("unknown listener! " + observerName.getName());
+                BAirDropX.getMessage().error("unknown listener! " + listener.getName());
                 return;
             }
             if (observer.getEventType().equals(event.getEventType()) || ignoreType) {
@@ -67,14 +66,14 @@ public class ObserverManager {
         } else {
             Map<NameKey, Observer> observerMap = new HashMap<>();
             for (Map.Entry<NameKey, ObserverLoader> entry : loaders.entrySet()) {
-                var observer = entry.getValue().getByName(observerName);
+                var observer = entry.getValue().getByName(listener);
                 if (observer != null) {
                     observerMap.put(entry.getKey(), observer);
                 }
             }
 
             if (observerMap.isEmpty()) {
-                BAirDropX.getMessage().error("unknown listener! " + observerName.getName());
+                BAirDropX.getMessage().error("unknown listener! " + listener.getName());
             } else if (observerMap.size() == 1) {
                 Observer observer = observerMap.values().iterator().next();
                 if (observer.getEventType().equals(event.getEventType()) || ignoreType) {
@@ -85,11 +84,15 @@ public class ObserverManager {
                 StringJoiner joiner = new StringJoiner(", ");
 
                 for (Map.Entry<NameKey, Observer> entry : observerMap.entrySet()) {
-                    joiner.add(entry.getKey().getName() + ":" + observerName.getName());
+                    joiner.add(entry.getKey().getName() + ":" + listener.getName());
                 }
 
-                BAirDropX.getMessage().error("Неоднозначный вызов слушателя %s! Все возможные варианты: [%s]", observerName.getName(), joiner.toString());
+                BAirDropX.getMessage().error("Неоднозначный вызов слушателя %s! Все возможные варианты: [%s]", listener.getName(), joiner.toString());
             }
         }
+    }
+
+    public Map<NameKey, ObserverLoader> getLoaders() {
+        return loaders;
     }
 }

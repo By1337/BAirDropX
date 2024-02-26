@@ -6,3 +6,10 @@ depend:
   - BLib
   - WorldGuard
   - WorldEdit
+commands:
+  bairdropx:
+    aliases:
+      - bairx
+      - bair
+      - air
+      - airdrop

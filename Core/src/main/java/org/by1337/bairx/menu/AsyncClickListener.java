@@ -67,6 +67,9 @@ public abstract class AsyncClickListener extends Placeholder implements Listener
         }
     }
 
+    protected void createInventory(int size, String title) {
+        createInventory(size, title, InventoryType.CHEST);
+    }
     protected void createInventory(int size, String title, InventoryType type) {
         if (type == InventoryType.CHEST) {
             inventory = Bukkit.createInventory(null, size, title);
@@ -106,7 +109,7 @@ public abstract class AsyncClickListener extends Placeholder implements Listener
         if (inventory.equals(e.getInventory())) {
             onClose(e);
             close();
-            syncUtil(() -> {
+/*            syncUtil(() -> {
                 viewer.updateInventory();
                 for (ItemStack itemStack : viewer.getInventory()) {
                     if (itemStack == null) continue;
@@ -116,7 +119,7 @@ public abstract class AsyncClickListener extends Placeholder implements Listener
                         viewer.getInventory().remove(itemStack);
                     }
                 }
-            }, 10);
+            }, 10);*/
         }
     }
 

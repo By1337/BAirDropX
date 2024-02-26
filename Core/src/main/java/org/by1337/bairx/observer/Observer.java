@@ -5,6 +5,8 @@ import org.by1337.bairx.command.CommandRegistry;
 import org.by1337.bairx.event.Event;
 import org.by1337.bairx.event.EventType;
 import org.by1337.bairx.observer.requirement.Requirements;
+import org.by1337.blib.util.SpacedNameKey;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
@@ -15,6 +17,8 @@ public class Observer {
     private final List<String> commands;
     private final List<String> denyCommands;
     private final EventType eventType;
+    @Nullable
+    private SpacedNameKey name;
 
     public Observer(ItemStack icon, String description, Requirements requirements, List<String> commands, List<String> denyCommands, EventType eventType) {
         this.icon = icon;
@@ -38,7 +42,7 @@ public class Observer {
     }
 
     public ItemStack getIcon() {
-        return icon;
+        return icon.clone();
     }
 
     public String getDescription() {
@@ -59,5 +63,13 @@ public class Observer {
 
     public EventType getEventType() {
         return eventType;
+    }
+
+    public @Nullable SpacedNameKey getName() {
+        return name;
+    }
+
+    public void setName(@Nullable SpacedNameKey name) {
+        this.name = name;
     }
 }

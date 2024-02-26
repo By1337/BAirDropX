@@ -11,9 +11,11 @@ public final class EventType {
     private static final Map<NameKey, EventType> byName = new HashMap<>();
     private final NameKey nameKey;
 
+    public static final EventType LOAD = register("load");
     public static final EventType START = register("start");
     public static final EventType OPEN = register("open");
     public static final EventType END = register("end");
+    public static final EventType UNLOAD = register("unload");
     public static final EventType TICK = register("tick");
 
     private EventType(String nameKey) {

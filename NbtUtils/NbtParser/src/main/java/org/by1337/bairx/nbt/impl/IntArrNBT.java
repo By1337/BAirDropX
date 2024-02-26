@@ -50,7 +50,8 @@ public class IntArrNBT extends NBT {
         for (Integer b : value) {
             sb.append(b).append(",");
         }
-        sb.setLength(sb.length() - 1);
+        if (value.length != 0)
+            sb.setLength(sb.length() - 1);
 
         return sb.append("]").toString();
     }

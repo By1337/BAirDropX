@@ -37,7 +37,7 @@ public class CommandRegistry {
         registerCommand(new Command<Event>("[MESSAGE_ALL]")
                 .argument(new ArgumentStrings<>("message"))
                 .executor((event, args) -> {
-                    BAirDropX.getMessage().sendAllMsg((String) args.getOrThrow("message"));
+                    BAirDropX.getMessage().sendAllMsg((String) args.getOrThrow("message", "Отсутствует сообщение!"));
                 })
         );
     }

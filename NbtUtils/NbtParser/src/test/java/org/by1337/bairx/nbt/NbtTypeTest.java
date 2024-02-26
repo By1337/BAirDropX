@@ -11,6 +11,7 @@ import org.by1337.bairx.nbt.io.ByteBuffer;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.io.File;
 import java.io.IOException;
 
 public class NbtTypeTest {
@@ -36,10 +37,10 @@ public class NbtTypeTest {
     public void write() throws CommandSyntaxException {
 
         var nms = buildNmsCompoundTag();
-        if (true){
-            System.out.println(nms);
-            return;
-        }
+//        if (true){
+//            System.out.println(nms);
+//            return;
+//        }
         CompoundTag parsed = NBTParser.parse(nms.toString());
 
         ByteBuffer buffer = new ByteBuffer();

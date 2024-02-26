@@ -39,7 +39,8 @@ public class LongArrNBT extends NBT {
         for (Long b : value) {
             sb.append(b).append("L,");
         }
-        sb.setLength(sb.length() - 1);
+        if (value.length != 0)
+            sb.setLength(sb.length() - 1);
 
         return sb.append("]").toString();
     }
