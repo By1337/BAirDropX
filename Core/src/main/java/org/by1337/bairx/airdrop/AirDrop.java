@@ -15,6 +15,5 @@ public interface AirDrop extends Placeholderable {
     Set<SpacedNameKey> getSignedListeners();
     boolean isStarted();
     NameKey getId();
-    @Nullable Timer getTimer();
-
+    boolean isUseDefaultTimer();
 }

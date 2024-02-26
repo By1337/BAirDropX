@@ -1,5 +1,6 @@
 package org.by1337.bairx.timer;
 
+import org.bukkit.configuration.MemorySection;
 import org.by1337.bairx.BAirDropX;
 import org.by1337.bairx.airdrop.AirDrop;
 import org.by1337.bairx.event.Event;
@@ -35,11 +36,8 @@ public class Ticker implements Timer, EventListener {
         Validate.test(tickTypeString, str -> !str.equals("all") && !str.equals("by_chance"), () -> new PluginInitializationException("Параметр `tick-type` может быть только 'all' или 'by_chance'"));
         tickType = tickTypeString.equals("all") ? TickType.ALL : TickType.BY_CHANCE;
 
-        Map<?, ?> airdropsRawMap = (Map<?, ?>) Validate.test(
-                context.getAs("licked-airdrops", Object.class),
-                obj -> !(obj instanceof Map<?, ?>),
-                () -> new PluginInitializationException("Параметр `licked-airdrops` имеет не правильный тип!")
-        );
+
+        Map<?, ?> airdropsRawMap = context.getAs("licked-airdrops", MemorySection.class).getValues(false);
 
         for (Map.Entry<?, ?> entry : airdropsRawMap.entrySet()) {
             Object key = entry.getKey();
@@ -92,15 +90,16 @@ public class Ticker implements Timer, EventListener {
 
     @Override
     public void onEvent(@NotNull Event event, @NotNull AirDrop airDrop) {
+        if (!lickedAirDrops.contains(airDrop.getId()))
+            return;
         if (tickType == TickType.ALL) return;
-        if (!lickedAirDrops.contains(airDrop.getId())) return;
         if (event.getEventType() == EventType.END) {
             if (current == airDrop) {
                 current = null;
             }
             bypassed.remove(airDrop);
         }
-        if (event.getEventType() == EventType.START && this.equals(airDrop.getTimer())) {
+        if (event.getEventType() == EventType.START) {
             if (current != airDrop) {
                 bypassed.add(airDrop);
             }

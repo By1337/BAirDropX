@@ -8,6 +8,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.by1337.bairx.airdrop.AirDrop;
 import org.by1337.bairx.airdrop.ClassicAirDrop;
+import org.by1337.bairx.airdrop.loader.AirdropLoader;
 import org.by1337.bairx.config.adapter.AdapterGeneratorSetting;
 import org.by1337.bairx.config.adapter.AdapterObserver;
 import org.by1337.bairx.config.adapter.AdapterRequirement;
@@ -66,6 +67,8 @@ public final class BAirDropX extends JavaPlugin {
 
             timerManager.load(new YamlConfig(new File(getDataFolder() + "/config.yml")));
 
+            AirdropLoader.load();
+
             Bukkit.getScheduler().runTaskTimer(this, this::tick, 0, 1);
 
         } catch (Exception e) {
@@ -83,9 +86,11 @@ public final class BAirDropX extends JavaPlugin {
     private long currentTick;
     private void tick() {
         timerManager.tick(currentTick);
+        if (currentTick % 20 == 0){
+            airDropMap.values().stream().filter(AirDrop::isUseDefaultTimer).forEach(AirDrop::tick);
+        }
         currentTick++;
     }
-
     @Override
     public void onDisable() {
         AdapterRegistry.unregisterAdapter(GeneratorSetting.class);
@@ -97,9 +102,11 @@ public final class BAirDropX extends JavaPlugin {
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         Player player = (Player) sender;
 
-        ListenersMenu listenersMenu = new ListenersMenu(airDropMap.get("default"), player, null);
-        player.openInventory(listenersMenu.getMenu().getInventory());
-        listenersMenu.generateMenu();
+        AirDrop airDrop = ClassicAirDrop.createNew(new NameKey("default"), new File(getDataFolder() + "/airdrops/default"));
+        airDropMap.put(airDrop.getId(), airDrop);
+//        ListenersMenu listenersMenu = new ListenersMenu(airDropMap.get("default"), player, null);
+//        player.openInventory(listenersMenu.getMenu().getInventory());
+//        listenersMenu.generateMenu();
         return true;
     }
 
@@ -109,6 +116,10 @@ public final class BAirDropX extends JavaPlugin {
 
     public static BAirDropX getInstance() {
         return instance;
+    }
+
+    public static Map<NameKey, AirDrop> getAirDropMap() {
+        return instance.airDropMap;
     }
 
     public static void setInstance(BAirDropX instance) {
