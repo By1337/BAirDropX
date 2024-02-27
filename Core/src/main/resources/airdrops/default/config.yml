@@ -1,0 +1,20 @@
+air-name: '&7AirDrop'
+id: default
+world: world
+time-to-start: 120
+time-to-open: 120
+time-to-end: 120
+use-static-loc: false
+static-loc:
+  x: 0
+  y: 0
+  z: 0
+triggered-time-to-open: false
+independent-time-to-end: false
+material-when-closed: RESPAWN_ANCHOR
+material-when-opened: ENDER_CHEST
+required-number-of-players-online: 1
+enable: true
+signed-listeners:
+- default:test
+use-default-timer: true

@@ -4,6 +4,7 @@ import org.by1337.bairx.BAirDropX;
 import org.by1337.bairx.airdrop.AirDrop;
 import org.by1337.bairx.airdrop.AirDropMetaData;
 import org.by1337.bairx.nbt.io.ByteBuffer;
+import org.by1337.bairx.util.ConfigUtil;
 import org.by1337.blib.util.NameKey;
 
 import java.io.File;
@@ -18,7 +19,9 @@ public class AirdropLoader {
         File file = new File(BAirDropX.getInstance().getDataFolder(), "airdrops");
         if (!file.exists()) {
             file.mkdir();
-            return;
+            ConfigUtil.trySave("airdrops/default/config.yml");
+            ConfigUtil.trySave("airdrops/default/desc.metadata");
+            ConfigUtil.trySave("airdrops/default/generator_setting.yml");
         }
         var list = file.listFiles();
         if (list == null) return;

@@ -1,5 +1,6 @@
 package org.by1337.bairx.airdrop;
 
+import org.bukkit.Location;
 import org.bukkit.World;
 import org.by1337.bairx.timer.Timer;
 import org.by1337.blib.chat.Placeholderable;
@@ -15,5 +16,6 @@ public interface AirDrop extends Placeholderable {
     Set<SpacedNameKey> getSignedListeners();
     boolean isStarted();
     NameKey getId();
-    boolean isUseDefaultTimer();
+   boolean isUseDefaultTimer();
+   Location getLocation();
 }

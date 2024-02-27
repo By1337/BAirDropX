@@ -39,4 +39,16 @@ public class Event extends Placeholder {
                 BAirDropX.getMessage().messageBuilder(airDrop.replace(super.replace(string)), player)
         );
     }
+
+    public Event getWith(@Nullable Player player) {
+        return getWith(airDrop, player);
+    }
+
+    public Event getWith(@NotNull AirDrop airDrop) {
+        return getWith(airDrop, player);
+    }
+    public Event getWith(@NotNull AirDrop airDrop, @Nullable Player player) {
+        return new Event(airDrop, player, eventType);
+    }
+
 }

@@ -27,17 +27,21 @@ public class Validate {
     }
 
     @CanIgnoreReturnValue
+    @NotNull
     public static <T> T notNull(@Nullable T obj, @NotNull String message, @NotNull Object... objects) {
         return notNull(obj, String.format(message, objects));
 
     }
 
     @CanIgnoreReturnValue
+    @NotNull
     public static <T> T notNull(@Nullable T obj) {
         return notNull(obj, null);
     }
 
     @CanIgnoreReturnValue
+    @NotNull
+    @SuppressWarnings("ConstantConditions")
     public static <T> T notNull(@Nullable T obj, @Nullable String message) {
         return test(obj, Objects::isNull, () -> new NullPointerException(message));
     }
