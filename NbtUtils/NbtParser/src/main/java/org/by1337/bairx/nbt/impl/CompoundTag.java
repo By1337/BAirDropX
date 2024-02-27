@@ -73,6 +73,9 @@ public class CompoundTag extends NBT {
     public NBT get(String name) {
         return tags.get(name);
     }
+    public NBT getOrThrow(String name) {
+        return Objects.requireNonNull(tags.get(name), "unknown tag " + name);
+    }
 
     public NBT getOrDefault(String name, NBT def) {
         return tags.getOrDefault(name, def);

@@ -157,7 +157,6 @@ public class CommandRegistry {
                     String cmd = (String) args.getOrThrow("cmd", "В команде не указана команда!");
                     new BukkitRunnable() {
                         int x = 0;
-
                         @Override
                         public void run() {
                             CommandRegistry.run(event, cmd);
