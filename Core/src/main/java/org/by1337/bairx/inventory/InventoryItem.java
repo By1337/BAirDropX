@@ -4,12 +4,13 @@ import org.bukkit.inventory.ItemStack;
 import org.by1337.bairx.exception.ConfigurationReadException;
 import org.by1337.bairx.nbt.impl.CompoundTag;
 import org.by1337.bairx.nbt.nms.ParseCompoundTagManager;
+import org.by1337.bairx.util.Placeholder;
 import org.by1337.bairx.util.Validate;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Random;
 
-public class InventoryItem {
+public class InventoryItem extends Placeholder {
     private final ItemStack itemStack;
     private int chance;
     private boolean randomAmount;
@@ -22,6 +23,10 @@ public class InventoryItem {
         this.randomAmount = randomAmount;
         this.minAmount = minAmount;
         this.maxAmount = maxAmount;
+        registerPlaceholder("{chance}", this::getChance);
+        registerPlaceholder("{enable-random-count}", this::isRandomAmount);
+        registerPlaceholder("{min-count}", this::getMinAmount);
+        registerPlaceholder("{max-count}", this::getMaxAmount);
     }
 
     public static InventoryItem load(CompoundTag compoundTag) {
@@ -99,10 +104,11 @@ public class InventoryItem {
     }
 
     public void setMinAmount(int minAmount) {
-        this.minAmount = minAmount;
+        this.minAmount = Math.max(1, Math.min(minAmount, itemStack.getMaxStackSize()));
     }
 
     public void setMaxAmount(int maxAmount) {
-        this.maxAmount = maxAmount;
+        this.maxAmount = Math.max(1, Math.min(maxAmount, itemStack.getMaxStackSize()));
     }
+
 }

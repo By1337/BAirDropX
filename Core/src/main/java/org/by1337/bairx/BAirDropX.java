@@ -16,6 +16,7 @@ import org.by1337.bairx.config.adapter.AdapterObserver;
 import org.by1337.bairx.config.adapter.AdapterRequirement;
 import org.by1337.bairx.exception.PluginInitializationException;
 import org.by1337.bairx.inventory.MenuAddItem;
+import org.by1337.bairx.inventory.MenuEditChance;
 import org.by1337.bairx.listener.ClickListener;
 import org.by1337.bairx.location.generator.GeneratorSetting;
 import org.by1337.bairx.menu.ListenersMenu;
@@ -155,6 +156,16 @@ public final class BAirDropX extends JavaPlugin {
                                     Player player = (Player) sender;
                                     AirDrop airDrop = airDropMap.get(new NameKey((String) args.getOrThrow("air", "&c/bairx edit loot <id>")));
                                     MenuAddItem menuAddItem = new MenuAddItem(airDrop.getInventoryManager(), airDrop, player);
+                                    player.openInventory(menuAddItem.getInventory());
+                                }))
+                        )
+                        .addSubCommand(new Command<CommandSender>("chance")
+                                .requires((sender -> sender instanceof Player))
+                                .argument(new ArgumentSetList<>("air", () -> airDropMap.values().stream().map(air -> air.getId().getName()).toList()))
+                                .executor(((sender, args) -> {
+                                    Player player = (Player) sender;
+                                    AirDrop airDrop = airDropMap.get(new NameKey((String) args.getOrThrow("air", "&c/bairx edit chance <id>")));
+                                    MenuEditChance menuAddItem = new MenuEditChance(airDrop.getInventoryManager(), airDrop, player);
                                     player.openInventory(menuAddItem.getInventory());
                                 }))
                         )

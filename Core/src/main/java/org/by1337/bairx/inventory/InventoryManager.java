@@ -84,9 +84,6 @@ public class InventoryManager implements PipelineHandler<ItemStack> {
                 .add("generator", this)
                 .add("handler", new ItemHandler(inventory, random));
 
-        for (Pair<String, PipelineHandler<ItemStack>> handler : pipeline.getHandlers()) {
-            System.out.println(handler.getLeft());
-        }
     }
 
     @Override

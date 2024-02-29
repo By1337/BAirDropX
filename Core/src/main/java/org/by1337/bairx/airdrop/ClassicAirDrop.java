@@ -308,15 +308,15 @@ public class ClassicAirDrop extends Placeholder implements AirDrop {
 
     private void generateLocation() {
         if (location != null) return;
+        if (useStaticLoc) {
+            location = new Location(world, staticLoc.getX(), staticLoc.getY(), staticLoc.getZ());
+            return;
+        }
         if (generateTask == null) {
             generateTask = new BukkitRunnable() {
                 @Override
                 public void run() {
-                    if (useStaticLoc) {
-                        location = new Location(world, staticLoc.getX(), staticLoc.getY(), staticLoc.getZ());
-                    } else {
-                        location = locationManager.generate();
-                    }
+                    location = locationManager.generate();
                     generateTask = null;
                 }
             }.runTaskAsynchronously(BAirDropX.getInstance());

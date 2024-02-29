@@ -10,7 +10,6 @@ public abstract class Placeholder implements Placeholderable {
 
     public void registerPlaceholder(String placeholder, Supplier<Object> supplier) {
         placeholders.put(placeholder, supplier);
-        String s;
     }
 
     public void registerPlaceholders(Collection<Map.Entry<String, Supplier<Object>>> list) {

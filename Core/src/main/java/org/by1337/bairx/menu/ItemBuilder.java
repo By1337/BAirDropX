@@ -9,6 +9,7 @@ import org.by1337.blib.util.Pair;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.UnaryOperator;
 
 public class ItemBuilder {
     private List<String> lore;
@@ -16,10 +17,14 @@ public class ItemBuilder {
     private Material material;
     private List<Pair<NamespacedKey, String>> nbts = new ArrayList<>();
     public ItemBuilder setLore(String... lore) {
-        return setLore(List.of(lore));
+        return setLore(new ArrayList<>(List.of(lore)));
     }
     public ItemBuilder setLore(List<String> lore) {
         this.lore = lore;
+        return this;
+    }
+    public ItemBuilder replaceLore(UnaryOperator<String> operator) {
+        this.lore.replaceAll(operator);
         return this;
     }
 
@@ -38,10 +43,17 @@ public class ItemBuilder {
     }
 
     public ItemStack build(){
-        ItemStack itemStack = new ItemStack(material);
+        return new ItemStack(new ItemStack(material));
+    }
+    public ItemStack build(ItemStack itemStack){
         var meta = itemStack.getItemMeta();
-        meta.setDisplayName(BAirDropX.getMessage().messageBuilder(name));
-        List<String> lore0 = new ArrayList<>(lore);
+        if (name != null)
+            meta.setDisplayName(BAirDropX.getMessage().messageBuilder(name));
+        List<String> lore0 = new ArrayList<>();
+        if (meta.getLore() != null){
+            lore0.addAll(meta.getLore());
+        }
+        lore0.addAll(lore);
         lore0.replaceAll(BAirDropX.getMessage()::messageBuilder);
         meta.setLore(lore0);
         if (!nbts.isEmpty()){
