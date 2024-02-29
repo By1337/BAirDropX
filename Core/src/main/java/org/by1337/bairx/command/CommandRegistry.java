@@ -207,5 +207,16 @@ public class CommandRegistry {
                     Bukkit.getScheduler().runTaskLaterAsynchronously(BAirDropX.getInstance(), () -> run(event, cmd), delay);
                 })
         );
+        registerCommand(new Command<Event>("[INV_MANAGER]")
+                .addSubCommand(new Command<Event>("[OPEN_INVENTORY]")
+                        .executor((event, args) -> Validate.notNull(event.getPlayer(), "В ивенте отсутствует игрок!").openInventory(event.getAirDrop().getInventoryManager().getInventory()))
+                )
+                .addSubCommand(new Command<Event>("[GENERATE_LOOT]")
+                        .executor((event, args) -> event.getAirDrop().getInventoryManager().generateItems())
+                )
+                .addSubCommand(new Command<Event>("[CLEAR_INVENTORY]")
+                        .executor((event, args) -> event.getAirDrop().getInventoryManager().getInventory().clear())
+                )
+        );
     }
 }

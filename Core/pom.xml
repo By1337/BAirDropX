@@ -30,13 +30,36 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>3.2.4</version>
+                <version>3.5.0</version>
                 <executions>
                     <execution>
                         <phase>package</phase>
                         <goals>
                             <goal>shade</goal>
                         </goals>
+                        <configuration>
+                            <minimizeJar>true</minimizeJar>
+                            <createDependencyReducedPom>false</createDependencyReducedPom>
+                            <relocations>
+                                <relocation>
+                                    <pattern>com.github.retrooper</pattern>
+                                    <shadedPattern>org.by1337.bairx.libs.com.github.retrooper</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>io.github.retrooper</pattern>
+                                    <shadedPattern>org.by1337.bairx.libs.io.github.retrooper</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>net.kyori</pattern>
+                                    <shadedPattern>org.by1337.bairx.libs.net.kyori</shadedPattern>
+                                </relocation>
+
+                                <relocation>
+                                    <pattern>com.google.gson</pattern>
+                                    <shadedPattern>org.by1337.bairx.libs.com.google.gson</shadedPattern>
+                                </relocation>
+                            </relocations>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
@@ -70,6 +93,10 @@
             <id>minecraft-repo</id>
             <url>https://libraries.minecraft.net/</url>
         </repository>
+        <repository>
+            <id>codemc-releases</id>
+            <url>https://repo.codemc.io/repository/maven-releases/</url>
+        </repository>
     </repositories>
 
     <dependencies>
@@ -92,6 +119,12 @@
             <version>1.0</version>
             <scope>compile</scope>
         </dependency>
+<!--        <dependency>-->
+<!--            <groupId>com.github.retrooper.packetevents</groupId>-->
+<!--            <artifactId>spigot</artifactId>-->
+<!--            <version>2.2.1</version>-->
+<!--            <scope>compile</scope>-->
+<!--        </dependency>-->
         <!--libs-->
         <dependency>
             <groupId>org.by1337.blib</groupId>

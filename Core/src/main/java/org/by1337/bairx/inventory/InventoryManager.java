@@ -10,9 +10,11 @@ import org.by1337.bairx.inventory.pipeline.PipelineManager;
 import org.by1337.bairx.nbt.NBT;
 import org.by1337.bairx.nbt.impl.CompoundTag;
 import org.by1337.bairx.nbt.impl.ListNBT;
+import org.by1337.blib.util.Pair;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.function.Consumer;
 
 public class InventoryManager implements PipelineHandler<ItemStack> {
     private final Random random = new Random();
@@ -35,7 +37,7 @@ public class InventoryManager implements PipelineHandler<ItemStack> {
         rebuildPipeline();
     }
 
-    public static InventoryManager load(CompoundTag compoundTag){
+    public static InventoryManager load(CompoundTag compoundTag) {
         int genItemCount = compoundTag.getAsInt("genItemCount");
         int invSize = compoundTag.getAsInt("invSize");
         String invName = compoundTag.getAsString("invName");
@@ -48,8 +50,9 @@ public class InventoryManager implements PipelineHandler<ItemStack> {
         manager.setItems(items);
         return manager;
     }
-    public CompoundTag save(){
-        CompoundTag compoundTag = new CompoundTag();
+
+    public void save(CompoundTag compoundTag) {
+        // CompoundTag compoundTag = new CompoundTag();
         compoundTag.putInt("genItemCount", genItemCount);
         compoundTag.putInt("invSize", invSize);
         compoundTag.putString("invName", invName);
@@ -60,16 +63,18 @@ public class InventoryManager implements PipelineHandler<ItemStack> {
             listNBT.add(compoundTag1);
         }
         compoundTag.putTag("items", listNBT);
-        return compoundTag;
+        //  return compoundTag;
     }
+
     public void sortItems() {
         items.sort(Comparator.comparingInt(InventoryItem::getChance));
     }
 
     public void generateItems() {
-        pipeline.processNext(null, this);
+        process(null, pipeline);
     }
-    public void clearInventory(){
+
+    public void clearInventory() {
         inventory.clear();
     }
 
@@ -78,6 +83,10 @@ public class InventoryManager implements PipelineHandler<ItemStack> {
         pipeline
                 .add("generator", this)
                 .add("handler", new ItemHandler(inventory, random));
+
+        for (Pair<String, PipelineHandler<ItemStack>> handler : pipeline.getHandlers()) {
+            System.out.println(handler.getLeft());
+        }
     }
 
     @Override

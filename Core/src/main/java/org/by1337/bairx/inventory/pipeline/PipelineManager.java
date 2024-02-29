@@ -35,22 +35,25 @@ public class PipelineManager<T> {
         throw new PipelineEndOfListException();
     }
 
-    public void processNext(T val, PipelineHandler<T> current){
-        for (Pair<String, PipelineHandler<T>> pair : handlers) {
+    public void processNext(T val, PipelineHandler<T> current) {
+        for (int i = 0; i < handlers.size(); i++) {
+            Pair<String, PipelineHandler<T>> pair = handlers.get(i);
             if (pair.getRight() == current) {
-                pair.getRight().process(val, this);
-                return;
+                if (i + 1 < handlers.size()) {
+                    handlers.get(i + 1).getRight().process(val, this);
+                    return;
+                }
             }
         }
         throw new PipelineEndOfListException();
     }
 
     public PipelineManager<T> add(String n, PipelineHandler<T> h,
-                    String n1, PipelineHandler<T> h1,
-                    String n2, PipelineHandler<T> h2,
-                    String n3, PipelineHandler<T> h3,
-                    String n4, PipelineHandler<T> h4,
-                    String n5, PipelineHandler<T> h5
+                                  String n1, PipelineHandler<T> h1,
+                                  String n2, PipelineHandler<T> h2,
+                                  String n3, PipelineHandler<T> h3,
+                                  String n4, PipelineHandler<T> h4,
+                                  String n5, PipelineHandler<T> h5
     ) {
         add(n, h, n1, h1, n2, h2, n3, h3, n4, h4);
         add(n5, h5);
@@ -58,10 +61,10 @@ public class PipelineManager<T> {
     }
 
     public PipelineManager<T> add(String n, PipelineHandler<T> h,
-                    String n1, PipelineHandler<T> h1,
-                    String n2, PipelineHandler<T> h2,
-                    String n3, PipelineHandler<T> h3,
-                    String n4, PipelineHandler<T> h4
+                                  String n1, PipelineHandler<T> h1,
+                                  String n2, PipelineHandler<T> h2,
+                                  String n3, PipelineHandler<T> h3,
+                                  String n4, PipelineHandler<T> h4
     ) {
         add(n, h, n1, h1, n2, h2, n3, h3);
         add(n4, h4);
@@ -69,9 +72,9 @@ public class PipelineManager<T> {
     }
 
     public PipelineManager<T> add(String n, PipelineHandler<T> h,
-                    String n1, PipelineHandler<T> h1,
-                    String n2, PipelineHandler<T> h2,
-                    String n3, PipelineHandler<T> h3
+                                  String n1, PipelineHandler<T> h1,
+                                  String n2, PipelineHandler<T> h2,
+                                  String n3, PipelineHandler<T> h3
     ) {
         add(n, h, n1, h1, n2, h2);
         add(n3, h3);
@@ -79,8 +82,8 @@ public class PipelineManager<T> {
     }
 
     public PipelineManager<T> add(String n, PipelineHandler<T> h,
-                    String n1, PipelineHandler<T> h1,
-                    String n2, PipelineHandler<T> h2
+                                  String n1, PipelineHandler<T> h1,
+                                  String n2, PipelineHandler<T> h2
     ) {
         add(n, h, n1, h1);
         add(n2, h2);

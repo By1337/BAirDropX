@@ -17,6 +17,9 @@ public final class EventType {
     public static final EventType END = register("end");
     public static final EventType UNLOAD = register("unload");
     public static final EventType TICK = register("tick");
+    public static final EventType CLICK = register("click");
+    public static final EventType CLICK_OPEN = register("click_open");
+    public static final EventType CLICK_CLOSE = register("click_close");
 
     private EventType(String nameKey) {
         this(new NameKey(nameKey));

@@ -3,6 +3,7 @@ package org.by1337.bairx.menu;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.by1337.bairx.BAirDropX;
@@ -17,16 +18,15 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ListenersMenu {
+public class ListenersMenu extends CodeMenu {
     private final AirDrop airDrop;
-    private final CodeMenu menu;
     @Nullable
     private final String nameSpace;
     private int page = 0;
 
     public ListenersMenu(AirDrop airDrop, Player player, @Nullable String nameSpace) {
+        super(player, "&7Listeners: " + (nameSpace == null ? "all" : nameSpace));
         this.airDrop = airDrop;
-        menu = new CodeMenu(player, "&7Listeners: " + (nameSpace == null ? "all" : nameSpace));
         this.nameSpace = nameSpace;
     }
 
@@ -35,7 +35,7 @@ public class ListenersMenu {
 
         SpacedNameKey name = observer.getName();
         List<String> lore = new ArrayList<>();
-        boolean singled = name != null && (airDrop.getSignedListeners().contains(name) || airDrop.getSignedListeners().contains(name));
+        boolean singled = name != null && airDrop.getSignedListeners().contains(name);
         lore.add("&fОписание: &f" + observer.getDescription());
         lore.add("&fПодписан: &f" + (name == null ? "&cНевозможно подписаться" : singled));
         lore.add("&fИвент: &f" + observer.getEventType().getNameKey().getName());
@@ -76,7 +76,7 @@ public class ListenersMenu {
 
 
     public void generateMenu() {
-        menu.getItems().clear();
+        getItems().clear();
         var list = getObservers();
         int startPos = 45 * page;
 
@@ -84,7 +84,7 @@ public class ListenersMenu {
         for (int i = startPos; i < startPos + 45; i++) {
             if (list.size() <= i) break;
             var observer = list.get(i);
-            menu.addItem(new MenuItem<>(observer, this::buildItem, this::clickByObserver, slot));
+            addItem(new MenuItem<>(observer, this::buildItem, this::clickByObserver, slot));
             slot++;
         }
 
@@ -93,7 +93,7 @@ public class ListenersMenu {
             var meta = arrowBack.getItemMeta();
             meta.setDisplayName(BAirDropX.getMessage().messageBuilder("&cНазад"));
             arrowBack.setItemMeta(meta);
-            menu.addItem(new MenuItem<>(null, obj -> arrowBack, click -> {
+            addItem(new MenuItem<>(null, obj -> arrowBack, click -> {
                 if (page > 0) {
                     page--;
                     generateMenu();
@@ -105,12 +105,12 @@ public class ListenersMenu {
             var meta = arrowNext.getItemMeta();
             meta.setDisplayName(BAirDropX.getMessage().messageBuilder("&aВперёд"));
             arrowNext.setItemMeta(meta);
-            menu.addItem(new MenuItem<>(null, obj -> arrowNext, click -> {
+            addItem(new MenuItem<>(null, obj -> arrowNext, click -> {
                 page++;
                 generateMenu();
             }, 53));
         }
-        menu.generateMenu();
+        generateMenu();
     }
 
     private List<Observer> getObservers() {
@@ -138,9 +138,14 @@ public class ListenersMenu {
         generateMenu();
     }
 
+    @Override
+    protected void onClose(InventoryCloseEvent e) {
+        super.onClose(e);
+        airDrop.trySave();
+    }
 
-
+    @Deprecated
     public CodeMenu getMenu() {
-        return menu;
+        return this;
     }
 }

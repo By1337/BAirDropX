@@ -12,8 +12,10 @@ import org.by1337.bairx.BAirDropX;
 import org.by1337.bairx.event.Event;
 import org.by1337.bairx.event.EventListenerManager;
 import org.by1337.bairx.event.EventType;
+import org.by1337.bairx.inventory.InventoryManager;
 import org.by1337.bairx.location.generator.GeneratorSetting;
 import org.by1337.bairx.location.generator.LocationManager;
+import org.by1337.bairx.nbt.NBTParser;
 import org.by1337.bairx.nbt.impl.CompoundTag;
 import org.by1337.bairx.nbt.impl.StringNBT;
 import org.by1337.bairx.nbt.io.ByteBuffer;
@@ -65,6 +67,7 @@ public class ClassicAirDrop extends Placeholder implements AirDrop {
     private Location location;
     private LocationManager locationManager;
     private boolean useDefaultTimer;
+    private InventoryManager inventoryManager;
 
     public static AirDrop createNew(NameKey id, File dataFolder) {
         try {
@@ -87,10 +90,13 @@ public class ClassicAirDrop extends Placeholder implements AirDrop {
         this.metaData = metaData;
 
         File cfgFile = new File(dataFolder,
-                Validate.tryMap(metaData.getExtra().get("config"), nbt -> (StringNBT) nbt, "В мета даных аирдропа отсутствует параметр `config`").getValue()
+                Validate.tryMap(metaData.getExtra().get("config"), nbt -> (StringNBT) nbt, "В метаданных аирдропа отсутствует параметр `config`").getValue()
         );
         File genSettingFile = new File(dataFolder,
-                Validate.tryMap(metaData.getExtra().get("genSettings"), nbt -> (StringNBT) nbt, "В мета даных аирдропа отсутствует параметр `genSettings`").getValue()
+                Validate.tryMap(metaData.getExtra().get("genSettings"), nbt -> (StringNBT) nbt, "В метаданных аирдропа отсутствует параметр `genSettings`").getValue()
+        );
+        File invManagerFile = new File(dataFolder,
+                Validate.tryMap(metaData.getExtra().get("invManager"), nbt -> (StringNBT) nbt, "В метаданных аирдропа отсутствует параметр `invManager`").getValue()
         );
         if (!cfgFile.exists()) {
             throw new IllegalArgumentException("Файл конфига отсутствует!");
@@ -98,17 +104,23 @@ public class ClassicAirDrop extends Placeholder implements AirDrop {
         if (!genSettingFile.exists()) {
             throw new IllegalArgumentException("Файл настроек генератора отсутствует!");
         }
+        if (!invManagerFile.exists()) {
+            throw new IllegalArgumentException("Файл настроек инвентаря отсутствует!");
+        }
 
         YamlConfig gen = new YamlConfig(genSettingFile);
 
         generatorSetting = gen.getAs("setting", GeneratorSetting.class);
         locationManager = new LocationManager(generatorSetting, this);
 
+        CompoundTag compoundTag1 = NBTParser.parse(Files.readString(invManagerFile.toPath()));
+        inventoryManager = InventoryManager.load(compoundTag1);
+
         YamlConfig cfg = new YamlConfig(cfgFile);
 
         id = cfg.getAsNameKey("id");
         load(cfg);
-
+        registerPlaceholders();
     }
 
     private ClassicAirDrop(NameKey id, File dataFolder) throws IOException, InvalidConfigurationException {
@@ -123,11 +135,13 @@ public class ClassicAirDrop extends Placeholder implements AirDrop {
         generatorSetting.applyDefaultFlags();
         locationManager = new LocationManager(generatorSetting, this);
         setDefaultValues();
+        registerPlaceholders();
 
         metaData = AirDropMetaData.createEmpty();
         metaData.setType(TYPE);
         metaData.getExtra().putString("config", "config.yml");
         metaData.getExtra().putString("genSettings", "generator_setting.yml");
+        metaData.getExtra().putString("invManager", "inventory.textNbt");
         metaData.setVersion(1);
 
         ByteBuffer buffer = new ByteBuffer();
@@ -147,6 +161,9 @@ public class ClassicAirDrop extends Placeholder implements AirDrop {
         timeToStartConst = context.getAsInteger("time-to-start");
         timeToOpenConst = context.getAsInteger("time-to-open");
         timeToEndConst = context.getAsInteger("time-to-end");
+        timeToEnd = timeToEndConst;
+        timeToOpen = timeToOpenConst;
+        timeToStart = timeToStartConst;
         useStaticLoc = context.getAsBoolean("use-static-loc");
         staticLoc = context.getAs("static-loc", BlockPosition.class);
         triggeredTimeToOpen = context.getAsBoolean("triggered-time-to-open");
@@ -162,6 +179,14 @@ public class ClassicAirDrop extends Placeholder implements AirDrop {
         useDefaultTimer = context.getAsBoolean("use-default-timer");
     }
 
+
+    public void trySave() {
+        try {
+            save();
+        } catch (IOException | InvalidConfigurationException e) {
+            BAirDropX.getMessage().error("Не удалось сохранить аирдроп!", e);
+        }
+    }
 
     public void save() throws IOException, InvalidConfigurationException {
         if (!dataFolder.exists()) {
@@ -198,9 +223,22 @@ public class ClassicAirDrop extends Placeholder implements AirDrop {
         cfg.set("signed-listeners", signedListeners);
         cfg.set("use-default-timer", useDefaultTimer);
         cfg.save();
+        File invManagerFile = new File(dataFolder,
+                Validate.tryMap(metaData.getExtra().get("invManager"), nbt -> (StringNBT) nbt, "В метаданных аирдропа отсутствует параметр `invManager`").getValue()
+        );
+        if (invManagerFile.exists()) {
+            invManagerFile.delete();
+        }
+        invManagerFile.createNewFile();
+
+        CompoundTag compoundTag1 = new CompoundTag();
+        inventoryManager.save(compoundTag1);
+
+        Files.writeString(invManagerFile.toPath(), compoundTag1.toString());
     }
 
     private void setDefaultValues() {
+        inventoryManager = new InventoryManager(54, "&7AirDrop inventory");
         world = Bukkit.getWorld("world") == null ? Bukkit.getWorlds().get(0) : Bukkit.getWorld("world");
         airName = "&7AirDrop";
         timeToStart = 120;
@@ -223,8 +261,9 @@ public class ClassicAirDrop extends Placeholder implements AirDrop {
         opened = false;
         clicked = false;
         useDefaultTimer = true;
-        registerPlaceholders();
+
     }
+
 
     public void tick() {
         if (!enable) return;
@@ -284,7 +323,15 @@ public class ClassicAirDrop extends Placeholder implements AirDrop {
         }
     }
 
+    @Override
     public void callEvent(@Nullable Player player, EventType eventType) {
+        if (eventType == EventType.CLICK) {
+            if (opened) {
+                callEvent(player, EventType.CLICK_OPEN);
+            } else {
+                callEvent(player, EventType.CLICK_CLOSE);
+            }
+        }
         Event event = new Event(this, player, eventType);
         EventListenerManager.call(event, this);
 
@@ -359,5 +406,15 @@ public class ClassicAirDrop extends Placeholder implements AirDrop {
 
     public boolean isUseDefaultTimer() {
         return useDefaultTimer;
+    }
+
+    @Override
+    public Location getLocation() {
+        return location;
+    }
+
+    @Override
+    public InventoryManager getInventoryManager() {
+        return inventoryManager;
     }
 }

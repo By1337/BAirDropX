@@ -8,17 +8,17 @@ import java.util.function.Consumer;
 public class MenuItem<T> {
     private final T raw;
     private final HashSet<Integer> slots;
-    private final ItemBuilder<T> builder;
+    private final ItemCreator<T> builder;
     private final Consumer<T> click;
 
-    public MenuItem(T raw, HashSet<Integer> slots, ItemBuilder<T> builder, Consumer<T> click) {
+    public MenuItem(T raw, HashSet<Integer> slots, ItemCreator<T> builder, Consumer<T> click) {
         this.raw = raw;
         this.slots = slots;
         this.builder = builder;
         this.click = click;
     }
 
-    public MenuItem(T raw, ItemBuilder<T> builder, Consumer<T> click, int... slots) {
+    public MenuItem(T raw, ItemCreator<T> builder, Consumer<T> click, int... slots) {
         this.raw = raw;
         this.builder = builder;
         this.click = click;
@@ -39,7 +39,7 @@ public class MenuItem<T> {
         return slots;
     }
 
-    public ItemBuilder<T> getBuilder() {
+    public ItemCreator<T> getBuilder() {
         return builder;
     }
     public void click(){
