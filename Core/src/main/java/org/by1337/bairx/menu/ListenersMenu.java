@@ -110,7 +110,7 @@ public class ListenersMenu extends CodeMenu {
                 generateMenu();
             }, 53));
         }
-        generateMenu();
+        super.generateMenu();
     }
 
     private List<Observer> getObservers() {

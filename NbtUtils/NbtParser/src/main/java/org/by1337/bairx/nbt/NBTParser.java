@@ -86,6 +86,7 @@ public class NBTParser {
     public static NBT parseNBT(String raw) {
         return parseNBT(new LexemeBuffer(parseExp(raw)));
     }
+
     public static NBT parseNBT(LexemeBuffer buffer) {
         Lexeme lexeme = buffer.next();
         LexemeType type = lexeme.type;
@@ -124,7 +125,7 @@ public class NBTParser {
             if (val.contains(".")) {
                 return new DoubleNBT(Double.parseDouble(val));
             }
-            if (isByte){
+            if (isByte) {
                 return ByteNBT.valueOf(Byte.parseByte(val));
             }
             return IntNBT.valueOf(Integer.parseInt(val));
@@ -160,7 +161,7 @@ public class NBTParser {
                     break main;
                 }
                 case ELEMENT_SEPARATOR -> {
-                    // ignore
+                    // ignore - не хотелось бы
                 }
                 case TYPE_INT,
                         TYPE_BYTE,
@@ -181,8 +182,17 @@ public class NBTParser {
             }
         }
 
-        if (list.isEmpty() || type == null)
+        if (list.isEmpty() && type == null)
             return new ListNBT(list);
+
+        if (!list.isEmpty()) {
+            final Class<?> clazz = list.get(0).getClass();
+            for (NBT nbt : list) {
+                if (nbt.getClass() != clazz) {
+                    throw new ParseException("Элементы в списке не одного класса!" + list);
+                }
+            }
+        }
 
         if (type == LexemeType.TYPE_BYTE) {
             byte[] arr = new byte[list.size()];
@@ -200,15 +210,16 @@ public class NBTParser {
                 i++;
             }
             return new LongArrNBT(arr);
+        } else if (type == LexemeType.TYPE_INT) {
+            int[] arr = new int[list.size()];
+            int i = 0;
+            for (NBT nbt : list) {
+                arr[i] = ((IntNBT) nbt).getValue();
+                i++;
+            }
+            return new IntArrNBT(arr);
         }
-
-        int[] arr = new int[list.size()];
-        int i = 0;
-        for (NBT nbt : list) {
-            arr[i] = ((IntNBT) nbt).getValue();
-            i++;
-        }
-        return new IntArrNBT(arr);
+        return new ListNBT(list);
     }
 
     public static List<Lexeme> parseExp(String expText) throws ParseException {
@@ -357,7 +368,7 @@ public class NBTParser {
                     lexemes.add(new Lexeme(LexemeType.LIST_CLOSE, c));
                     pos++;
                 }
-                case 'I' -> {
+                case 'I', 'i' -> {
                     if (last == '[') {
                         lexemes.add(new Lexeme(LexemeType.TYPE_INT, c));
                         pos++;
@@ -389,7 +400,7 @@ public class NBTParser {
                         text.append(c);
                     pos++;
                 }
-                case 'd' -> {
+                case 'd', 'D' -> {
                     if (lastIsDigit) {
                         if (digit.isEmpty())
                             throw new ParseException("specified type of digit even though there is no digit! At position %s", pos);
@@ -400,7 +411,7 @@ public class NBTParser {
                         text.append(c);
                     pos++;
                 }
-                case 'L' -> {
+                case 'L', 'l' -> {
                     if (last == '[') {
                         lexemes.add(new Lexeme(LexemeType.TYPE_LONG, c));
                         pos++;
@@ -416,7 +427,7 @@ public class NBTParser {
                         text.append(c);
                     pos++;
                 }
-                case 's' -> {
+                case 's', 'S' -> {
                     if (lastIsDigit) {
                         if (digit.isEmpty())
                             throw new ParseException("specified type of digit even though there is no digit! At position %s", pos);
@@ -427,7 +438,7 @@ public class NBTParser {
                         text.append(c);
                     pos++;
                 }
-                case 'f' -> {
+                case 'f', 'F' -> {
                     if (lastIsDigit) {
                         if (digit.isEmpty())
                             throw new ParseException("specified type of digit even though there is no digit! At position %s", pos);

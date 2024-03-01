@@ -22,7 +22,11 @@ public class IntArrNBT extends NBT {
         for (int b : value) {
             sb.append(space).append(b).append(",\n");
         }
-        sb.setLength(sb.length() - 2);
+        if (value.length != 0)
+            sb.setLength(sb.length() - 2);
+        else {
+            sb.setLength(sb.length() - 1);
+        }
         return sb.append("\n").append(" ".repeat(lvl)).append("]").toString();
     }
 

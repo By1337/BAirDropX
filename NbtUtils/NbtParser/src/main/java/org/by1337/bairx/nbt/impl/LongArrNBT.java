@@ -52,7 +52,11 @@ public class LongArrNBT extends NBT {
         for (long b : value) {
             sb.append(space).append(b).append("L,\n");
         }
-        sb.setLength(sb.length() - 2);
+        if (value.length != 0)
+            sb.setLength(sb.length() - 2);
+        else {
+            sb.setLength(sb.length() - 1);
+        }
         return sb.append("\n").append(" ".repeat(lvl)).append("]").toString();
     }
 

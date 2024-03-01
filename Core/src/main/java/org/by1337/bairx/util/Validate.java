@@ -20,7 +20,9 @@ public class Validate {
 
     public static <T, R> R tryMap(T raw, ThrowableFunction<T, R> mapper, String message) throws PluginInitializationException {
         try {
-            return mapper.apply(raw);
+            var v = mapper.apply(raw);
+            if (v == null) throw new NullPointerException();
+            return v;
         } catch (Exception e) {
             throw new PluginInitializationException(message, e);
         }

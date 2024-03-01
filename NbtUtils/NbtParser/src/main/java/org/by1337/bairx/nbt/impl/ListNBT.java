@@ -78,7 +78,8 @@ public class ListNBT extends NBT implements Iterable<NBT> {
         for (NBT v : list) {
             sb.append(v).append(",");
         }
-        sb.setLength(sb.length() - 1);
+        if (!list.isEmpty())
+            sb.setLength(sb.length() - 1);
         return sb.append("]").toString();
     }
 
@@ -91,6 +92,7 @@ public class ListNBT extends NBT implements Iterable<NBT> {
         }
         if (!list.isEmpty())
             sb.setLength(sb.length() - 2);
+        else sb.setLength(sb.length() - 1);
         return sb.append("\n").append(" ".repeat(lvl)).append("]").toString();
     }
 

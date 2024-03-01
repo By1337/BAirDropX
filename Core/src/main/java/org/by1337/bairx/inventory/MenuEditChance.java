@@ -78,6 +78,7 @@ public class MenuEditChance extends AsyncClickListener {
 
     @Override
     protected void onClose(InventoryCloseEvent e) {
+        inventoryManager.sortItems();
         airDrop.trySave();
     }
 

@@ -95,8 +95,12 @@ public class ClassicAirDrop extends Placeholder implements AirDrop {
         File genSettingFile = new File(dataFolder,
                 Validate.tryMap(metaData.getExtra().get("genSettings"), nbt -> (StringNBT) nbt, "В метаданных аирдропа отсутствует параметр `genSettings`").getValue()
         );
-        File invManagerFile = new File(dataFolder,
-                Validate.tryMap(metaData.getExtra().get("invManager"), nbt -> (StringNBT) nbt, "В метаданных аирдропа отсутствует параметр `invManager`").getValue()
+        File invItemsFile = new File(dataFolder,
+                Validate.tryMap(metaData.getExtra().get("invItems"), nbt -> (StringNBT) nbt, "В метаданных аирдропа отсутствует параметр `invItems`").getValue()
+        );
+
+        File invManagerCfgFile = new File(dataFolder,
+                Validate.tryMap(metaData.getExtra().get("invManagerCfg"), nbt -> (StringNBT) nbt, "В метаданных аирдропа отсутствует параметр `invManagerCfg`").getValue()
         );
         if (!cfgFile.exists()) {
             throw new IllegalArgumentException("Файл конфига отсутствует!");
@@ -104,7 +108,10 @@ public class ClassicAirDrop extends Placeholder implements AirDrop {
         if (!genSettingFile.exists()) {
             throw new IllegalArgumentException("Файл настроек генератора отсутствует!");
         }
-        if (!invManagerFile.exists()) {
+        if (!invItemsFile.exists()) {
+            throw new IllegalArgumentException("Файл предметов инвентаря отсутствует!");
+        }
+        if (!invManagerCfgFile.exists()) {
             throw new IllegalArgumentException("Файл настроек инвентаря отсутствует!");
         }
 
@@ -113,8 +120,11 @@ public class ClassicAirDrop extends Placeholder implements AirDrop {
         generatorSetting = gen.getAs("setting", GeneratorSetting.class);
         locationManager = new LocationManager(generatorSetting, this);
 
-        CompoundTag compoundTag1 = NBTParser.parse(Files.readString(invManagerFile.toPath()));
-        inventoryManager = InventoryManager.load(compoundTag1);
+
+        YamlConfig invCfg = new YamlConfig(invManagerCfgFile);
+
+        CompoundTag compoundTag1 = NBTParser.parse(Files.readString(invItemsFile.toPath()));
+        inventoryManager = InventoryManager.load(compoundTag1, invCfg);
 
         YamlConfig cfg = new YamlConfig(cfgFile);
 
@@ -141,7 +151,8 @@ public class ClassicAirDrop extends Placeholder implements AirDrop {
         metaData.setType(TYPE);
         metaData.getExtra().putString("config", "config.yml");
         metaData.getExtra().putString("genSettings", "generator_setting.yml");
-        metaData.getExtra().putString("invManager", "inventory.textNbt");
+        metaData.getExtra().putString("invItems", "items.snbt");
+        metaData.getExtra().putString("invManagerCfg", "inventory_config.yml");
         metaData.setVersion(1);
 
         ByteBuffer buffer = new ByteBuffer();
@@ -223,18 +234,27 @@ public class ClassicAirDrop extends Placeholder implements AirDrop {
         cfg.set("signed-listeners", signedListeners);
         cfg.set("use-default-timer", useDefaultTimer);
         cfg.save();
-        File invManagerFile = new File(dataFolder,
-                Validate.tryMap(metaData.getExtra().get("invManager"), nbt -> (StringNBT) nbt, "В метаданных аирдропа отсутствует параметр `invManager`").getValue()
+        File invItemsFile = new File(dataFolder,
+                Validate.tryMap(metaData.getExtra().get("invItems"), nbt -> (StringNBT) nbt, "В метаданных аирдропа отсутствует параметр `invItems`").getValue()
         );
-        if (invManagerFile.exists()) {
-            invManagerFile.delete();
+        if (invItemsFile.exists()) {
+            invItemsFile.delete();
         }
-        invManagerFile.createNewFile();
+        invItemsFile.createNewFile();
+        File invManagerCfgFile = new File(dataFolder,
+                Validate.tryMap(metaData.getExtra().get("invManagerCfg"), nbt -> (StringNBT) nbt, "В метаданных аирдропа отсутствует параметр `invManagerCfg`").getValue()
+        );
+        if (invManagerCfgFile.exists()){
+            invManagerCfgFile.delete();
+        }
+        invManagerCfgFile.createNewFile();
+        YamlConfig invCfg = new YamlConfig(invManagerCfgFile);
 
         CompoundTag compoundTag1 = new CompoundTag();
-        inventoryManager.save(compoundTag1);
+        inventoryManager.save(compoundTag1, invCfg);
 
-        Files.writeString(invManagerFile.toPath(), compoundTag1.toString());
+        Files.writeString(invItemsFile.toPath(), compoundTag1.toStringBeautifier(0));
+        invCfg.save();
     }
 
     private void setDefaultValues() {

@@ -35,6 +35,7 @@ public class ByteArrNBT extends NBT {
     public Object getAsObject() {
         return value;
     }
+
     @Override
     public NbtType getType() {
         return NbtType.BYTE_ARR;
@@ -47,7 +48,11 @@ public class ByteArrNBT extends NBT {
         for (Byte b : value) {
             sb.append(space).append(b).append("B,\n");
         }
-        sb.setLength(sb.length() - 2);
+        if (value.length != 0)
+            sb.setLength(sb.length() - 2);
+        else {
+            sb.setLength(sb.length() - 1);
+        }
         return sb.append("\n").append(" ".repeat(lvl)).append("]").toString();
     }
 

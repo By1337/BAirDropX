@@ -1,15 +1,20 @@
 package org.by1337.bairx.inventory;
 
 import org.bukkit.Bukkit;
+import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.event.inventory.InventoryEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.by1337.bairx.BAirDropX;
 import org.by1337.bairx.inventory.pipeline.ItemHandler;
 import org.by1337.bairx.inventory.pipeline.PipelineHandler;
 import org.by1337.bairx.inventory.pipeline.PipelineManager;
+import org.by1337.bairx.inventory.pipeline.click.AntiSteal;
 import org.by1337.bairx.nbt.NBT;
 import org.by1337.bairx.nbt.impl.CompoundTag;
 import org.by1337.bairx.nbt.impl.ListNBT;
+import org.by1337.blib.configuration.YamlConfig;
+import org.by1337.blib.configuration.YamlContext;
 import org.by1337.blib.util.Pair;
 import org.jetbrains.annotations.Nullable;
 
@@ -20,10 +25,12 @@ public class InventoryManager implements PipelineHandler<ItemStack> {
     private final Random random = new Random();
     private List<InventoryItem> items = new ArrayList<>();
     private PipelineManager<ItemStack> pipeline;
+    private PipelineManager<InventoryEvent> clickPipeline;
     private int genItemCount;
     private int invSize;
     private String invName;
     private Inventory inventory;
+    private AntiSteal.Config antiStealCfg;
 
     public InventoryManager(int invSize, String invName) {
         this(invSize, invSize, invName);
@@ -34,13 +41,16 @@ public class InventoryManager implements PipelineHandler<ItemStack> {
         this.invSize = invSize;
         this.invName = invName;
         inventory = Bukkit.createInventory(null, invSize, BAirDropX.getMessage().messageBuilder(invName));
+        antiStealCfg = new AntiSteal.Config();
         rebuildPipeline();
+        reloadExtensions();
     }
 
-    public static InventoryManager load(CompoundTag compoundTag) {
-        int genItemCount = compoundTag.getAsInt("genItemCount");
-        int invSize = compoundTag.getAsInt("invSize");
-        String invName = compoundTag.getAsString("invName");
+    public static InventoryManager load(CompoundTag compoundTag, YamlContext cfg) {
+        int genItemCount = cfg.getAsInteger("genItemCount");
+        int invSize = cfg.getAsInteger("invSize");
+        String invName = cfg.getAsString("invName");
+
         ListNBT listNBT = (ListNBT) compoundTag.getOrThrow("items");
         List<InventoryItem> items = new ArrayList<>();
         for (NBT nbt : listNBT) {
@@ -48,14 +58,17 @@ public class InventoryManager implements PipelineHandler<ItemStack> {
         }
         InventoryManager manager = new InventoryManager(genItemCount, invSize, invName);
         manager.setItems(items);
+        manager.sortItems();
+        manager.antiStealCfg.load(cfg.getAs("extensions.anti-steal", YamlContext.class, new YamlContext(new YamlConfiguration())));
+        manager.reloadExtensions();
         return manager;
     }
 
-    public void save(CompoundTag compoundTag) {
-        // CompoundTag compoundTag = new CompoundTag();
-        compoundTag.putInt("genItemCount", genItemCount);
-        compoundTag.putInt("invSize", invSize);
-        compoundTag.putString("invName", invName);
+    public void save(CompoundTag compoundTag, YamlContext cfg) {
+        cfg.set("extensions.anti-steal", antiStealCfg.save());
+        cfg.set("genItemCount", genItemCount);
+        cfg.set("invSize", invSize);
+        cfg.set("invName", invName);
         ListNBT listNBT = new ListNBT();
         for (InventoryItem item : items) {
             CompoundTag compoundTag1 = new CompoundTag();
@@ -63,7 +76,6 @@ public class InventoryManager implements PipelineHandler<ItemStack> {
             listNBT.add(compoundTag1);
         }
         compoundTag.putTag("items", listNBT);
-        //  return compoundTag;
     }
 
     public void sortItems() {
@@ -76,6 +88,13 @@ public class InventoryManager implements PipelineHandler<ItemStack> {
 
     public void clearInventory() {
         inventory.clear();
+    }
+
+    public void reloadExtensions(){
+        clickPipeline = new PipelineManager<>();
+        if (antiStealCfg.enable){
+            clickPipeline.add("anti-steal", new AntiSteal(antiStealCfg));
+        }
     }
 
     public void rebuildPipeline() {
