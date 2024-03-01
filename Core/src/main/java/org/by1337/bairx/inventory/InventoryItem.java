@@ -69,7 +69,7 @@ public class InventoryItem extends Placeholder {
 
     @Nullable
     public ItemStack getItemStack(Random random){
-        if (chance < random.nextInt(100)){
+        if (random.nextInt(100) > chance){
             return null;
         }
         if (randomAmount){

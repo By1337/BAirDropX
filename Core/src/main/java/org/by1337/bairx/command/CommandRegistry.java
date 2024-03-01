@@ -215,7 +215,7 @@ public class CommandRegistry {
                         .executor((event, args) -> event.getAirDrop().getInventoryManager().generateItems())
                 )
                 .addSubCommand(new Command<Event>("[CLEAR_INVENTORY]")
-                        .executor((event, args) -> event.getAirDrop().getInventoryManager().getInventory().clear())
+                        .executor((event, args) -> event.getAirDrop().getInventoryManager().release())
                 )
         );
     }

@@ -69,8 +69,12 @@ public class AntiSteal implements PipelineHandler<InventoryEvent> {
         }
     }
 
+    public Map<UUID, ChestStealData> getChestStealDataMap() {
+        return chestStealDataMap;
+    }
+
     public static class Config {
-        public boolean enable;
+        public boolean enable = false;
         public int cooldown = 200;
         public int maxWarnings = 5;
         public int interval = 5;
@@ -104,7 +108,7 @@ public class AntiSteal implements PipelineHandler<InventoryEvent> {
 
     }
 
-    private static class ChestStealData {
+    public static class ChestStealData {
         private int interval; // 5
         private int minIntervalToIgnore; // 250
         private int warnings = 0;

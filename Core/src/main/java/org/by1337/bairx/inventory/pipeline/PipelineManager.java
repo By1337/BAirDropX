@@ -1,5 +1,6 @@
 package org.by1337.bairx.inventory.pipeline;
 
+import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import org.by1337.blib.util.Pair;
 
 import java.util.ArrayList;
@@ -8,22 +9,24 @@ import java.util.List;
 public class PipelineManager<T> {
     private final List<Pair<String, PipelineHandler<T>>> handlers = new ArrayList<>();
 
+    @CanIgnoreReturnValue
     public PipelineManager<T> add(String name, PipelineHandler<T> handler) {
         handlers.add(Pair.of(name, handler));
         return this;
     }
-
+    @CanIgnoreReturnValue
     public PipelineManager<T> addLast(String name, PipelineHandler<T> handler) {
         add(name, handler);
         return this;
     }
 
-
+    @CanIgnoreReturnValue
     public PipelineManager<T> addFirst(String name, PipelineHandler<T> handler) {
         handlers.add(0, Pair.of(name, handler));
         return this;
     }
 
+    @CanIgnoreReturnValue
     public PipelineManager<T> addBefore(String before, String name, PipelineHandler<T> handler) {
         for (int i = 0; i < handlers.size(); i++) {
             var pair = handlers.get(i);
@@ -33,6 +36,11 @@ public class PipelineManager<T> {
             }
         }
         throw new PipelineEndOfListException();
+    }
+
+    public void processFirst(T val) {
+        if (handlers.isEmpty()) return;
+        processNext(val, handlers.get(0).getRight());
     }
 
     public void processNext(T val, PipelineHandler<T> current) {
@@ -48,6 +56,7 @@ public class PipelineManager<T> {
         throw new PipelineEndOfListException();
     }
 
+    @CanIgnoreReturnValue
     public PipelineManager<T> add(String n, PipelineHandler<T> h,
                                   String n1, PipelineHandler<T> h1,
                                   String n2, PipelineHandler<T> h2,
@@ -60,6 +69,7 @@ public class PipelineManager<T> {
         return this;
     }
 
+    @CanIgnoreReturnValue
     public PipelineManager<T> add(String n, PipelineHandler<T> h,
                                   String n1, PipelineHandler<T> h1,
                                   String n2, PipelineHandler<T> h2,
@@ -71,6 +81,7 @@ public class PipelineManager<T> {
         return this;
     }
 
+    @CanIgnoreReturnValue
     public PipelineManager<T> add(String n, PipelineHandler<T> h,
                                   String n1, PipelineHandler<T> h1,
                                   String n2, PipelineHandler<T> h2,
@@ -81,6 +92,7 @@ public class PipelineManager<T> {
         return this;
     }
 
+    @CanIgnoreReturnValue
     public PipelineManager<T> add(String n, PipelineHandler<T> h,
                                   String n1, PipelineHandler<T> h1,
                                   String n2, PipelineHandler<T> h2
@@ -90,6 +102,7 @@ public class PipelineManager<T> {
         return this;
     }
 
+    @CanIgnoreReturnValue
     public PipelineManager<T> add(String n, PipelineHandler<T> h, String n1, PipelineHandler<T> h1) {
         add(n, h);
         add(n1, h1);

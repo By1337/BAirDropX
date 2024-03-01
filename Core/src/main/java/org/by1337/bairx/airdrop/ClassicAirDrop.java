@@ -190,6 +190,10 @@ public class ClassicAirDrop extends Placeholder implements AirDrop {
         useDefaultTimer = context.getAsBoolean("use-default-timer");
     }
 
+    public void close(){
+        inventoryManager.close();
+
+    }
 
     public void trySave() {
         try {
