@@ -6,6 +6,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.by1337.bairx.BAirDropX;
 import org.by1337.bairx.airdrop.AirDrop;
+import org.by1337.bairx.effect.EffectCreator;
+import org.by1337.bairx.effect.EffectLoader;
 import org.by1337.bairx.event.Event;
 import org.by1337.bairx.hook.wg.RegionManager;
 import org.by1337.bairx.util.Validate;
@@ -158,6 +160,7 @@ public class CommandRegistry {
                     String cmd = (String) args.getOrThrow("cmd", "В команде не указана команда!");
                     new BukkitRunnable() {
                         int x = 0;
+
                         @Override
                         public void run() {
                             CommandRegistry.run(event, cmd);
@@ -179,6 +182,7 @@ public class CommandRegistry {
                     String cmd = (String) args.getOrThrow("cmd", "В команде не указана команда!");
                     new BukkitRunnable() {
                         int x = 0;
+
                         @Override
                         public void run() {
                             CommandRegistry.run(event, cmd);
@@ -224,6 +228,26 @@ public class CommandRegistry {
         );
         registerCommand(new Command<Event>("[REMOVE_REGION]")
                 .executor((event, args) -> RegionManager.removeRegion(event.getAirDrop()))
+        );
+        registerCommand(new Command<Event>("[EFFECT_START]")
+                .argument(new ArgumentString<>("name"))
+                .argument(new ArgumentString<>("id"))
+                .executor((event, args) -> {
+                    String name = (String) args.getOrThrow("name", "[EFFECT_START] <name> <id>");
+                    String id = (String) args.getOrThrow("id", "[EFFECT_START] <name> <id>");
+                    EffectCreator creator = EffectLoader.getByName(name);
+                    if (creator == null) {
+                        throw new CommandException("Эффект %s не найден! Все эффекты %s", name, EffectLoader.keys());
+                    }
+                    event.getAirDrop().addEffectAndStart(id, creator.create());
+                })
+        );
+        registerCommand(new Command<Event>("[EFFECT_STOP]")
+                .argument(new ArgumentString<>("id"))
+                .executor((event, args) -> {
+                    String id = (String) args.getOrThrow("id", "[EFFECT_STOP] <id>");
+                    event.getAirDrop().stopEffect(id);
+                })
         );
     }
 }

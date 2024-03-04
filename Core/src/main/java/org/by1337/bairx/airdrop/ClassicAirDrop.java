@@ -10,6 +10,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import org.by1337.bairx.BAirDropX;
+import org.by1337.bairx.effect.Effect;
 import org.by1337.bairx.event.Event;
 import org.by1337.bairx.event.EventListenerManager;
 import org.by1337.bairx.event.EventType;
@@ -34,10 +35,7 @@ import org.jetbrains.annotations.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class ClassicAirDrop extends Placeholder implements AirDrop {
     public static final String TYPE = "classic";
@@ -70,6 +68,7 @@ public class ClassicAirDrop extends Placeholder implements AirDrop {
     private LocationManager locationManager;
     private boolean useDefaultTimer;
     private InventoryManager inventoryManager;
+    private final Map<String, Effect> loadedEffects = new HashMap<>();
 
     public static AirDrop createNew(NameKey id, File dataFolder) {
         try {
@@ -126,7 +125,7 @@ public class ClassicAirDrop extends Placeholder implements AirDrop {
         if (!invItemsFile.exists()) {
             CompoundTag compoundTag1 = NBTParser.parse(Files.readString(invItemsFile.toPath()));
             inventoryManager = InventoryManager.load(compoundTag1, invCfg);
-        }else {
+        } else {
             inventoryManager = InventoryManager.load(null, invCfg);
         }
 
@@ -294,8 +293,9 @@ public class ClassicAirDrop extends Placeholder implements AirDrop {
     }
 
     private BukkitTask forceStartTask;
+
     public void forceStart(CommandSender sender) {
-        if (started){
+        if (started) {
             BAirDropX.getMessage().sendMsg(sender, "&cАирдоп уже запущен!");
             return;
         }
@@ -321,7 +321,8 @@ public class ClassicAirDrop extends Placeholder implements AirDrop {
             }
         }.runTaskTimer(BAirDropX.getInstance(), 0, 1);
     }
-    public void forceStop(){
+
+    public void forceStop() {
         if (!started) return;
         end();
     }
@@ -353,18 +354,21 @@ public class ClassicAirDrop extends Placeholder implements AirDrop {
         }
         callEvent(null, EventType.TICK);
     }
-    private void start(){
+
+    private void start() {
         timeToStart = 0;
         started = true;
         location.getBlock().setType(materialWhenClosed);
         callEvent(null, EventType.START);
     }
-    private void unlock(){
+
+    private void unlock() {
         opened = true;
         location.getBlock().setType(materialWhenOpened);
         callEvent(null, EventType.OPEN);
     }
-    private void end(){
+
+    private void end() {
         started = false;
         opened = false;
         timeToStart = timeToStartConst;
@@ -374,6 +378,7 @@ public class ClassicAirDrop extends Placeholder implements AirDrop {
         location = null;
         callEvent(null, EventType.END);
     }
+
     private BukkitTask generateTask;
 
     private void generateLocation() {
@@ -407,9 +412,10 @@ public class ClassicAirDrop extends Placeholder implements AirDrop {
             BAirDropX.getObserverManager().invoke(listener, event);
         }
     }
+
     @Override
     public void callEvent(@Nullable Player player, EventType eventType) {
-       callEvent(new Event(this, player, eventType));
+        callEvent(new Event(this, player, eventType));
     }
 
     public World getWorld() {
@@ -454,6 +460,25 @@ public class ClassicAirDrop extends Placeholder implements AirDrop {
         registerPlaceholder("{x}", () -> location == null ? "?" : location.getBlockX());
         registerPlaceholder("{y}", () -> location == null ? "?" : location.getBlockY());
         registerPlaceholder("{z}", () -> location == null ? "?" : location.getBlockZ());
+    }
+
+    @Override
+    public void addEffectAndStart(String id, Effect effect) {
+        if (loadedEffects.containsKey(id)){
+            throw new IllegalStateException("Эффект " + id + " уже загружен!");
+        }
+        effect.start(location);
+        loadedEffects.put(id, effect);
+    }
+
+    @Override
+    public void stopEffect(String id) {
+        var ef = loadedEffects.remove(id);
+        if (ef != null) {
+            ef.stop();
+        } else {
+            throw new IllegalStateException("Эффект " + id + " не был загружен!");
+        }
     }
 
     @Override

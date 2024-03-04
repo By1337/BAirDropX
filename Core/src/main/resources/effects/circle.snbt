@@ -18,5 +18,5 @@
     },
     radius: 2.0d,
     velocity.x: 0.0d,
-    repeatCount: 50
+    repeatCount: 9999
 }

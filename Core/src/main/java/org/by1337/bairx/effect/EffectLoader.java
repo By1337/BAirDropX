@@ -26,16 +26,16 @@ public class EffectLoader {
         return creatorMap.get(name);
     }
 
-    public static Set<String> keys(){
+    public static Set<String> keys() {
         return creatorMap.keySet();
     }
+
     public static void load() {
         creatorMap.clear();
         File folder = new File(BAirDropX.getInstance().getDataFolder(), "effects");
         if (!folder.exists()) {
             folder.mkdir();
             ConfigUtil.trySave("effects/circle.snbt");
-            return;
         }
         List<File> files = findFiles(folder, file -> file.getName().endsWith(".snbt"));
 

@@ -5,11 +5,11 @@ import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.entity.Player;
+import org.by1337.bairx.effect.Effect;
 import org.by1337.bairx.event.Event;
 import org.by1337.bairx.event.EventType;
 import org.by1337.bairx.inventory.InventoryManager;
 import org.by1337.bairx.location.generator.GeneratorSetting;
-import org.by1337.bairx.timer.Timer;
 import org.by1337.blib.chat.Placeholderable;
 import org.by1337.blib.util.NameKey;
 import org.by1337.blib.util.SpacedNameKey;
@@ -43,4 +43,6 @@ public interface AirDrop extends Placeholderable {
     void forceStart(CommandSender sender);
     void forceStop();
     GeneratorSetting getGeneratorSetting();
+    void addEffectAndStart(String id, Effect effect);
+    void stopEffect(String id);
 }

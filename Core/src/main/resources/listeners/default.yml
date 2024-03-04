@@ -49,9 +49,12 @@ listeners:
      commands:
        - '[INV_MANAGER] [CLEAR_INVENTORY]'
        - '[REMOVE_REGION]'
+       - '[EFFECT_STOP] newEffect'
 
    start:
      description: '&fStart'
      event: 'start'
      commands:
        - '[SET_REGION]'
+       - '[MESSAGE_ALL] {air_name} Заспавнился!'
+       - '[EFFECT_START] circle newEffect'
