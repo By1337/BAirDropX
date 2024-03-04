@@ -7,6 +7,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.by1337.bairx.BAirDropX;
 import org.by1337.bairx.airdrop.AirDrop;
 import org.by1337.bairx.event.Event;
+import org.by1337.bairx.hook.wg.RegionManager;
 import org.by1337.bairx.util.Validate;
 import org.by1337.blib.command.Command;
 import org.by1337.blib.command.CommandException;
@@ -125,7 +126,7 @@ public class CommandRegistry {
                     int radius = (int) args.getOrThrow("radius", "В команду не указан радиус!");
                     String cmd = (String) args.getOrThrow("cmd", "В команде не указана команда!");
                     var loc = Validate.notNull(event.getAirDrop().getLocation(), "Локация аирдропа ещё не определена!");
-                    loc.getWorld().getNearbyEntities(loc, radius, radius, radius).stream().filter(e -> e instanceof Player).map(e -> (Player) e).forEach(pl -> run(event.getWith(pl), cmd));
+                    loc.getWorld().getNearbyEntities(loc, radius, radius, radius).stream().filter(e -> e instanceof Player).map(e -> (Player) e).forEach(pl -> run(event.getWithPlayer(pl), cmd));
                 })
         );
         registerCommand(new Command<Event>("[ERROR]")
@@ -144,7 +145,7 @@ public class CommandRegistry {
                 .executor((event, args) -> {
                     AirDrop airDrop = Validate.notNull(BAirDropX.getAirDropMap().get(new NameKey((String) args.getOrThrow("airdrop"))), "аирдроп не найден!");
                     String cmd = (String) args.getOrThrow("cmd", "В команде не указана команда!");
-                    run(event.getWith(airDrop), cmd);
+                    run(event.getWithAirDrop(airDrop), cmd);
                 })
         );
         registerCommand(new Command<Event>("[REPEAT]")
@@ -217,6 +218,12 @@ public class CommandRegistry {
                 .addSubCommand(new Command<Event>("[CLEAR_INVENTORY]")
                         .executor((event, args) -> event.getAirDrop().getInventoryManager().release())
                 )
+        );
+        registerCommand(new Command<Event>("[SET_REGION]")
+                .executor((event, args) -> RegionManager.setRegion(event.getAirDrop()))
+        );
+        registerCommand(new Command<Event>("[REMOVE_REGION]")
+                .executor((event, args) -> RegionManager.removeRegion(event.getAirDrop()))
         );
     }
 }

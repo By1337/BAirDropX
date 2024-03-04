@@ -48,3 +48,10 @@ listeners:
      event: 'end'
      commands:
        - '[INV_MANAGER] [CLEAR_INVENTORY]'
+       - '[REMOVE_REGION]'
+
+   start:
+     description: '&fStart'
+     event: 'start'
+     commands:
+       - '[SET_REGION]'

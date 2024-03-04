@@ -22,7 +22,7 @@ public class ByteNBT extends NBT{
 
     @Override
     public String toStringBeautifier(int lvl) {
-        return toString();
+        return value == 0 ? "'false'" : value == 1 ? "'true'" : toString();
     }
 
     public byte getValue() {

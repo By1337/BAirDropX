@@ -4,6 +4,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -27,6 +28,7 @@ import org.by1337.blib.configuration.adapter.AdapterRegistry;
 import org.by1337.blib.util.NameKey;
 import org.by1337.blib.util.SpacedNameKey;
 import org.by1337.blib.world.BlockPosition;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
@@ -108,9 +110,7 @@ public class ClassicAirDrop extends Placeholder implements AirDrop {
         if (!genSettingFile.exists()) {
             throw new IllegalArgumentException("Файл настроек генератора отсутствует!");
         }
-        if (!invItemsFile.exists()) {
-            throw new IllegalArgumentException("Файл предметов инвентаря отсутствует!");
-        }
+
         if (!invManagerCfgFile.exists()) {
             throw new IllegalArgumentException("Файл настроек инвентаря отсутствует!");
         }
@@ -123,8 +123,13 @@ public class ClassicAirDrop extends Placeholder implements AirDrop {
 
         YamlConfig invCfg = new YamlConfig(invManagerCfgFile);
 
-        CompoundTag compoundTag1 = NBTParser.parse(Files.readString(invItemsFile.toPath()));
-        inventoryManager = InventoryManager.load(compoundTag1, invCfg);
+        if (!invItemsFile.exists()) {
+            CompoundTag compoundTag1 = NBTParser.parse(Files.readString(invItemsFile.toPath()));
+            inventoryManager = InventoryManager.load(compoundTag1, invCfg);
+        }else {
+            inventoryManager = InventoryManager.load(null, invCfg);
+        }
+
 
         YamlConfig cfg = new YamlConfig(cfgFile);
 
@@ -190,7 +195,7 @@ public class ClassicAirDrop extends Placeholder implements AirDrop {
         useDefaultTimer = context.getAsBoolean("use-default-timer");
     }
 
-    public void close(){
+    public void close() {
         inventoryManager.close();
 
     }
@@ -248,7 +253,7 @@ public class ClassicAirDrop extends Placeholder implements AirDrop {
         File invManagerCfgFile = new File(dataFolder,
                 Validate.tryMap(metaData.getExtra().get("invManagerCfg"), nbt -> (StringNBT) nbt, "В метаданных аирдропа отсутствует параметр `invManagerCfg`").getValue()
         );
-        if (invManagerCfgFile.exists()){
+        if (invManagerCfgFile.exists()) {
             invManagerCfgFile.delete();
         }
         invManagerCfgFile.createNewFile();
@@ -288,6 +293,38 @@ public class ClassicAirDrop extends Placeholder implements AirDrop {
 
     }
 
+    private BukkitTask forceStartTask;
+    public void forceStart(CommandSender sender) {
+        if (started){
+            BAirDropX.getMessage().sendMsg(sender, "&cАирдоп уже запущен!");
+            return;
+        }
+        if (forceStartTask != null) {
+            forceStartTask.cancel();
+            BAirDropX.getMessage().sendMsg(sender, "&cПринудительный запуск отменён!");
+            return;
+        }
+        forceStartTask = new BukkitRunnable() {
+            @Override
+            public void run() {
+                if (location == null) {
+                    if (useStaticLoc) {
+                        location = new Location(world, staticLoc.getX(), staticLoc.getY(), staticLoc.getZ());
+                        return;
+                    }
+                    location = locationManager.generate();
+                } else {
+                    start();
+                    cancel();
+                    forceStartTask = null;
+                }
+            }
+        }.runTaskTimer(BAirDropX.getInstance(), 0, 1);
+    }
+    public void forceStop(){
+        if (!started) return;
+        end();
+    }
 
     public void tick() {
         if (!enable) return;
@@ -300,34 +337,43 @@ public class ClassicAirDrop extends Placeholder implements AirDrop {
             if (Bukkit.getOnlinePlayers().size() < requiredNumberOfPlayersOnline) return;
             timeToStart--;
             if (timeToStart == 0) {
-                started = true;
-                location.getBlock().setType(materialWhenClosed);
-                callEvent(null, EventType.START);
+                start();
             }
         } else if (!opened && (!triggeredTimeToOpen || clicked)) {
             timeToOpen--;
             if (timeToOpen == 0) {
-                opened = true;
-                location.getBlock().setType(materialWhenOpened);
-                callEvent(null, EventType.OPEN);
+                unlock();
             }
         }
         if (timeToOpen == 0 || independentTimeToEnd) {
             timeToEnd--;
             if (timeToEnd == 0) {
-                started = false;
-                opened = false;
-                timeToStart = timeToStartConst;
-                timeToOpen = timeToOpenConst;
-                timeToEnd = timeToEndConst;
-                location.getBlock().setType(Material.AIR);
-                location = null;
-                callEvent(null, EventType.END);
+                end();
             }
         }
         callEvent(null, EventType.TICK);
     }
-
+    private void start(){
+        timeToStart = 0;
+        started = true;
+        location.getBlock().setType(materialWhenClosed);
+        callEvent(null, EventType.START);
+    }
+    private void unlock(){
+        opened = true;
+        location.getBlock().setType(materialWhenOpened);
+        callEvent(null, EventType.OPEN);
+    }
+    private void end(){
+        started = false;
+        opened = false;
+        timeToStart = timeToStartConst;
+        timeToOpen = timeToOpenConst;
+        timeToEnd = timeToEndConst;
+        location.getBlock().setType(Material.AIR);
+        location = null;
+        callEvent(null, EventType.END);
+    }
     private BukkitTask generateTask;
 
     private void generateLocation() {
@@ -348,20 +394,22 @@ public class ClassicAirDrop extends Placeholder implements AirDrop {
     }
 
     @Override
-    public void callEvent(@Nullable Player player, EventType eventType) {
-        if (eventType == EventType.CLICK) {
+    public void callEvent(@NotNull Event event) {
+        if (event.getEventType() == EventType.CLICK) {
             if (opened) {
-                callEvent(player, EventType.CLICK_OPEN);
+                callEvent(event.getAs(this, event.getPlayer(), EventType.CLICK_OPEN));
             } else {
-                callEvent(player, EventType.CLICK_CLOSE);
+                callEvent(event.getAs(this, event.getPlayer(), EventType.CLICK_CLOSE));
             }
         }
-        Event event = new Event(this, player, eventType);
         EventListenerManager.call(event, this);
-
         for (SpacedNameKey listener : signedListeners) {
             BAirDropX.getObserverManager().invoke(listener, event);
         }
+    }
+    @Override
+    public void callEvent(@Nullable Player player, EventType eventType) {
+       callEvent(new Event(this, player, eventType));
     }
 
     public World getWorld() {
@@ -440,5 +488,10 @@ public class ClassicAirDrop extends Placeholder implements AirDrop {
     @Override
     public InventoryManager getInventoryManager() {
         return inventoryManager;
+    }
+
+    @Override
+    public GeneratorSetting getGeneratorSetting() {
+        return generatorSetting;
     }
 }

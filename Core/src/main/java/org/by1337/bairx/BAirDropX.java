@@ -14,6 +14,9 @@ import org.by1337.bairx.airdrop.loader.AirdropRegistry;
 import org.by1337.bairx.config.adapter.AdapterGeneratorSetting;
 import org.by1337.bairx.config.adapter.AdapterObserver;
 import org.by1337.bairx.config.adapter.AdapterRequirement;
+import org.by1337.bairx.effect.Effect;
+import org.by1337.bairx.effect.EffectCreator;
+import org.by1337.bairx.effect.EffectLoader;
 import org.by1337.bairx.exception.PluginInitializationException;
 import org.by1337.bairx.inventory.MenuAddItem;
 import org.by1337.bairx.inventory.MenuEditChance;
@@ -72,6 +75,7 @@ public final class BAirDropX extends JavaPlugin {
             AdapterRegistry.registerAdapter(Observer.class, new AdapterObserver());
 
             observerManager = new ObserverManager();
+            EffectLoader.load();
 
             timerManager.load(new YamlConfig(new File(getDataFolder() + "/config.yml")));
 
@@ -107,6 +111,10 @@ public final class BAirDropX extends JavaPlugin {
         AdapterRegistry.unregisterAdapter(GeneratorSetting.class);
         AdapterRegistry.unregisterAdapter(Requirement.class);
         AdapterRegistry.unregisterAdapter(Observer.class);
+
+        for (AirDrop value : airDropMap.values()) {
+            value.forceStop();
+        }
     }
 
     @Override
@@ -184,7 +192,38 @@ public final class BAirDropX extends JavaPlugin {
 
                         }))
         );
+        command.addSubCommand(new Command<CommandSender>("start")
+                .requires(new RequiresPermission<>("bair.start"))
+                .argument(new ArgumentSetList<>("air", () -> airDropMap.values().stream().map(air -> air.getId().getName()).toList()))
+                .executor(((sender, args) -> {
+                    AirDrop airDrop = airDropMap.get(new NameKey((String) args.getOrThrow("air", "&c/bairx edit loot <id>")));
+                    airDrop.forceStart(sender);
+                }))
+        );
+        command.addSubCommand(new Command<CommandSender>("stop")
+                .requires(new RequiresPermission<>("bair.stop"))
+                .argument(new ArgumentSetList<>("air", () -> airDropMap.values().stream().map(air -> air.getId().getName()).toList()))
+                .executor(((sender, args) -> {
+                    AirDrop airDrop = airDropMap.get(new NameKey((String) args.getOrThrow("air", "&c/bairx edit loot <id>")));
+                    airDrop.forceStop();
+                }))
+        );
+        command.addSubCommand(new Command<CommandSender>("effect")
+                .requires(new RequiresPermission<>("bair.effect"))
+                .addSubCommand(new Command<CommandSender>("start")
+                        .requires(new RequiresPermission<>("bair.effect.start"))
+                        .requires((sender -> sender instanceof Player))
+                        .argument(new ArgumentSetList<>("effect", () -> EffectLoader.keys().stream().toList()))
+                        .executor(((sender, args) -> {
+                            String effectS = (String) args.getOrThrow("effect", "Укажите effect");
+                            EffectCreator creator = EffectLoader.getByName(effectS);
+                            Effect effect = creator.create();
+                            effect.start(((Player) sender).getLocation());
+                        }))
+                )
+        );
     }
+
 
     public static Message getMessage() {
         return instance.message;
@@ -212,7 +251,7 @@ public final class BAirDropX extends JavaPlugin {
 
     public static void debug(Supplier<String> message) {
         if (debug) {
-            getMessage().logger(message.get());
+            getMessage().debug(message.get());
         }
     }
 

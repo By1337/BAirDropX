@@ -7,6 +7,7 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.by1337.bairx.BAirDropX;
 import org.by1337.bairx.airdrop.AirDrop;
+import org.by1337.bairx.event.Event;
 import org.by1337.bairx.event.EventType;
 
 import java.util.HashMap;
@@ -34,7 +35,11 @@ public class ClickListener implements Listener {
             } else {
                 antiDoubleClick.put(e.getPlayer().getUniqueId(), System.currentTimeMillis() + 20L);
             }
-            air.callEvent(e.getPlayer(), EventType.CLICK);
+            Event event = new Event(air, e.getPlayer(), EventType.CLICK);
+            event.registerPlaceholder("{clicked_x}", block::getX);
+            event.registerPlaceholder("{clicked_y}", block::getY);
+            event.registerPlaceholder("{clicked_z}", block::getZ);
+            air.callEvent(event);
         }
     }
 }

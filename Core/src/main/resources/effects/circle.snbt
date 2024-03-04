@@ -1,0 +1,22 @@
+{
+    period: 3,
+    offsets.x: 0.5d,
+    count: 0,
+    offsets.y: 0.0d,
+    maxSpeed: 0.1f,
+    type: "XZ",
+    offsets.z: 0.5d,
+    effect-type: "circle",
+    velocity.y: 1.0d,
+    velocity.z: 0.0d,
+    repeat: 'true',
+    name: "circle",
+    step: 0.05d,
+    particle: {
+        particle: "CLOUD",
+        type: "default"
+    },
+    radius: 2.0d,
+    velocity.x: 0.0d,
+    repeatCount: 50
+}

@@ -471,7 +471,7 @@ public class NBTParser {
                     isSingleQuote = true;
                     pos++;
                 }
-                case ' ', '\n', '\t' -> {
+                case ' ', '\n', '\t', '\r', '\f', '\b' -> {
                     pos++;
                     continue main;
                 }

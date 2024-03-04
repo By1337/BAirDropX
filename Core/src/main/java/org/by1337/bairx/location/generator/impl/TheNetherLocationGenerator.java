@@ -33,8 +33,8 @@ public class TheNetherLocationGenerator extends LocationGenerator {
 
         pos = pos.add(setting.offsets);
 
-//        if (!isRegionEmpty(setting.regionRadius, block.getLocation()))
-//            return null;
+        if (!isRegionEmpty(setting.regionRadius, block.getLocation()))
+            return null;
 
         for (BlockPosition blockPosition : setting.hasBlock) {
             if (!hasBlock(chunk, blockPosition.add(pos))) {

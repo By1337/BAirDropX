@@ -1,6 +1,7 @@
-package org.by1337.bairx.effect.impl;
+package org.by1337.bairx.effect.particle;
 
 import org.by1337.bairx.nbt.impl.CompoundTag;
+import org.by1337.bairx.util.Validate;
 import org.by1337.blib.util.NameKey;
 
 import java.util.HashMap;
@@ -8,7 +9,8 @@ import java.util.Map;
 
 public class ParticleType {
     private static final Map<NameKey, ParticleType> types = new HashMap<>();
-
+    public static final ParticleType DEFAULT = register(new NameKey("default"), DefaultParticle::new);
+    public static final ParticleType REDSTONE = register(new NameKey("redstone"), RedStoneParticle::new);
     private final NameKey id;
     private final ParticleCreator creator;
 
@@ -16,6 +18,16 @@ public class ParticleType {
         this.id = id;
         this.creator = creator;
         types.put(id, this);
+    }
+
+    public static SpawnableParticle create(CompoundTag compoundTag){
+        NameKey nameKey = new NameKey(compoundTag.getAsString("type"));
+        var type = types.get(nameKey);
+        Validate.notNull(type, "Неизвестный тип партикла " + nameKey.getName());
+        return type.creator.create(compoundTag);
+    }
+    public static ParticleType getById(NameKey id){
+        return types.get(id);
     }
 
     public NameKey getId() {

@@ -9,11 +9,11 @@ import org.by1337.blib.configuration.YamlContext;
 import java.util.Objects;
 import java.util.Random;
 
-public class SmoothItemAddHandler implements PipelineHandler<ItemStack> {
+public class SmoothAddItemHandler implements PipelineHandler<ItemStack> {
     private final Random random;
     private final Config config;
 
-    public SmoothItemAddHandler(Random random, Config config) {
+    public SmoothAddItemHandler(Random random, Config config) {
         this.random = random;
         this.config = config;
     }
@@ -23,7 +23,7 @@ public class SmoothItemAddHandler implements PipelineHandler<ItemStack> {
         new BukkitRunnable() {
             @Override
             public void run() {
-                manager.processNext(val, SmoothItemAddHandler.this);
+                manager.processNext(val, SmoothAddItemHandler.this);
             }
         }.runTaskLaterAsynchronously(BAirDropX.getInstance(), random.nextInt(config.insertTickMax - config.insertTickMin) + config.insertTickMin);
     }

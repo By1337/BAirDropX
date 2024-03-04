@@ -14,7 +14,7 @@ import org.by1337.bairx.BAirDropX;
 import org.by1337.bairx.inventory.pipeline.ItemHandler;
 import org.by1337.bairx.inventory.pipeline.PipelineHandler;
 import org.by1337.bairx.inventory.pipeline.PipelineManager;
-import org.by1337.bairx.inventory.pipeline.SmoothItemAddHandler;
+import org.by1337.bairx.inventory.pipeline.SmoothAddItemHandler;
 import org.by1337.bairx.inventory.pipeline.click.AntiSteal;
 import org.by1337.bairx.nbt.NBT;
 import org.by1337.bairx.nbt.impl.CompoundTag;
@@ -35,7 +35,7 @@ public class InventoryManager implements PipelineHandler<ItemStack>, Listener {
     private String invName;
     private Inventory inventory;
     private AntiSteal.Config antiStealCfg;
-    private SmoothItemAddHandler.Config smoothItemAddCfg;
+    private SmoothAddItemHandler.Config smoothAddItemCfg;
     private int emptySlotChance;
 
     public InventoryManager(int invSize, String invName) {
@@ -49,35 +49,38 @@ public class InventoryManager implements PipelineHandler<ItemStack>, Listener {
         this.invName = invName;
         inventory = Bukkit.createInventory(null, invSize, BAirDropX.getMessage().messageBuilder(invName));
         antiStealCfg = new AntiSteal.Config();
-        smoothItemAddCfg = new SmoothItemAddHandler.Config();
+        smoothAddItemCfg = new SmoothAddItemHandler.Config();
         rebuildPipeline();
         reloadExtensions();
         Bukkit.getPluginManager().registerEvents(this, BAirDropX.getInstance());
     }
 
-    public static InventoryManager load(CompoundTag compoundTag, YamlContext cfg) {
+    public static InventoryManager load(@Nullable CompoundTag compoundTag, YamlContext cfg) {
         int genItemCount = cfg.getAsInteger("genItemCount");
         int invSize = cfg.getAsInteger("invSize");
         int emptySlotChance = cfg.getAsInteger("emptySlotChance");
         String invName = cfg.getAsString("invName");
 
-        ListNBT listNBT = (ListNBT) compoundTag.getOrThrow("items");
-        List<InventoryItem> items = new ArrayList<>();
-        for (NBT nbt : listNBT) {
-            items.add(InventoryItem.load((CompoundTag) nbt));
-        }
         InventoryManager manager = new InventoryManager(genItemCount, invSize, invName, emptySlotChance);
-        manager.setItems(items);
+        if (compoundTag!= null){
+            ListNBT listNBT = (ListNBT) compoundTag.getOrThrow("items");
+            List<InventoryItem> items = new ArrayList<>();
+            for (NBT nbt : listNBT) {
+                items.add(InventoryItem.load((CompoundTag) nbt));
+            }
+            manager.setItems(items);
+        }
+
         manager.sortItems();
         manager.antiStealCfg.load(cfg.getAs("extensions.anti-steal", YamlContext.class, new YamlContext(new YamlConfiguration())));
-        manager.smoothItemAddCfg.load(cfg.getAs("extensions.smooth-iem-add", YamlContext.class, new YamlContext(new YamlConfiguration())));
+        manager.smoothAddItemCfg.load(cfg.getAs("extensions.smooth-add-item", YamlContext.class, new YamlContext(new YamlConfiguration())));
         manager.reloadExtensions();
         return manager;
     }
 
     public void save(CompoundTag compoundTag, YamlContext cfg) {
         cfg.set("extensions.anti-steal", antiStealCfg.save());
-        cfg.set("extensions.smooth-iem-add", smoothItemAddCfg.save());
+        cfg.set("extensions.smooth-add-item", smoothAddItemCfg.save());
         cfg.set("genItemCount", genItemCount);
         cfg.set("invSize", invSize);
         cfg.set("invName", invName);
@@ -120,11 +123,11 @@ public class InventoryManager implements PipelineHandler<ItemStack>, Listener {
         if (antiStealCfg.enable) {
             clickPipeline.add("anti-steal", new AntiSteal(antiStealCfg));
         }
-        if (smoothItemAddCfg.enable){
+        if (smoothAddItemCfg.enable) {
             pipeline.addBefore(
                     "handler",
-                    "smooth_item_add_handler",
-                    new SmoothItemAddHandler(random, smoothItemAddCfg)
+                    "smooth_add_item",
+                    new SmoothAddItemHandler(random, smoothAddItemCfg)
             );
         }
     }
@@ -152,14 +155,15 @@ public class InventoryManager implements PipelineHandler<ItemStack>, Listener {
     }
 
     @EventHandler
-    public void onClick(InventoryClickEvent e){
-        if (e.getClickedInventory() == inventory){
+    public void onClick(InventoryClickEvent e) {
+        if (e.getClickedInventory() == inventory) {
             clickPipeline.processFirst(e);
         }
     }
+
     @EventHandler
-    public void onClick(InventoryDragEvent e){
-        if (e.getInventory() == inventory){
+    public void onClick(InventoryDragEvent e) {
+        if (e.getInventory() == inventory) {
             clickPipeline.processFirst(e);
         }
     }

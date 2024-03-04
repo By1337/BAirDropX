@@ -47,7 +47,7 @@ public class GeneratorSetting {
       flags.put(WorldGuard.getInstance().getFlagRegistry().get("creeper-explosion"), "deny");
       flags.put(WorldGuard.getInstance().getFlagRegistry().get("wither-damage"), "deny");
       flags.put(WorldGuard.getInstance().getFlagRegistry().get("ghast-fireball"), "deny");
-      flags.put(WorldGuard.getInstance().getFlagRegistry().get("greeting"), "&lEntering &r{air-name}&r&l area");
+      flags.put(WorldGuard.getInstance().getFlagRegistry().get("greeting"), "&lEntering &r{air_name}&r&l area");
    }
    @SuppressWarnings("unchecked")
    public <T> void applyFlags(ProtectedCuboidRegion rg, ClassicAirDrop airDrop){

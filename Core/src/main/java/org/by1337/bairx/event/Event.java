@@ -2,7 +2,6 @@ package org.by1337.bairx.event;
 
 import org.bukkit.entity.Player;
 import org.by1337.bairx.airdrop.AirDrop;
-import org.by1337.bairx.airdrop.ClassicAirDrop;
 import org.by1337.bairx.BAirDropX;
 import org.by1337.bairx.util.Placeholder;
 import org.by1337.blib.math.MathParser;
@@ -40,15 +39,21 @@ public class Event extends Placeholder {
         );
     }
 
-    public Event getWith(@Nullable Player player) {
+    public Event getWithPlayer(@Nullable Player player) {
         return getWith(airDrop, player);
     }
 
-    public Event getWith(@NotNull AirDrop airDrop) {
+    public Event getWithAirDrop(@NotNull AirDrop airDrop) {
         return getWith(airDrop, player);
     }
+
     public Event getWith(@NotNull AirDrop airDrop, @Nullable Player player) {
-        return new Event(airDrop, player, eventType);
+        return getAs(airDrop, player, eventType);
+    }
+    public Event getAs(@NotNull AirDrop airDrop, @Nullable Player player, @NotNull EventType eventType) {
+        Event event = new Event(airDrop, player, eventType);
+        event.registerPlaceholders(super.placeholders.entrySet());
+        return event;
     }
 
 }
