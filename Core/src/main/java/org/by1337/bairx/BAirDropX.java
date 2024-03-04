@@ -26,6 +26,7 @@ import org.by1337.bairx.menu.ListenersMenu;
 import org.by1337.bairx.observer.Observer;
 import org.by1337.bairx.observer.ObserverManager;
 import org.by1337.bairx.observer.requirement.Requirement;
+import org.by1337.bairx.schematics.SchematicsLoader;
 import org.by1337.bairx.timer.TimerManager;
 import org.by1337.bairx.util.ConfigUtil;
 import org.by1337.blib.chat.util.Message;
@@ -76,6 +77,7 @@ public final class BAirDropX extends JavaPlugin {
 
             observerManager = new ObserverManager();
             EffectLoader.load();
+            SchematicsLoader.load();
 
             timerManager.load(new YamlConfig(new File(getDataFolder() + "/config.yml")));
 

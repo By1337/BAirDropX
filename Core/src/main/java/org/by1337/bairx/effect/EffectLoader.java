@@ -8,6 +8,7 @@ import org.by1337.bairx.nbt.NBTParser;
 import org.by1337.bairx.nbt.impl.CompoundTag;
 import org.by1337.bairx.nbt.impl.StringNBT;
 import org.by1337.bairx.util.ConfigUtil;
+import org.by1337.bairx.util.FileUtil;
 import org.by1337.bairx.util.Validate;
 import org.by1337.blib.util.NameKey;
 import org.jetbrains.annotations.Nullable;
@@ -37,7 +38,7 @@ public class EffectLoader {
             folder.mkdir();
             ConfigUtil.trySave("effects/circle.snbt");
         }
-        List<File> files = findFiles(folder, file -> file.getName().endsWith(".snbt"));
+        List<File> files = FileUtil.findFiles(folder, file -> file.getName().endsWith(".snbt"));
 
         for (File file : files) {
             try {
@@ -61,22 +62,4 @@ public class EffectLoader {
         }
     }
 
-    private static List<File> findFiles(File folder, Predicate<File> filter) {
-        List<File> list = new ArrayList<>();
-        try {
-            if (folder.isDirectory()) {
-                File[] files = folder.listFiles();
-                if (files != null) {
-                    for (File file : files) {
-                        list.addAll(findFiles(file, filter));
-                    }
-                }
-            } else if (filter.test(folder)) {
-                list.add(folder);
-            }
-        } catch (Exception e) {
-            BAirDropX.getMessage().error("failed to load effects", e);
-        }
-        return list;
-    }
 }

@@ -10,6 +10,8 @@ import org.by1337.bairx.effect.EffectCreator;
 import org.by1337.bairx.effect.EffectLoader;
 import org.by1337.bairx.event.Event;
 import org.by1337.bairx.hook.wg.RegionManager;
+import org.by1337.bairx.hook.wg.SchematicPaster;
+import org.by1337.bairx.schematics.SchematicsLoader;
 import org.by1337.bairx.util.Validate;
 import org.by1337.blib.command.Command;
 import org.by1337.blib.command.CommandException;
@@ -247,6 +249,20 @@ public class CommandRegistry {
                 .executor((event, args) -> {
                     String id = (String) args.getOrThrow("id", "[EFFECT_STOP] <id>");
                     event.getAirDrop().stopEffect(id);
+                })
+        );
+        registerCommand(new Command<Event>("[SCHEMATIC_PASTE]")
+                .aliases("[SCHEM_PASTE]")
+                .argument(new ArgumentString<>("id"))
+                .executor((event, args) -> {
+                    String id = (String) args.getOrThrow("id", "[SCHEMATIC_PASTE] <id>");
+                    SchematicPaster.paste(id, event.getAirDrop());
+                })
+        );
+        registerCommand(new Command<Event>("[SCHEMATIC_UNDO]")
+                .aliases("[SCHEM_UNDO]")
+                .executor((event, args) -> {
+                    SchematicPaster.undo(event.getAirDrop());
                 })
         );
     }

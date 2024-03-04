@@ -46,29 +46,29 @@ public class RegionManager {
                 rg.setFlag(f, f.parseInput(FlagContext.create().setInput(state).build()));
             }
         } catch (Exception e) {
-           BAirDropX.getMessage().error("Не удалось установить флаг!", e);
+            BAirDropX.getMessage().error("Не удалось установить флаг!", e);
         }
         regions.addRegion(rg);
         System.out.println(rg);
     }
 
     public static ProtectedCuboidRegion createProtectedCuboidRegion(GeneratorSetting setting, Location location, String name) {
-        int xMax = setting.regionRadius.getX() + location.getBlockX();
-        int yMax = setting.regionRadius.getY() + location.getBlockY();
-        int zMax = setting.regionRadius.getZ() + location.getBlockZ();
+        int xMax = location.getBlockX() + setting.regionRadius.getX();
+        int yMax = location.getBlockY() + setting.regionRadius.getY();
+        int zMax = location.getBlockZ() + setting.regionRadius.getZ();
 
-        int xMin = setting.regionRadius.getX() - location.getBlockX();
-        int yMin = setting.regionRadius.getY() - location.getBlockY();
-        int zMin = setting.regionRadius.getZ() - location.getBlockZ();
+        int xMin = location.getBlockX() - setting.regionRadius.getX();
+        int yMin = location.getBlockY() - setting.regionRadius.getY();
+        int zMin = location.getBlockZ() - setting.regionRadius.getZ();
 
-        if (yMax > location.getWorld().getMaxHeight()){
+        if (yMax > location.getWorld().getMaxHeight()) {
             yMax = location.getWorld().getMaxHeight();
         }
-        if (yMin < location.getWorld().getMinHeight()){
+        if (yMin < location.getWorld().getMinHeight()) {
             yMin = location.getWorld().getMinHeight();
         }
         return new ProtectedCuboidRegion(name,
-                BlockVector3.at(xMax, yMax,zMax),
+                BlockVector3.at(xMax, yMax, zMax),
                 BlockVector3.at(xMin, yMin, zMin));
     }
 }

@@ -1,0 +1,10 @@
+Этот файл пример файла настройки схематики.
+Сам файл настройки схематики должен быть с расширением .yml
+
+
+name: 'air1'
+schematics-file: 'air1.schem' # файл схематики должен находится в 'plugins\WorldEdit\schematics' или 'plugins\FastAsyncWorldEdit\schematics' или 'plugins\BAirDropX\schematics'
+ignore-air-blocks: true
+offsets-x: 0
+offsets-y: 0
+offsets-z: 0

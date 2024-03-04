@@ -122,7 +122,7 @@ public class ClassicAirDrop extends Placeholder implements AirDrop {
 
         YamlConfig invCfg = new YamlConfig(invManagerCfgFile);
 
-        if (!invItemsFile.exists()) {
+        if (invItemsFile.exists()) {
             CompoundTag compoundTag1 = NBTParser.parse(Files.readString(invItemsFile.toPath()));
             inventoryManager = InventoryManager.load(compoundTag1, invCfg);
         } else {
