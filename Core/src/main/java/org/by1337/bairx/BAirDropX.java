@@ -1,14 +1,24 @@
 package org.by1337.bairx;
 
-//import com.github.retrooper.packetevents.PacketEvents;
-//import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder;
-
+/*import com.github.retrooper.packetevents.PacketEvents;
+import com.github.retrooper.packetevents.protocol.entity.data.EntityData;
+import com.github.retrooper.packetevents.protocol.entity.type.EntityTypes;
+import com.github.retrooper.packetevents.protocol.npc.NPC;
+import com.github.retrooper.packetevents.protocol.player.GameMode;
+import com.github.retrooper.packetevents.protocol.player.UserProfile;
+import com.github.retrooper.packetevents.protocol.world.Location;
+import com.github.retrooper.packetevents.util.Vector3d;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerEntityMetadata;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSpawnLivingEntity;
+import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;*/
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.by1337.bairx.airdrop.AirDrop;
-import org.by1337.bairx.airdrop.ClassicAirDrop;
 import org.by1337.bairx.airdrop.loader.AirdropLoader;
 import org.by1337.bairx.airdrop.loader.AirdropRegistry;
 import org.by1337.bairx.config.adapter.AdapterGeneratorSetting;
@@ -17,7 +27,10 @@ import org.by1337.bairx.config.adapter.AdapterRequirement;
 import org.by1337.bairx.effect.Effect;
 import org.by1337.bairx.effect.EffectCreator;
 import org.by1337.bairx.effect.EffectLoader;
+//import org.by1337.bairx.entity.metadata.MetaDataProviderArmorStand;
 import org.by1337.bairx.exception.PluginInitializationException;
+import org.by1337.bairx.hologram.HologramLoader;
+import org.by1337.bairx.hologram.HologramManager;
 import org.by1337.bairx.inventory.MenuAddItem;
 import org.by1337.bairx.inventory.MenuEditChance;
 import org.by1337.bairx.listener.ClickListener;
@@ -61,11 +74,19 @@ public final class BAirDropX extends JavaPlugin {
         setInstance(this);
         message = new Message(getLogger());
         getDataFolder().mkdir();
+/*        PacketEvents.setAPI(SpigotPacketEventsBuilder.build(this));
+        PacketEvents.getAPI().getSettings().reEncodeByDefault(false)
+                .checkForUpdates(false)
+                .bStats(true);
+        PacketEvents.getAPI().load();*/
     }
 
     @Override
     public void onEnable() {
         try {
+           // PacketEvents.getAPI().getEventManager().registerListener(new PacketEventsPacketListener());
+//            PacketEvents.getAPI().init();
+
             initCommand();
             ConfigUtil.trySave("listeners/default.yml");
             ConfigUtil.trySave("config.yml");
@@ -78,6 +99,8 @@ public final class BAirDropX extends JavaPlugin {
             observerManager = new ObserverManager();
             EffectLoader.load();
             SchematicsLoader.load();
+            HologramLoader.load();
+            HologramManager.INSTANCE.registerCommands();
 
             timerManager.load(new YamlConfig(new File(getDataFolder() + "/config.yml")));
 
@@ -103,7 +126,7 @@ public final class BAirDropX extends JavaPlugin {
     private void tick() {
         timerManager.tick(currentTick);
         if (currentTick % 10 == 0) {
-            airDropMap.values().stream().filter(AirDrop::isUseDefaultTimer).forEach(AirDrop::tick);
+              airDropMap.values().stream().filter(AirDrop::isUseDefaultTimer).forEach(AirDrop::tick);
         }
         currentTick++;
     }
@@ -117,6 +140,7 @@ public final class BAirDropX extends JavaPlugin {
         for (AirDrop value : airDropMap.values()) {
             value.forceStop();
         }
+      //  PacketEvents.getAPI().terminate();
     }
 
     @Override
@@ -223,6 +247,58 @@ public final class BAirDropX extends JavaPlugin {
                             effect.start(((Player) sender).getLocation());
                         }))
                 )
+        );
+        command.addSubCommand(new Command<CommandSender>("test")
+                .executor(((sender, args) -> {
+                    Player player = (Player) sender;
+/*
+                    WrapperPlayServerSpawnLivingEntity spawn = new WrapperPlayServerSpawnLivingEntity(
+                            1337,
+                            UUID.randomUUID(),
+                            EntityTypes.ARMOR_STAND,
+                            new Vector3d(player.getLocation().getX(), player.getLocation().getY(), player.getLocation().getZ()),
+                            0,
+                            0,
+                            0,
+                            new Vector3d(0, 0, 0),
+                            new ArrayList<>() // meta data
+                    );
+
+                    var channel = PacketEvents.getAPI().getPlayerManager().getChannel(player);
+                    PacketEvents.getAPI().getProtocolManager().sendPacket(channel, spawn);
+
+                    MetaDataProviderArmorStand metaData = new MetaDataProviderArmorStand();
+                    metaData.init();
+
+                    MiniMessage miniMessage = MiniMessage.miniMessage();
+
+                    metaData.setCustomName(miniMessage.deserialize("&cCustom ArmorStand"));
+                    metaData.setGlowing(true);
+                    metaData.setCustomNameVisible(true);
+                    metaData.setSmall(true);
+                    metaData.setInvisible(true);
+                    metaData.setNoBasePlate(true);
+                    metaData.setSilent(true);
+                    metaData.setNoGravity(true);
+                    metaData.setMarker(true);
+
+                    var list = metaData.getEntityData().build();
+                    for (EntityData data : list) {
+                        System.out.println(
+                                "index = '" + data.getIndex() + "' " +
+                                        "type = '" + data.getType().getName() + "' " +
+                                        "value = '" + data.getValue() + "'"
+                        );
+                    }
+                    WrapperPlayServerEntityMetadata metadataPacket = new WrapperPlayServerEntityMetadata(
+                            1337,
+                            list
+                    );
+
+                    PacketEvents.getAPI().getProtocolManager().sendPacket(channel, metadataPacket);
+
+                    // npc.spawn(PacketEvents.getAPI().getPlayerManager().getChannel(sender));*/
+                }))
         );
     }
 

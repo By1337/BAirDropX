@@ -32,6 +32,7 @@ public class RegionManager {
             regions.removeRegion(airDrop.getId().getName() + "_region", RemovalStrategy.REMOVE_CHILDREN);
     }
 
+    @SuppressWarnings("unchecked")
     public static <T> void setRegion(AirDrop airDrop) {
         ProtectedCuboidRegion rg = createProtectedCuboidRegion(airDrop.getGeneratorSetting(), airDrop.getLocation(), airDrop.getId().getName() + "_region");
         World world = airDrop.getLocation().getWorld();
@@ -49,7 +50,6 @@ public class RegionManager {
             BAirDropX.getMessage().error("Не удалось установить флаг!", e);
         }
         regions.addRegion(rg);
-        System.out.println(rg);
     }
 
     public static ProtectedCuboidRegion createProtectedCuboidRegion(GeneratorSetting setting, Location location, String name) {

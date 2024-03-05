@@ -6,6 +6,8 @@ depend:
   - BLib
   - WorldGuard
   - WorldEdit
+softdepend:
+  - DecentHolograms
 commands:
   bairdropx:
     aliases:

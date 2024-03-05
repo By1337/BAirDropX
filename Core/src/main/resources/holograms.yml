@@ -1,0 +1,22 @@
+holograms:
+  timeToOpen:
+    provider: DecentHolograms
+    name: hologramTimeToOpen
+    offsets:
+      x: 0.5
+      y: 2
+      z: 0.5
+    lines:
+      - '{air_name}'
+      - '&aДо открытия: {time_to_open} секунд.'
+
+  timeToEnd:
+    provider: DecentHolograms
+    name: hologramTimeToEnd
+    offsets:
+      x: 0.5
+      y: 2
+      z: 0.5
+    lines:
+      - '{air_name}'
+      - '&aДо удаления: {time_to_end} секунд.'

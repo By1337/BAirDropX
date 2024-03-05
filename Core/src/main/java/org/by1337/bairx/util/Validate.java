@@ -40,7 +40,11 @@ public class Validate {
     public static <T> T notNull(@Nullable T obj) {
         return notNull(obj, null);
     }
-
+    public static void notNullAll(Object... objects) {
+        for (Object object : objects) {
+            notNull(object);
+        }
+    }
     @CanIgnoreReturnValue
     @NotNull
     @SuppressWarnings("ConstantConditions")

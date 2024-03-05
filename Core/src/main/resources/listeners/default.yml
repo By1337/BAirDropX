@@ -42,6 +42,8 @@ listeners:
      event: 'open'
      commands:
        - '[INV_MANAGER] [GENERATE_LOOT]'
+       - '[HOLOGRAM] [REMOVE] holo1'
+       - '[HOLOGRAM] [CREATE] hologramTimeToEnd holo2'
 
    end:
      description: '&fоткрывает инвентарь аирдропа игроку'
@@ -50,6 +52,7 @@ listeners:
        - '[INV_MANAGER] [CLEAR_INVENTORY]'
        - '[REMOVE_REGION]'
        - '[EFFECT_STOP] newEffect'
+       - '[HOLOGRAM] [REMOVE] holo2'
 
    start:
      description: '&fStart'
@@ -58,3 +61,25 @@ listeners:
        - '[SET_REGION]'
        - '[MESSAGE_ALL] {air_name} Заспавнился!'
        - '[EFFECT_START] circle newEffect'
+       - '[HOLOGRAM] [CREATE] hologramTimeToOpen holo1'
+
+
+   holo1-updater:
+     description: '&fHolo updater'
+     event: 'tick'
+     requirement:
+       check:
+         type: 'math'
+         input: '{started} && !{opened}'
+     commands:
+       - '[HOLOGRAM] [UPDATE] holo1'
+
+   holo2-updater:
+     description: '&fHolo updater'
+     event: 'tick'
+     requirement:
+       check:
+         type: 'math'
+         input: '{opened}'
+     commands:
+       - '[HOLOGRAM] [UPDATE] holo2'

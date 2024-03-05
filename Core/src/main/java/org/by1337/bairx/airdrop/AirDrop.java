@@ -21,21 +21,13 @@ import java.util.Set;
 
 public interface AirDrop extends Placeholderable {
     World getWorld();
-
     void tick();
-
     Set<SpacedNameKey> getSignedListeners();
-
     boolean isStarted();
-
     NameKey getId();
-
     boolean isUseDefaultTimer();
-
     Location getLocation();
-
     InventoryManager getInventoryManager();
-
     void callEvent(@NotNull Event event);
     void callEvent(@Nullable Player player, EventType eventType);
     void save() throws IOException, InvalidConfigurationException;
