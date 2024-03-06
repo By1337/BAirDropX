@@ -13,11 +13,15 @@ import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSp
 import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;*/
-import net.kyori.adventure.text.minimessage.MiniMessage;
+//import net.kyori.adventure.text.minimessage.MiniMessage;
+
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.by1337.bairx.addon.*;
 import org.by1337.bairx.airdrop.AirDrop;
 import org.by1337.bairx.airdrop.loader.AirdropLoader;
 import org.by1337.bairx.airdrop.loader.AirdropRegistry;
@@ -42,11 +46,14 @@ import org.by1337.bairx.observer.requirement.Requirement;
 import org.by1337.bairx.schematics.SchematicsLoader;
 import org.by1337.bairx.timer.TimerManager;
 import org.by1337.bairx.util.ConfigUtil;
+import org.by1337.bairx.util.FileUtil;
 import org.by1337.blib.chat.util.Message;
 import org.by1337.blib.command.Command;
 import org.by1337.blib.command.CommandException;
+import org.by1337.blib.command.argument.ArgumentPosition;
 import org.by1337.blib.command.argument.ArgumentSetList;
 import org.by1337.blib.command.argument.ArgumentValidCharacters;
+import org.by1337.blib.command.argument.ArgumentWorld;
 import org.by1337.blib.command.requires.RequiresPermission;
 import org.by1337.blib.configuration.YamlConfig;
 import org.by1337.blib.configuration.adapter.AdapterRegistry;
@@ -55,6 +62,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.*;
 import java.util.function.Supplier;
 import java.util.logging.Level;
@@ -68,25 +76,25 @@ public final class BAirDropX extends JavaPlugin {
     private TimerManager timerManager;
     private Command<CommandSender> command;
     private final Map<NameKey, AirDrop> airDropMap = new HashMap<>();
+    private AddonLoader addonLoader;
 
     @Override
     public void onLoad() {
         setInstance(this);
         message = new Message(getLogger());
         getDataFolder().mkdir();
-/*        PacketEvents.setAPI(SpigotPacketEventsBuilder.build(this));
-        PacketEvents.getAPI().getSettings().reEncodeByDefault(false)
-                .checkForUpdates(false)
-                .bStats(true);
-        PacketEvents.getAPI().load();*/
+        File addons = new File(getDataFolder(), "addons");
+        if (!addons.exists()) {
+            addons.mkdir();
+        }
+        addonLoader = new AddonLoader(new AddonLogger("Addons", this.getClass(), getLogger()), addons);
     }
 
     @Override
     public void onEnable() {
         try {
-           // PacketEvents.getAPI().getEventManager().registerListener(new PacketEventsPacketListener());
-//            PacketEvents.getAPI().init();
-
+            addonLoader.loadAll();
+            addonLoader.enableAll();
             initCommand();
             ConfigUtil.trySave("listeners/default.yml");
             ConfigUtil.trySave("config.yml");
@@ -126,13 +134,14 @@ public final class BAirDropX extends JavaPlugin {
     private void tick() {
         timerManager.tick(currentTick);
         if (currentTick % 10 == 0) {
-              airDropMap.values().stream().filter(AirDrop::isUseDefaultTimer).forEach(AirDrop::tick);
+            airDropMap.values().stream().filter(AirDrop::isUseDefaultTimer).forEach(AirDrop::tick);
         }
         currentTick++;
     }
 
     @Override
     public void onDisable() {
+        addonLoader.disableAll();
         AdapterRegistry.unregisterAdapter(GeneratorSetting.class);
         AdapterRegistry.unregisterAdapter(Requirement.class);
         AdapterRegistry.unregisterAdapter(Observer.class);
@@ -140,7 +149,7 @@ public final class BAirDropX extends JavaPlugin {
         for (AirDrop value : airDropMap.values()) {
             value.forceStop();
         }
-      //  PacketEvents.getAPI().terminate();
+        //  PacketEvents.getAPI().terminate();
     }
 
     @Override
@@ -222,15 +231,31 @@ public final class BAirDropX extends JavaPlugin {
                 .requires(new RequiresPermission<>("bair.start"))
                 .argument(new ArgumentSetList<>("air", () -> airDropMap.values().stream().map(air -> air.getId().getName()).toList()))
                 .executor(((sender, args) -> {
-                    AirDrop airDrop = airDropMap.get(new NameKey((String) args.getOrThrow("air", "&c/bairx edit loot <id>")));
-                    airDrop.forceStart(sender);
+                    AirDrop airDrop = airDropMap.get(new NameKey((String) args.getOrThrow("air", "&c/bairx start <id>")));
+                    airDrop.forceStart(sender, null);
                 }))
+                .addSubCommand(new Command<CommandSender>("at")
+                        .requires(new RequiresPermission<>("bair.start.at"))
+                        .argument(new ArgumentSetList<>("air", () -> airDropMap.values().stream().map(air -> air.getId().getName()).toList()))
+                        .argument(new ArgumentPosition<>("x", List.of("~", "~", "~"), ArgumentPosition.ArgumentPositionType.X))
+                        .argument(new ArgumentPosition<>("y", List.of("~", "~"), ArgumentPosition.ArgumentPositionType.Y))
+                        .argument(new ArgumentPosition<>("z", List.of("~"), ArgumentPosition.ArgumentPositionType.Z))
+                        .argument(new ArgumentWorld<>("world"))
+                        .executor(((sender, args) -> {
+                            AirDrop airDrop = airDropMap.get(new NameKey((String) args.getOrThrow("air", "&c/bairx start at <id> <x> <y> <z> <?world>")));
+                            int x = ((Double) args.getOrThrow("x", "&c/bairx start at <id> <x> <y> <z> <?world>")).intValue();
+                            int y = ((Double) args.getOrThrow("y", "&c/bairx start at <id> <x> <y> <z> <?world>")).intValue();
+                            int z = ((Double) args.getOrThrow("z", "&c/bairx start at <id> <x> <y> <z> <?world>")).intValue();
+                            World world = (World) args.getOrDefault("world", airDrop.getWorld());
+                            airDrop.forceStart(sender, new Location(world, x, y, z));
+                        }))
+                )
         );
         command.addSubCommand(new Command<CommandSender>("stop")
                 .requires(new RequiresPermission<>("bair.stop"))
                 .argument(new ArgumentSetList<>("air", () -> airDropMap.values().stream().map(air -> air.getId().getName()).toList()))
                 .executor(((sender, args) -> {
-                    AirDrop airDrop = airDropMap.get(new NameKey((String) args.getOrThrow("air", "&c/bairx edit loot <id>")));
+                    AirDrop airDrop = airDropMap.get(new NameKey((String) args.getOrThrow("air", "&c/bairx stop <id>")));
                     airDrop.forceStop();
                 }))
         );
@@ -248,57 +273,51 @@ public final class BAirDropX extends JavaPlugin {
                         }))
                 )
         );
-        command.addSubCommand(new Command<CommandSender>("test")
-                .executor(((sender, args) -> {
-                    Player player = (Player) sender;
-/*
-                    WrapperPlayServerSpawnLivingEntity spawn = new WrapperPlayServerSpawnLivingEntity(
-                            1337,
-                            UUID.randomUUID(),
-                            EntityTypes.ARMOR_STAND,
-                            new Vector3d(player.getLocation().getX(), player.getLocation().getY(), player.getLocation().getZ()),
-                            0,
-                            0,
-                            0,
-                            new Vector3d(0, 0, 0),
-                            new ArrayList<>() // meta data
-                    );
-
-                    var channel = PacketEvents.getAPI().getPlayerManager().getChannel(player);
-                    PacketEvents.getAPI().getProtocolManager().sendPacket(channel, spawn);
-
-                    MetaDataProviderArmorStand metaData = new MetaDataProviderArmorStand();
-                    metaData.init();
-
-                    MiniMessage miniMessage = MiniMessage.miniMessage();
-
-                    metaData.setCustomName(miniMessage.deserialize("&cCustom ArmorStand"));
-                    metaData.setGlowing(true);
-                    metaData.setCustomNameVisible(true);
-                    metaData.setSmall(true);
-                    metaData.setInvisible(true);
-                    metaData.setNoBasePlate(true);
-                    metaData.setSilent(true);
-                    metaData.setNoGravity(true);
-                    metaData.setMarker(true);
-
-                    var list = metaData.getEntityData().build();
-                    for (EntityData data : list) {
-                        System.out.println(
-                                "index = '" + data.getIndex() + "' " +
-                                        "type = '" + data.getType().getName() + "' " +
-                                        "value = '" + data.getValue() + "'"
-                        );
-                    }
-                    WrapperPlayServerEntityMetadata metadataPacket = new WrapperPlayServerEntityMetadata(
-                            1337,
-                            list
-                    );
-
-                    PacketEvents.getAPI().getProtocolManager().sendPacket(channel, metadataPacket);
-
-                    // npc.spawn(PacketEvents.getAPI().getPlayerManager().getChannel(sender));*/
-                }))
+        command.addSubCommand(new Command<CommandSender>("addons")
+                .addSubCommand(new Command<CommandSender>("list")
+                        .executor(((sender, args) -> {
+                            message.sendMsg(sender, addonLoader.getAddonList());
+                        }))
+                )
+                .addSubCommand(new Command<CommandSender>("unload")
+                        .argument(new ArgumentSetList<>("addon", () -> addonLoader.getAddons().stream().map(JavaAddon::getName).toList()))
+                        .executor(((sender, args) -> {
+                            String addon = (String) args.getOrThrow("addon", "&c/addons unload <addon>");
+                            addonLoader.disable(addon);
+                            addonLoader.unload(addon);
+                            message.sendMsg(sender, "&aDone");
+                        }))
+                )
+                .addSubCommand(new Command<CommandSender>("load")
+                        .argument(new ArgumentSetList<>("file", () -> {
+                            List<File> files = FileUtil.findFiles(addonLoader.getDir(), f -> f.getName().endsWith(".jar"));
+                            List<String> names = new ArrayList<>();
+                            for (File file : files) {
+                                try {
+                                    AddonDescriptionFile descriptionFile = new AddonDescriptionFile(AddonLoader.readFileContentFromJar(file.getPath()));
+                                    if (addonLoader.getAddon(descriptionFile.getName()) == null) {
+                                        names.add(file.getName());
+                                    }
+                                } catch (Exception e) {
+                                }
+                            }
+                            return names;
+                        }))
+                        .executor(((sender, args) -> {
+                            String file = (String) args.getOrThrow("file", "&c/addons load <file>");
+                            File file1 = new File(addonLoader.getDir() + "/" + file + ".jar");
+                            if (!file1.exists()) {
+                                message.sendMsg(sender, "Файл не существует!");
+                                return;
+                            }
+                            try {
+                                addonLoader.loadAddon(file1);
+                            } catch (IOException | InvalidAddonException e) {
+                                message.error(e);
+                                message.sendMsg(sender, e.getLocalizedMessage());
+                            }
+                        }))
+                )
         );
     }
 

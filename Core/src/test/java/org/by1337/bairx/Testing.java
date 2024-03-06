@@ -19,7 +19,7 @@ import java.util.concurrent.TimeUnit;
 public class Testing {
     @Test
     public void run() {
-//        Circle.Config cfg = new Circle.Config(2, 0.05, Circle.Type.XZ, new Vector(1, 0, 1), new Vector(0, 0, 0), 0, 0, false, 5, 20, "test", new DefaultParticle(Particle.CLOUD));
+//        Circle.Creator cfg = new Circle.Creator(2, 0.05, Circle.Type.XZ, new Vector(1, 0, 1), new Vector(0, 0, 0), 0, 0, false, 5, 20, "test", new DefaultParticle(Particle.CLOUD));
 //
 //        CompoundTag nbt = new CompoundTag();
 //
@@ -27,7 +27,7 @@ public class Testing {
 //
 //        System.out.println(nbt.toString());
 //
-//        Circle.Config v = new Circle.Config(nbt);
+//        Circle.Creator v = new Circle.Creator(nbt);
 //
 //        CompoundTag nbt1 = new CompoundTag();
 //        v.save(nbt1);

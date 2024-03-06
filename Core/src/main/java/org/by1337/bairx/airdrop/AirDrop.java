@@ -32,9 +32,10 @@ public interface AirDrop extends Placeholderable {
     void callEvent(@Nullable Player player, EventType eventType);
     void save() throws IOException, InvalidConfigurationException;
     void trySave();
-    void forceStart(CommandSender sender);
+    void forceStart(CommandSender sender, @Nullable Location location);
     void forceStop();
     GeneratorSetting getGeneratorSetting();
     void addEffectAndStart(String id, Effect effect);
     void stopEffect(String id);
+    public AirDrop createMirror(NameKey id);
 }

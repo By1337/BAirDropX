@@ -6,8 +6,21 @@
 
     <groupId>org.by1337.bairx</groupId>
     <artifactId>BAirDropX</artifactId>
-    <version>1.0</version>
+    <version>beta-1</version>
     <packaging>jar</packaging>
+
+    <distributionManagement>
+        <repository>
+            <id>by1337.space</id>
+            <name>releases</name>
+            <url>https://by1337.space/repository/maven-releases/</url>
+        </repository>
+        <snapshotRepository>
+            <id>by1337.space</id>
+            <name>snapshots</name>
+            <url>https://by1337.space/repository/maven-snapshots/</url>
+        </snapshotRepository>
+    </distributionManagement>
 
     <name>BAirDropX</name>
 
@@ -29,6 +42,20 @@
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>3.3.0</version>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>jar-no-fork</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
                 <version>3.5.0</version>
                 <executions>
@@ -37,29 +64,6 @@
                         <goals>
                             <goal>shade</goal>
                         </goals>
-                        <configuration>
-                            <minimizeJar>true</minimizeJar>
-                            <createDependencyReducedPom>false</createDependencyReducedPom>
-                            <relocations>
-                                <relocation>
-                                    <pattern>com.github.retrooper</pattern>
-                                    <shadedPattern>org.by1337.bairx.libs.com.github.retrooper</shadedPattern>
-                                </relocation>
-                                <relocation>
-                                    <pattern>io.github.retrooper</pattern>
-                                    <shadedPattern>org.by1337.bairx.libs.io.github.retrooper</shadedPattern>
-                                </relocation>
-                                <relocation>
-                                    <pattern>net.kyori</pattern>
-                                    <shadedPattern>org.by1337.bairx.libs.net.kyori</shadedPattern>
-                                </relocation>
-
-                                <relocation>
-                                    <pattern>com.google.gson</pattern>
-                                    <shadedPattern>org.by1337.bairx.libs.com.google.gson</shadedPattern>
-                                </relocation>
-                            </relocations>
-                        </configuration>
                     </execution>
                 </executions>
             </plugin>
@@ -129,12 +133,12 @@
 <!--            <version>2.2.1</version>-->
 <!--            <scope>compile</scope>-->
 <!--        </dependency>-->
-        <dependency>
-            <groupId>net.kyori</groupId>
-            <artifactId>adventure-text-minimessage</artifactId>
-            <version>4.16.0</version>
-            <scope>compile</scope>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>net.kyori</groupId>-->
+<!--            <artifactId>adventure-text-minimessage</artifactId>-->
+<!--            <version>4.16.0</version>-->
+<!--            <scope>compile</scope>-->
+<!--        </dependency>-->
         <!--libs-->
         <dependency>
             <groupId>com.github.decentsoftware-eu</groupId>
@@ -177,6 +181,12 @@
             <artifactId>authlib</artifactId>
             <version>1.5.21</version>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.10.1</version>
+            <scope>compile</scope>
         </dependency>
         <!-- tests -->
         <dependency>

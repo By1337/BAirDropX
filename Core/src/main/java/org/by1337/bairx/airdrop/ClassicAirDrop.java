@@ -39,7 +39,7 @@ import java.util.*;
 
 public class ClassicAirDrop extends Placeholder implements AirDrop {
     public static final String TYPE = "classic";
-    private final NameKey id;
+    private NameKey id;
     private final File dataFolder;
     private World world;
     private GeneratorSetting generatorSetting;
@@ -69,6 +69,7 @@ public class ClassicAirDrop extends Placeholder implements AirDrop {
     private boolean useDefaultTimer;
     private InventoryManager inventoryManager;
     private final Map<String, Effect> loadedEffects = new HashMap<>();
+    private boolean lockSave;
 
     public static AirDrop createNew(NameKey id, File dataFolder) {
         try {
@@ -84,6 +85,17 @@ public class ClassicAirDrop extends Placeholder implements AirDrop {
         } catch (IOException | InvalidConfigurationException e) {
             throw new RuntimeException(e);
         }
+    }
+    @Override
+    public AirDrop createMirror(NameKey id){
+       try {
+           ClassicAirDrop airDrop = new ClassicAirDrop(dataFolder, metaData);
+           airDrop.id = id;
+           airDrop.lockSave = true;
+           return airDrop;
+       } catch (IOException | InvalidConfigurationException e) {
+           throw new RuntimeException("Error while creating AirDrop mirror", e);
+       }
     }
 
     private ClassicAirDrop(File dataFolder, AirDropMetaData metaData) throws IOException, InvalidConfigurationException {
@@ -216,6 +228,7 @@ public class ClassicAirDrop extends Placeholder implements AirDrop {
     }
 
     public void save() throws IOException, InvalidConfigurationException {
+        if (lockSave) return;
         if (!dataFolder.exists()) {
             dataFolder.mkdir();
         }
@@ -302,7 +315,7 @@ public class ClassicAirDrop extends Placeholder implements AirDrop {
 
     private BukkitTask forceStartTask;
 
-    public void forceStart(CommandSender sender) {
+    public void forceStart(CommandSender sender, @Nullable Location loc) {
         if (started) {
             BAirDropX.getMessage().sendMsg(sender, "&cАирдоп уже запущен!");
             return;
@@ -311,6 +324,9 @@ public class ClassicAirDrop extends Placeholder implements AirDrop {
             forceStartTask.cancel();
             BAirDropX.getMessage().sendMsg(sender, "&cПринудительный запуск отменён!");
             return;
+        }
+        if (loc != null){
+            location = loc;
         }
         forceStartTask = new BukkitRunnable() {
             @Override
