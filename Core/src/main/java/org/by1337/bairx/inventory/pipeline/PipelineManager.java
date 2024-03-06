@@ -40,7 +40,7 @@ public class PipelineManager<T> {
 
     public void processFirst(T val) {
         if (handlers.isEmpty()) return;
-        processNext(val, handlers.get(0).getRight());
+        handlers.get(0).getRight().process(val, this);
     }
 
     public void processNext(T val, PipelineHandler<T> current) {

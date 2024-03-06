@@ -138,8 +138,7 @@ public class CommandRegistry {
                 .argument(new ArgumentStrings<>("cmd"))
                 .executor((event, args) -> BAirDropX.getMessage().error((String) args.getOrThrow("cmd", "Отсутствует сообщение!")))
         );
-        registerCommand(new Command<Event>("[LOGGER]")
-                .aliases("[LOG]")
+        registerCommand(new Command<Event>("[LOGG]")
                 .argument(new ArgumentStrings<>("cmd"))
                 .executor((event, args) -> BAirDropX.getMessage().logger((String) args.getOrThrow("cmd", "Отсутствует сообщение!")))
         );
@@ -253,9 +252,9 @@ public class CommandRegistry {
         );
         registerCommand(new Command<Event>("[SCHEMATIC_PASTE]")
                 .aliases("[SCHEM_PASTE]")
-                .argument(new ArgumentString<>("id"))
+                .argument(new ArgumentString<>("name"))
                 .executor((event, args) -> {
-                    String id = (String) args.getOrThrow("id", "[SCHEMATIC_PASTE] <id>");
+                    String id = (String) args.getOrThrow("name", "[SCHEMATIC_PASTE] <name>");
                     SchematicPaster.paste(id, event.getAirDrop());
                 })
         );

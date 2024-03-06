@@ -9,16 +9,8 @@ import java.util.Collection;
 public interface Timer {
     NameKey name();
 
-    void linkAirDrop(AirDrop airDrop);
-
-    void unlinkAirDrop(AirDrop airDrop);
-
-    Collection<AirDrop> linkedAirDrops();
-
     void tick(final long currentTick);
 
     TimerRegistry getType();
-
-    void close();
 
 }

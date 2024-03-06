@@ -6,24 +6,60 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryEvent;
 import org.by1337.bairx.BAirDropX;
+import org.by1337.bairx.inventory.HandlerCreator;
+import org.by1337.bairx.inventory.HandlerRegistry;
+import org.by1337.bairx.inventory.Saveable;
+import org.by1337.bairx.inventory.Releasable;
 import org.by1337.bairx.inventory.pipeline.PipelineHandler;
 import org.by1337.bairx.inventory.pipeline.PipelineManager;
 import org.by1337.blib.configuration.YamlContext;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
-public class AntiSteal implements PipelineHandler<InventoryEvent> {
+public class AntiSteal implements PipelineHandler<InventoryEvent>, Releasable, Saveable {
     private Map<UUID, ChestStealData> chestStealDataMap = new HashMap<>();
+    public int cooldown = 200;
+    public int maxWarnings = 5;
+    public int interval = 5;
+    public int minIntervalToIgnore = 250;
+    public String command = "close_inventory";
 
-    private final AntiSteal.Config config;
-
-    public AntiSteal(Config config) {
-        this.config = config;
+    public AntiSteal(YamlContext context) {
+        load(context);
     }
 
+    public void load(YamlContext context) {
+        Objects.requireNonNull(context, "YamlContext cannot be null");
+
+        cooldown = context.getAsInteger("cooldown", cooldown);
+        maxWarnings = context.getAsInteger("maxWarnings", maxWarnings);
+        interval = context.getAsInteger("interval", interval);
+        minIntervalToIgnore = context.getAsInteger("minIntervalToIgnore", minIntervalToIgnore);
+        command = context.getAsString("command", command);
+    }
+    public YamlContext save() {
+        YamlContext context = new YamlContext(new YamlConfiguration());
+        context.set("cooldown", cooldown);
+        context.set("maxWarnings", maxWarnings);
+        context.set("interval", interval);
+        context.set("minIntervalToIgnore", minIntervalToIgnore);
+        context.set("command", command);
+        return context;
+    }
+    public static YamlContext saveDefault() {
+        YamlContext context = new YamlContext(new YamlConfiguration());
+        context.set("cooldown", 200);
+        context.set("maxWarnings", 5);
+        context.set("interval", 5);
+        context.set("minIntervalToIgnore", 250);
+        context.set("command", "close_inventory");
+        return context;
+    }
 
     @Override
     public void process(InventoryEvent val, PipelineManager<InventoryEvent> manager) {
@@ -31,7 +67,7 @@ public class AntiSteal implements PipelineHandler<InventoryEvent> {
         if (event.getCurrentItem() == null) return;
         Player player = (Player) event.getWhoClicked();
 
-        ChestStealData chestStealData = chestStealDataMap.getOrDefault(player.getUniqueId(), new ChestStealData(config.interval, config.minIntervalToIgnore));
+        ChestStealData chestStealData = chestStealDataMap.getOrDefault(player.getUniqueId(), new ChestStealData(interval, minIntervalToIgnore));
         long currentTime = System.currentTimeMillis();
 
         if (chestStealData.getLastTime() == 0) {
@@ -42,19 +78,19 @@ public class AntiSteal implements PipelineHandler<InventoryEvent> {
             if (interval != 0) {
                 chestStealData.addTime(interval);
             }
-            if (chestStealData.getLastSteal() != -1 && currentTime - chestStealData.getLastSteal() <= config.cooldown) {
+            if (chestStealData.getLastSteal() != -1 && currentTime - chestStealData.getLastSteal() <= cooldown) {
                 event.setCancelled(true);
                 if (event.getCurrentItem() != null) {
-                    player.setCooldown(event.getCurrentItem().getType(), Math.abs(config.cooldown / 50));
+                    player.setCooldown(event.getCurrentItem().getType(), Math.abs(cooldown / 50));
                 }
             } else {
                 chestStealData.setLastSteal(currentTime);
             }
-            if (chestStealData.getWarnings() >= config.maxWarnings) {
-                if (config.command.equals("close_inventory")){
+            if (chestStealData.getWarnings() >= maxWarnings) {
+                if (command.equals("close_inventory")){
                     player.closeInventory();
                 }else {
-                    Bukkit.dispatchCommand(Bukkit.getConsoleSender(), BAirDropX.getMessage().messageBuilder(config.command, player));
+                    Bukkit.dispatchCommand(Bukkit.getConsoleSender(), BAirDropX.getMessage().messageBuilder(command, player));
                 }
                 player.updateInventory();
                 chestStealData.reset();
@@ -73,39 +109,37 @@ public class AntiSteal implements PipelineHandler<InventoryEvent> {
         return chestStealDataMap;
     }
 
-    public static class Config {
-        public boolean enable = false;
-        public int cooldown = 200;
-        public int maxWarnings = 5;
-        public int interval = 5;
-        public int minIntervalToIgnore = 250;
-        public String command = "close_inventory";
+    @Override
+    public void release() {
+        chestStealDataMap.clear();
+    }
 
-        public Config() {
-        }
-        public void load(YamlContext context) {
-            Objects.requireNonNull(context, "YamlContext cannot be null");
+    public static class Creator implements HandlerCreator<InventoryEvent> {
 
-            enable = context.getAsBoolean("enable");
-            cooldown = context.getAsInteger("cooldown", cooldown);
-            maxWarnings = context.getAsInteger("maxWarnings", maxWarnings);
-            interval = context.getAsInteger("interval", interval);
-            minIntervalToIgnore = context.getAsInteger("minIntervalToIgnore", minIntervalToIgnore);
-            command = context.getAsString("command", command);
+        @Override
+        public PipelineHandler<InventoryEvent> create(YamlContext context) {
+            return new AntiSteal(context);
         }
 
-        public YamlContext save() {
-            YamlContext context = new YamlContext(new YamlConfiguration());
-
-            context.set("enable", enable);
-            context.set("cooldown", cooldown);
-            context.set("maxWarnings", maxWarnings);
-            context.set("interval", interval);
-            context.set("minIntervalToIgnore", minIntervalToIgnore);
-            context.set("command", command);
-            return context;
+        @Override
+        public HandlerRegistry.Type<InventoryEvent> getType() {
+            return HandlerRegistry.Type.CLICK;
         }
 
+        @Override
+        public @Nullable String addBefore() {
+            return "handler";
+        }
+
+        @Override
+        public @NotNull YamlContext saveDefault() {
+            return AntiSteal.saveDefault();
+        }
+
+        @Override
+        public @NotNull String name() {
+            return "anti_steal";
+        }
     }
 
     public static class ChestStealData {

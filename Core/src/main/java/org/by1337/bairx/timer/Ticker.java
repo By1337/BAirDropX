@@ -25,7 +25,7 @@ public class Ticker implements Timer, EventListener {
     private AirDrop current;
     private final HashSet<AirDrop> bypassed = new HashSet<>();
     private final HashSet<NameKey> lickedAirDrops = new HashSet<>();
-    private NameKey name;
+    private final NameKey name;
     private int tickSpeed;
     private TickType tickType;
 
@@ -121,30 +121,10 @@ public class Ticker implements Timer, EventListener {
     }
 
     @Override
-    public void linkAirDrop(AirDrop airDrop) {
-
-    }
-
-    @Override
-    public void unlinkAirDrop(AirDrop airDrop) {
-
-    }
-
-    @Override
-    public Collection<AirDrop> linkedAirDrops() {
-        return null;
-    }
-
-
-    @Override
     public TimerRegistry getType() {
         return TimerRegistry.TICKER;
     }
 
-    @Override
-    public void close() {
-
-    }
 
     private enum TickType {
         ALL,

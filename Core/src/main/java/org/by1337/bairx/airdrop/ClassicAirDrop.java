@@ -107,11 +107,20 @@ public class ClassicAirDrop extends Placeholder implements AirDrop {
             throw new IllegalArgumentException("Файл конфига отсутствует!");
         }
         if (!genSettingFile.exists()) {
-            throw new IllegalArgumentException("Файл настроек генератора отсутствует!");
+            generatorSetting = new GeneratorSetting();
+            generatorSetting.applyDefaultFlags();
+            genSettingFile.createNewFile();
+            YamlConfig config = new YamlConfig(genSettingFile);
+            config.set("setting", generatorSetting);
         }
 
         if (!invManagerCfgFile.exists()) {
-            throw new IllegalArgumentException("Файл настроек инвентаря отсутствует!");
+            inventoryManager = new InventoryManager(54, "&7AirDrop inventory");
+            invManagerCfgFile.createNewFile();
+            YamlConfig invCfg = new YamlConfig(invManagerCfgFile);
+            CompoundTag compoundTag1 = new CompoundTag();
+            inventoryManager.save(compoundTag1, invCfg);
+            invCfg.save(invManagerCfgFile);
         }
 
         YamlConfig gen = new YamlConfig(genSettingFile);
@@ -196,7 +205,6 @@ public class ClassicAirDrop extends Placeholder implements AirDrop {
 
     public void close() {
         inventoryManager.close();
-
     }
 
     public void trySave() {

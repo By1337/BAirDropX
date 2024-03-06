@@ -1,7 +1,7 @@
 package org.by1337.bairx.inventory;
 
 import org.bukkit.Bukkit;
-import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
@@ -14,13 +14,12 @@ import org.by1337.bairx.BAirDropX;
 import org.by1337.bairx.inventory.pipeline.ItemHandler;
 import org.by1337.bairx.inventory.pipeline.PipelineHandler;
 import org.by1337.bairx.inventory.pipeline.PipelineManager;
-import org.by1337.bairx.inventory.pipeline.SmoothAddItemHandler;
-import org.by1337.bairx.inventory.pipeline.click.AntiSteal;
+import org.by1337.bairx.inventory.pipeline.click.ClickHandler;
 import org.by1337.bairx.nbt.NBT;
 import org.by1337.bairx.nbt.impl.CompoundTag;
 import org.by1337.bairx.nbt.impl.ListNBT;
+import org.by1337.blib.configuration.YamlConfig;
 import org.by1337.blib.configuration.YamlContext;
-import org.by1337.blib.util.Pair;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -34,9 +33,8 @@ public class InventoryManager implements PipelineHandler<ItemStack>, Listener {
     private int invSize;
     private String invName;
     private Inventory inventory;
-    private AntiSteal.Config antiStealCfg;
-    private SmoothAddItemHandler.Config smoothAddItemCfg;
     private int emptySlotChance;
+    private Map<HandlerCreator<?>, PipelineHandler<?>> loadedExtensions = new HashMap<>();
 
     public InventoryManager(int invSize, String invName) {
         this(invSize, invSize, invName, 0);
@@ -48,21 +46,19 @@ public class InventoryManager implements PipelineHandler<ItemStack>, Listener {
         this.invSize = invSize;
         this.invName = invName;
         inventory = Bukkit.createInventory(null, invSize, BAirDropX.getMessage().messageBuilder(invName));
-        antiStealCfg = new AntiSteal.Config();
-        smoothAddItemCfg = new SmoothAddItemHandler.Config();
         rebuildPipeline();
         reloadExtensions();
         Bukkit.getPluginManager().registerEvents(this, BAirDropX.getInstance());
     }
 
-    public static InventoryManager load(@Nullable CompoundTag compoundTag, YamlContext cfg) {
+    public static InventoryManager load(@Nullable CompoundTag compoundTag, YamlConfig cfg) {
         int genItemCount = cfg.getAsInteger("genItemCount");
         int invSize = cfg.getAsInteger("invSize");
         int emptySlotChance = cfg.getAsInteger("emptySlotChance");
         String invName = cfg.getAsString("invName");
 
         InventoryManager manager = new InventoryManager(genItemCount, invSize, invName, emptySlotChance);
-        if (compoundTag!= null){
+        if (compoundTag != null) {
             ListNBT listNBT = (ListNBT) compoundTag.getOrThrow("items");
             List<InventoryItem> items = new ArrayList<>();
             for (NBT nbt : listNBT) {
@@ -72,15 +68,59 @@ public class InventoryManager implements PipelineHandler<ItemStack>, Listener {
         }
 
         manager.sortItems();
-        manager.antiStealCfg.load(cfg.getAs("extensions.anti-steal", YamlContext.class, new YamlContext(new YamlConfiguration())));
-        manager.smoothAddItemCfg.load(cfg.getAs("extensions.smooth-add-item", YamlContext.class, new YamlContext(new YamlConfiguration())));
+
+        Map<String, YamlContext> extensionMap = cfg.getMap("extensions", YamlContext.class, new HashMap<>());
+        for (Map.Entry<String, YamlContext> entry : extensionMap.entrySet()) {
+            YamlContext context = entry.getValue();
+            boolean enable = context.getAsBoolean("enable");
+            String name = context.getAsString("name");
+            if (enable) {
+                var registry = HandlerRegistry.getByName(name);
+                if (registry == null) {
+                    BAirDropX.getMessage().warning("Не найдено расширение для инвентаря под именем '%s'", name);
+                    continue;
+                }
+                var handler = registry.getCreator().create(context);
+                manager.loadedExtensions.put(registry.getCreator(), handler);
+            }
+        }
+        if (extensionMap.size() != HandlerRegistry.size()) {
+            for (Map.Entry<String, HandlerRegistry> entry : HandlerRegistry.entrySet()) {
+                if (!extensionMap.containsKey(entry.getKey())) {
+                    var context = entry.getValue().getCreator().saveDefault();
+                    context.set("enable", false);
+                    context.set("name", entry.getValue().getCreator().name());
+                    cfg.set("extensions." + entry.getKey(), context);
+                }
+            }
+            cfg.trySave();
+        }
         manager.reloadExtensions();
         return manager;
     }
 
     public void save(CompoundTag compoundTag, YamlContext cfg) {
-        cfg.set("extensions.anti-steal", antiStealCfg.save());
-        cfg.set("extensions.smooth-add-item", smoothAddItemCfg.save());
+        Map<String, YamlContext> contextMap = new HashMap<>();
+        for (Map.Entry<HandlerCreator<?>, PipelineHandler<?>> extension : loadedExtensions.entrySet()) {
+            YamlContext context;
+            if (extension.getValue() instanceof Saveable saveable) {
+                context = saveable.save();
+            } else {
+                context = extension.getKey().saveDefault();
+            }
+            context.set("enable", true);
+            context.set("name", extension.getKey().name());
+            contextMap.put(extension.getKey().name(), context);
+        }
+        for (Map.Entry<String, HandlerRegistry> entry : HandlerRegistry.entrySet()) {
+            if (!contextMap.containsKey(entry.getKey())) {
+                YamlContext context = entry.getValue().getCreator().saveDefault();
+                context.set("enable", false);
+                context.set("name", entry.getValue().getCreator().name());
+                contextMap.put(entry.getKey(), context);
+            }
+        }
+        cfg.set("extensions", contextMap);
         cfg.set("genItemCount", genItemCount);
         cfg.set("invSize", invSize);
         cfg.set("invName", invName);
@@ -104,12 +144,13 @@ public class InventoryManager implements PipelineHandler<ItemStack>, Listener {
 
     public void release() {
         inventory.clear();
-        if (clickPipeline != null) {
-            for (Pair<String, PipelineHandler<InventoryEvent>> handler : clickPipeline.getHandlers()) {
-                if (handler.getRight() instanceof AntiSteal antiSteal) {
-                    antiSteal.getChestStealDataMap().clear();
-                }
+        for (PipelineHandler<?> value : loadedExtensions.values()) {
+            if (value instanceof Releasable releasable){
+                releasable.release();
             }
+        }
+        for (HumanEntity viewer : inventory.getViewers().toArray(new HumanEntity[0])) {
+            viewer.closeInventory();
         }
     }
 
@@ -119,24 +160,40 @@ public class InventoryManager implements PipelineHandler<ItemStack>, Listener {
     }
 
     public void reloadExtensions() {
-        clickPipeline = new PipelineManager<>();
-        if (antiStealCfg.enable) {
-            clickPipeline.add("anti-steal", new AntiSteal(antiStealCfg));
-        }
-        if (smoothAddItemCfg.enable) {
-            pipeline.addBefore(
-                    "handler",
-                    "smooth_add_item",
-                    new SmoothAddItemHandler(random, smoothAddItemCfg)
-            );
-        }
+        loadedExtensions.forEach((k, v) -> {
+            if (k.getType() == HandlerRegistry.Type.ITEM) {
+                String before = k.addBefore();
+                before = before == null ? "handler" : before;
+                pipeline.addBefore(
+                        before,
+                        k.name(),
+                        (PipelineHandler<ItemStack>) v
+                );
+            } else {
+                String before = k.addBefore();
+                if (before != null) {
+                    clickPipeline.addBefore(
+                            before,
+                            k.name(),
+                            (PipelineHandler<InventoryEvent>) v
+                    );
+                } else {
+                    clickPipeline.add(
+                            k.name(),
+                            (PipelineHandler<InventoryEvent>) v
+                    );
+                }
+            }
+        });
     }
 
     public void rebuildPipeline() {
+        clickPipeline = new PipelineManager<>();
         pipeline = new PipelineManager<>();
         pipeline
                 .add("generator", this)
                 .add("handler", new ItemHandler(inventory, random));
+        clickPipeline.add("handler", new ClickHandler());
 
     }
 

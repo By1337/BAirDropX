@@ -9,8 +9,10 @@ timers:
     licked-airdrops:
       default: '100' # <airdrop id>: 'extra' extra - это дополнительная информация. При типе by_chance в extra указывается шанс того что этот аирдроп будет тикать. при all можно ничего не указывать
 
+### ПОКА НЕ РАБОТАЕТ
 #  timer-2:
 #    name: timer-2
+#    time-zone: 'Europe/Moscow'
 #    tick-speed: 20 # Один тик аирдропа каждые 20 тиков сервера (раз в секунду)
 #    type: waiter # тип ожидающий, запускает таймер аирдропов по времени
 #    licked-airdrops:
