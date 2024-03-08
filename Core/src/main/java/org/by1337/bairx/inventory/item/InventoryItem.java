@@ -1,16 +1,17 @@
-package org.by1337.bairx.inventory;
+package org.by1337.bairx.inventory.item;
 
 import org.bukkit.inventory.ItemStack;
 import org.by1337.bairx.exception.ConfigurationReadException;
 import org.by1337.bairx.nbt.impl.CompoundTag;
 import org.by1337.bairx.nbt.nms.ParseCompoundTagManager;
+import org.by1337.bairx.random.WeightedItem;
 import org.by1337.bairx.util.Placeholder;
 import org.by1337.bairx.util.Validate;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Random;
 
-public class InventoryItem extends Placeholder {
+public class InventoryItem extends Placeholder implements WeightedItem {
     private final ItemStack itemStack;
     private int chance;
     private boolean randomAmount;
@@ -111,4 +112,8 @@ public class InventoryItem extends Placeholder {
         this.maxAmount = Math.max(1, Math.min(maxAmount, itemStack.getMaxStackSize()));
     }
 
+    @Override
+    public int getWeight() {
+        return getChance();
+    }
 }

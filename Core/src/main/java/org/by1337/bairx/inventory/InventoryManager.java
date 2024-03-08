@@ -11,6 +11,7 @@ import org.bukkit.event.inventory.InventoryEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.by1337.bairx.BAirDropX;
+import org.by1337.bairx.inventory.item.InventoryItem;
 import org.by1337.bairx.inventory.pipeline.ItemHandler;
 import org.by1337.bairx.inventory.pipeline.PipelineHandler;
 import org.by1337.bairx.inventory.pipeline.PipelineManager;
@@ -18,6 +19,7 @@ import org.by1337.bairx.inventory.pipeline.click.ClickHandler;
 import org.by1337.bairx.nbt.NBT;
 import org.by1337.bairx.nbt.impl.CompoundTag;
 import org.by1337.bairx.nbt.impl.ListNBT;
+import org.by1337.bairx.random.WeightedRandomItemSelector;
 import org.by1337.blib.configuration.YamlConfig;
 import org.by1337.blib.configuration.YamlContext;
 import org.jetbrains.annotations.Nullable;
@@ -35,6 +37,7 @@ public class InventoryManager implements PipelineHandler<ItemStack>, Listener {
     private Inventory inventory;
     private int emptySlotChance;
     private Map<HandlerCreator<?>, PipelineHandler<?>> loadedExtensions = new HashMap<>();
+    private WeightedRandomItemSelector<InventoryItem> randomItemSelector;
 
     public InventoryManager(int invSize, String invName) {
         this(invSize, invSize, invName, 0);
@@ -139,11 +142,12 @@ public class InventoryManager implements PipelineHandler<ItemStack>, Listener {
     }
 
     public void generateItems() {
-        process(null, pipeline);
+        pipeline.processFirst(null);
     }
 
     public void release() {
         inventory.clear();
+        randomItemSelector = null;
         for (PipelineHandler<?> value : loadedExtensions.values()) {
             if (value instanceof Releasable releasable){
                 releasable.release();
@@ -199,14 +203,14 @@ public class InventoryManager implements PipelineHandler<ItemStack>, Listener {
 
     @Override
     public void process(@Nullable ItemStack val, PipelineManager<ItemStack> manager) {
+        if (randomItemSelector == null){
+            randomItemSelector = new WeightedRandomItemSelector<>(items, random);
+        }
         for (int i = 0; i < genItemCount; i++) {
             if (random.nextInt(100) < emptySlotChance) continue;
-            for (InventoryItem inventoryItem : items) {
-                ItemStack item = inventoryItem.getItemStack(random);
-                if (item != null) {
-                    manager.processNext(item, this);
-                    break;
-                }
+            var item = randomItemSelector.getRandomItem();
+            if (item != null){
+                manager.processNext(item.getItemStack(), this);
             }
         }
     }

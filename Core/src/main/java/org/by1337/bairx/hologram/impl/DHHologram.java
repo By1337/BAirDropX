@@ -9,6 +9,7 @@ import org.by1337.bairx.hologram.Hologram;
 import org.by1337.bairx.util.Validate;
 import org.by1337.blib.chat.Placeholderable;
 import org.by1337.blib.configuration.YamlContext;
+import org.by1337.blib.util.SpacedNameKey;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,11 +33,11 @@ public class DHHologram implements Hologram {
     public void load(YamlContext context) {
         lines = context.getList("lines", String.class);
         offsets = context.getAs("offsets", Vector.class);
-        name = this.getClass().getSimpleName() + "-id:" + counter.getAndIncrement();
     }
 
     @Override
-    public void spawn(Location location, Placeholderable placeholderable) {
+    public void spawn(Location location, Placeholderable placeholderable, SpacedNameKey name0) {
+        name = name0.getSpace().getName() + "_" + name0.getName().getName();
         if (!canUse){
             return;
         }

@@ -50,10 +50,7 @@ import org.by1337.bairx.util.FileUtil;
 import org.by1337.blib.chat.util.Message;
 import org.by1337.blib.command.Command;
 import org.by1337.blib.command.CommandException;
-import org.by1337.blib.command.argument.ArgumentPosition;
-import org.by1337.blib.command.argument.ArgumentSetList;
-import org.by1337.blib.command.argument.ArgumentValidCharacters;
-import org.by1337.blib.command.argument.ArgumentWorld;
+import org.by1337.blib.command.argument.*;
 import org.by1337.blib.command.requires.RequiresPermission;
 import org.by1337.blib.configuration.YamlConfig;
 import org.by1337.blib.configuration.adapter.AdapterRegistry;
@@ -133,7 +130,7 @@ public final class BAirDropX extends JavaPlugin {
 
     private void tick() {
         timerManager.tick(currentTick);
-        if (currentTick % 10 == 0) {
+        if (currentTick % 20 == 0) {
             airDropMap.values().stream().filter(AirDrop::isUseDefaultTimer).forEach(AirDrop::tick);
         }
         currentTick++;
@@ -259,6 +256,41 @@ public final class BAirDropX extends JavaPlugin {
                     airDrop.forceStop();
                 }))
         );
+//        command.addSubCommand(new Command<CommandSender>("clone")
+//                .requires(new RequiresPermission<>("bair.clone"))
+//                .argument(new ArgumentSetList<>("air", () -> airDropMap.values().stream().map(air -> air.getId().getName()).toList()))
+//                .argument(new ArgumentString<>("id"))
+//                .executor(((sender, args) -> {
+//                    AirDrop airDrop = airDropMap.get(new NameKey((String) args.getOrThrow("air", "&c/bairx stop <id>")));
+//                    String id0 = (String) args.getOrThrow("id", "&c/bairx <air> <id>");
+//                    NameKey id = new NameKey(id0);
+//                    if (airDropMap.containsKey(id)){
+//                        message.sendMsg(sender, "&cАирдроп с id '%s' уже существует");
+//                        return;
+//                    }
+//                    AirDrop mirror = airDrop.createMirror(id);
+//                    airDropMap.put(id, mirror);
+//                }))
+//        );
+        command.addSubCommand(new Command<CommandSender>("tp")
+                .requires(new RequiresPermission<>("bair.tp"))
+                .requires(sender -> sender instanceof Player)
+                .argument(new ArgumentSetList<>("air", () -> airDropMap.values().stream().map(air -> air.getId().getName()).toList()))
+                .executor(((sender, args) -> {
+                    AirDrop airDrop = airDropMap.get(new NameKey((String) args.getOrThrow("air", "&c/bairx tp <id>")));
+                    if (airDrop.getLocation() == null) {
+                        message.sendMsg(sender, "&cАирдроп ещё не нашёл локацию для спавна!");
+                        return;
+                    }
+                    Player player = (Player) sender;
+                    if (airDrop.isStarted()) {
+                        player.teleport(airDrop.getLocation());
+                    } else {
+                        player.teleport(airDrop.getLocation());
+                        message.sendMsg(sender, "&cАирдроп пока не появился, но он должен появиться здесь.");
+                    }
+                }))
+        );
         command.addSubCommand(new Command<CommandSender>("effect")
                 .requires(new RequiresPermission<>("bair.effect"))
                 .addSubCommand(new Command<CommandSender>("start")
@@ -266,7 +298,7 @@ public final class BAirDropX extends JavaPlugin {
                         .requires((sender -> sender instanceof Player))
                         .argument(new ArgumentSetList<>("effect", () -> EffectLoader.keys().stream().toList()))
                         .executor(((sender, args) -> {
-                            String effectS = (String) args.getOrThrow("effect", "Укажите effect");
+                            String effectS = (String) args.getOrThrow("effect", "Укажите эффект");
                             EffectCreator creator = EffectLoader.getByName(effectS);
                             Effect effect = creator.create();
                             effect.start(((Player) sender).getLocation());
@@ -274,7 +306,9 @@ public final class BAirDropX extends JavaPlugin {
                 )
         );
         command.addSubCommand(new Command<CommandSender>("addons")
+                .requires(new RequiresPermission<>("bair.addons"))
                 .addSubCommand(new Command<CommandSender>("list")
+                        .requires(new RequiresPermission<>("bair.addons.list"))
                         .executor(((sender, args) -> {
                             message.sendMsg(sender, addonLoader.getAddonList());
                         }))
@@ -289,6 +323,7 @@ public final class BAirDropX extends JavaPlugin {
                         }))
                 )
                 .addSubCommand(new Command<CommandSender>("load")
+                        .requires(new RequiresPermission<>("bair.addons.load"))
                         .argument(new ArgumentSetList<>("file", () -> {
                             List<File> files = FileUtil.findFiles(addonLoader.getDir(), f -> f.getName().endsWith(".jar"));
                             List<String> names = new ArrayList<>();

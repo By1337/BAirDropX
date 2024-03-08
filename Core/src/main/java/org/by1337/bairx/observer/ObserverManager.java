@@ -49,47 +49,51 @@ public class ObserverManager {
     }
 
     public void invoke(@Nullable NameKey space, @NotNull NameKey listener, @NotNull Event event, boolean ignoreType) {
-        if (space != null) {
-            var loader = loaders.get(space);
-            if (loader == null) {
-                BAirDropX.getMessage().error("unknown listener loader! " + space.getName());
-                return;
-            }
-            var observer = loader.getByName(listener);
-            if (observer == null) {
-                BAirDropX.getMessage().error("unknown listener! " + listener.getName());
-                return;
-            }
-            if (observer.getEventType().equals(event.getEventType()) || ignoreType) {
-                observer.update(event);
-            }
-        } else {
-            Map<NameKey, Observer> observerMap = new HashMap<>();
-            for (Map.Entry<NameKey, ObserverLoader> entry : loaders.entrySet()) {
-                var observer = entry.getValue().getByName(listener);
-                if (observer != null) {
-                    observerMap.put(entry.getKey(), observer);
-                }
-            }
+       try {
+           if (space != null) {
+               var loader = loaders.get(space);
+               if (loader == null) {
+                   BAirDropX.getMessage().error("unknown listener loader! " + space.getName());
+                   return;
+               }
+               var observer = loader.getByName(listener);
+               if (observer == null) {
+                   BAirDropX.getMessage().error("unknown listener! " + listener.getName());
+                   return;
+               }
+               if (observer.getEventType().equals(event.getEventType()) || ignoreType) {
+                   observer.update(event);
+               }
+           } else {
+               Map<NameKey, Observer> observerMap = new HashMap<>();
+               for (Map.Entry<NameKey, ObserverLoader> entry : loaders.entrySet()) {
+                   var observer = entry.getValue().getByName(listener);
+                   if (observer != null) {
+                       observerMap.put(entry.getKey(), observer);
+                   }
+               }
 
-            if (observerMap.isEmpty()) {
-                BAirDropX.getMessage().error("unknown listener! " + listener.getName());
-            } else if (observerMap.size() == 1) {
-                Observer observer = observerMap.values().iterator().next();
-                if (observer.getEventType().equals(event.getEventType()) || ignoreType) {
-                    observer.update(event);
-                }
+               if (observerMap.isEmpty()) {
+                   BAirDropX.getMessage().error("unknown listener! " + listener.getName());
+               } else if (observerMap.size() == 1) {
+                   Observer observer = observerMap.values().iterator().next();
+                   if (observer.getEventType().equals(event.getEventType()) || ignoreType) {
+                       observer.update(event);
+                   }
 
-            } else {
-                StringJoiner joiner = new StringJoiner(", ");
+               } else {
+                   StringJoiner joiner = new StringJoiner(", ");
 
-                for (Map.Entry<NameKey, Observer> entry : observerMap.entrySet()) {
-                    joiner.add(entry.getKey().getName() + ":" + listener.getName());
-                }
+                   for (Map.Entry<NameKey, Observer> entry : observerMap.entrySet()) {
+                       joiner.add(entry.getKey().getName() + ":" + listener.getName());
+                   }
 
-                BAirDropX.getMessage().error("Неоднозначный вызов слушателя %s! Все возможные варианты: [%s]", listener.getName(), joiner.toString());
-            }
-        }
+                   BAirDropX.getMessage().error("Неоднозначный вызов слушателя %s! Все возможные варианты: [%s]", listener.getName(), joiner.toString());
+               }
+           }
+       }catch (Exception e){
+           BAirDropX.getMessage().error(e);
+       }
     }
 
     public Map<NameKey, ObserverLoader> getLoaders() {

@@ -9,13 +9,12 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.by1337.bairx.BAirDropX;
 import org.by1337.bairx.airdrop.AirDrop;
+import org.by1337.bairx.inventory.item.InventoryItem;
 import org.by1337.bairx.menu.AsyncClickListener;
 import org.by1337.bairx.menu.ItemBuilder;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class MenuEditChance extends AsyncClickListener {
     private final int itemSlots = 45;

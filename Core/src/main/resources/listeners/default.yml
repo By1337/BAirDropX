@@ -52,7 +52,8 @@ listeners:
        - '[INV_MANAGER] [CLEAR_INVENTORY]'
        - '[REMOVE_REGION]'
        - '[EFFECT_STOP] newEffect'
-       - '[HOLOGRAM] [REMOVE] holo2'
+       - '[HOLOGRAM] [REMOVE] holo2 -ifexist'
+       - '[HOLOGRAM] [REMOVE] holo1 -ifexist' # если аир был стопнут до `open` ивента, то голограмма не holo1 не будет удалена, эта команда удалит эту голограмму если она существует
 
    start:
      description: '&fStart'

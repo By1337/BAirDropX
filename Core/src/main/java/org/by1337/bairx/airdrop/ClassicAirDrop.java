@@ -86,16 +86,17 @@ public class ClassicAirDrop extends Placeholder implements AirDrop {
             throw new RuntimeException(e);
         }
     }
+
     @Override
-    public AirDrop createMirror(NameKey id){
-       try {
-           ClassicAirDrop airDrop = new ClassicAirDrop(dataFolder, metaData);
-           airDrop.id = id;
-           airDrop.lockSave = true;
-           return airDrop;
-       } catch (IOException | InvalidConfigurationException e) {
-           throw new RuntimeException("Error while creating AirDrop mirror", e);
-       }
+    public AirDrop createMirror(NameKey id) {
+        try {
+            ClassicAirDrop airDrop = new ClassicAirDrop(dataFolder, metaData);
+            airDrop.id = id;
+            airDrop.lockSave = true;
+            return airDrop;
+        } catch (IOException | InvalidConfigurationException e) {
+            throw new RuntimeException("Error while creating AirDrop mirror", e);
+        }
     }
 
     private ClassicAirDrop(File dataFolder, AirDropMetaData metaData) throws IOException, InvalidConfigurationException {
@@ -325,18 +326,14 @@ public class ClassicAirDrop extends Placeholder implements AirDrop {
             BAirDropX.getMessage().sendMsg(sender, "&cПринудительный запуск отменён!");
             return;
         }
-        if (loc != null){
+        if (loc != null) {
             location = loc;
         }
         forceStartTask = new BukkitRunnable() {
             @Override
             public void run() {
                 if (location == null) {
-                    if (useStaticLoc) {
-                        location = new Location(world, staticLoc.getX(), staticLoc.getY(), staticLoc.getZ());
-                        return;
-                    }
-                    location = locationManager.generate();
+                    generateLocation0();
                 } else {
                     start();
                     cancel();
@@ -380,6 +377,12 @@ public class ClassicAirDrop extends Placeholder implements AirDrop {
     }
 
     private void start() {
+        if (location == null) {
+            BAirDropX.getMessage().warning("%s не успел найти локацию для спавна!", id.getName());
+            do {
+                generateLocation0();
+            } while (location == null);
+        }
         timeToStart = 0;
         started = true;
         location.getBlock().setType(materialWhenClosed);
@@ -405,17 +408,22 @@ public class ClassicAirDrop extends Placeholder implements AirDrop {
 
     private BukkitTask generateTask;
 
-    private void generateLocation() {
+    private void generateLocation0() {
         if (location != null) return;
         if (useStaticLoc) {
             location = new Location(world, staticLoc.getX(), staticLoc.getY(), staticLoc.getZ());
             return;
         }
+        location = locationManager.generate();
+
+    }
+
+    private void generateLocation() {
         if (generateTask == null) {
             generateTask = new BukkitRunnable() {
                 @Override
                 public void run() {
-                    location = locationManager.generate();
+                    generateLocation0();
                     generateTask = null;
                 }
             }.runTaskAsynchronously(BAirDropX.getInstance());
@@ -488,7 +496,7 @@ public class ClassicAirDrop extends Placeholder implements AirDrop {
 
     @Override
     public void addEffectAndStart(String id, Effect effect) {
-        if (loadedEffects.containsKey(id)){
+        if (loadedEffects.containsKey(id)) {
             throw new IllegalStateException("Эффект " + id + " уже загружен!");
         }
         effect.start(location);
@@ -503,6 +511,11 @@ public class ClassicAirDrop extends Placeholder implements AirDrop {
         } else {
             throw new IllegalStateException("Эффект " + id + " не был загружен!");
         }
+    }
+    @Override
+    public void stopAllEffects() {
+        loadedEffects.values().forEach(Effect::stop);
+        loadedEffects.clear();
     }
 
     @Override

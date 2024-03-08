@@ -21,21 +21,39 @@ import java.util.Set;
 
 public interface AirDrop extends Placeholderable {
     World getWorld();
+
     void tick();
+
     Set<SpacedNameKey> getSignedListeners();
+
     boolean isStarted();
+
     NameKey getId();
+
     boolean isUseDefaultTimer();
+
     Location getLocation();
+
     InventoryManager getInventoryManager();
+
     void callEvent(@NotNull Event event);
+
     void callEvent(@Nullable Player player, EventType eventType);
+
     void save() throws IOException, InvalidConfigurationException;
+
     void trySave();
+
     void forceStart(CommandSender sender, @Nullable Location location);
+
     void forceStop();
+
     GeneratorSetting getGeneratorSetting();
+
     void addEffectAndStart(String id, Effect effect);
+
     void stopEffect(String id);
-    public AirDrop createMirror(NameKey id);
+    void stopAllEffects();
+    AirDrop createMirror(NameKey id);
+
 }

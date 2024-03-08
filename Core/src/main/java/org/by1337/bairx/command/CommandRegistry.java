@@ -243,6 +243,9 @@ public class CommandRegistry {
                     event.getAirDrop().addEffectAndStart(id, creator.create());
                 })
         );
+        registerCommand(new Command<Event>("[EFFECT_STOP_ALL]")
+                .executor((event, args) -> event.getAirDrop().stopAllEffects())
+        );
         registerCommand(new Command<Event>("[EFFECT_STOP]")
                 .argument(new ArgumentString<>("id"))
                 .executor((event, args) -> {
