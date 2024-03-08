@@ -35,7 +35,7 @@ public class SmoothAddItemHandler implements PipelineHandler<ItemStack>, Saveabl
             public void run() {
                 manager.processNext(val, SmoothAddItemHandler.this);
             }
-        }.runTaskLaterAsynchronously(BAirDropX.getInstance(), random.nextInt(insertTickMax - insertTickMin) + insertTickMin);
+        }.runTaskLater(BAirDropX.getInstance(), random.nextInt(insertTickMax - insertTickMin) + insertTickMin);
     }
 
     public void load(YamlContext context) {

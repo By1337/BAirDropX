@@ -36,7 +36,7 @@ public class ItemHandler implements PipelineHandler<ItemStack>, Releasable {
         if (emptySlots.isEmpty()){
             return 0;
         }
-        return emptySlots.get(random.nextInt(emptySlots.size()));
+        return emptySlots.remove(random.nextInt(emptySlots.size()));
     }
 
     @Override

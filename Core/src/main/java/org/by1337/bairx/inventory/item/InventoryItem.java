@@ -7,6 +7,7 @@ import org.by1337.bairx.nbt.nms.ParseCompoundTagManager;
 import org.by1337.bairx.random.WeightedItem;
 import org.by1337.bairx.util.Placeholder;
 import org.by1337.bairx.util.Validate;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Random;
@@ -68,11 +69,8 @@ public class InventoryItem extends Placeholder implements WeightedItem {
         return itemStack.clone();
     }
 
-    @Nullable
+    @NotNull
     public ItemStack getItemStack(Random random){
-        if (random.nextInt(100) > chance){
-            return null;
-        }
         if (randomAmount){
             var item = getItemStack();
             item.setAmount(Math.min(item.getType().getMaxStackSize(), random.nextInt(Math.max(1, maxAmount - minAmount)) + minAmount));

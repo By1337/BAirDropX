@@ -210,7 +210,7 @@ public class InventoryManager implements PipelineHandler<ItemStack>, Listener {
             if (random.nextInt(100) < emptySlotChance) continue;
             var item = randomItemSelector.getRandomItem();
             if (item != null){
-                manager.processNext(item.getItemStack(), this);
+                manager.processNext(item.getItemStack(random), this);
             }
         }
     }

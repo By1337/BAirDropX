@@ -8,6 +8,8 @@ import org.by1337.bairx.event.EventListener;
 import org.by1337.bairx.event.EventListenerManager;
 import org.by1337.bairx.event.EventType;
 import org.by1337.bairx.exception.PluginInitializationException;
+import org.by1337.bairx.random.WeightedItem;
+import org.by1337.bairx.random.WeightedRandomItemSelector;
 import org.by1337.bairx.timer.strategy.TimerRegistry;
 import org.by1337.bairx.util.Validate;
 import org.by1337.blib.configuration.YamlContext;
@@ -20,7 +22,7 @@ import java.util.*;
 
 public class Ticker implements Timer, EventListener {
     private static final Random random = new Random();
-    private final List<Pair<NameKey, Integer>> airdrops = new ArrayList<>();
+    private final List<WeightedAirDrop> airdrops = new ArrayList<>();
     @Nullable
     private AirDrop current;
     private final HashSet<AirDrop> bypassed = new HashSet<>();
@@ -28,6 +30,7 @@ public class Ticker implements Timer, EventListener {
     private final NameKey name;
     private int tickSpeed;
     private TickType tickType;
+    private final WeightedRandomItemSelector<WeightedAirDrop> randomAirdropSelector;
 
     public Ticker(YamlContext context) {
         name = Validate.notNull(context.getAsNameKey("name"), "Параметр `name` не указан!");
@@ -44,20 +47,17 @@ public class Ticker implements Timer, EventListener {
             Object value = entry.getValue();
             NameKey id = new NameKey(String.valueOf(key));
             if (tickType == TickType.ALL) {
-                airdrops.add(Pair.of(id, 100));
+                airdrops.add(new WeightedAirDrop(id, 100));
             } else {
-                airdrops.add(Pair.of(
-                        id,
-                        Validate.tryMap(value, (obj) -> Integer.parseInt(String.valueOf(obj)), "%s должен быть числом!", value)
-                ));
+                airdrops.add(new WeightedAirDrop(id,
+                        Validate.tryMap(value, (obj) -> Integer.parseInt(String.valueOf(obj)), "%s должен быть числом!", value)));
             }
             lickedAirDrops.add(id);
         }
-        airdrops.sort(Comparator.comparingInt(Pair::getValue));
-
         if (tickType == TickType.BY_CHANCE) {
             EventListenerManager.register(BAirDropX.getInstance(), this);
         }
+        randomAirdropSelector = new WeightedRandomItemSelector<>(airdrops);
     }
 
     @Override
@@ -75,14 +75,13 @@ public class Ticker implements Timer, EventListener {
     }
 
     private AirDrop nextAirDrop() {
-        for (Pair<NameKey, Integer> airdrop : airdrops) {
-            if (airdrop.getRight() >= random.nextInt(100)) {
-                var air = BAirDropX.getAirdropById(airdrop.getLeft());
-                if (air == null) {
-                    BAirDropX.getMessage().warning("Таймер %s не найден аирдроп %s", name, airdrop.getLeft());
-                } else if (!air.isStarted()) {
-                    return air;
-                }
+        var wair = randomAirdropSelector.getRandomItem();
+        if (wair != null) {
+            var air = BAirDropX.getAirdropById(wair.id);
+            if (air == null) {
+                BAirDropX.getMessage().warning("Таймер %s не найден аирдроп %s", name, wair.id);
+            } else if (!air.isStarted()) {
+                return air;
             }
         }
         return null;
@@ -129,5 +128,20 @@ public class Ticker implements Timer, EventListener {
     private enum TickType {
         ALL,
         BY_CHANCE
+    }
+
+    private class WeightedAirDrop implements WeightedItem {
+        private final NameKey id;
+        private final int chance;
+
+        public WeightedAirDrop(NameKey id, int chance) {
+            this.id = id;
+            this.chance = chance;
+        }
+
+        @Override
+        public int getWeight() {
+            return chance;
+        }
     }
 }
