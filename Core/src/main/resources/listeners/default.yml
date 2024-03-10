@@ -53,6 +53,7 @@ listeners:
        - '[REMOVE_REGION]'
        - '[EFFECT_STOP] newEffect'
        - '[HOLOGRAM] [REMOVE] holo2 -ifexist'
+       - '[HOLOGRAM] [REMOVE] holo3 -ifexist'
        - '[HOLOGRAM] [REMOVE] holo1 -ifexist' # если аир был стопнут до `open` ивента, то голограмма не holo1 не будет удалена, эта команда удалит эту голограмму если она существует
 
    start:
@@ -63,6 +64,7 @@ listeners:
        - '[MESSAGE_ALL] {air_name} Заспавнился!'
        - '[EFFECT_START] circle newEffect'
        - '[HOLOGRAM] [CREATE] hologramTimeToOpen holo1'
+       - '[HOLOGRAM] [REMOVE] holo3 -ifexist'
 
 
    holo1-updater:
@@ -84,3 +86,23 @@ listeners:
          input: '{opened}'
      commands:
        - '[HOLOGRAM] [UPDATE] holo2'
+
+   holo3-updater:
+     description: '&fHolo updater'
+     event: 'tick'
+     requirement:
+       check:
+         type: 'math'
+         input: '{summoned} && !{started}'
+     commands:
+       - '[HOLOGRAM] [UPDATE] holo3'
+
+   summoned:
+     description: '&fСлушает призыв аирдропа'
+     event: 'summoned'
+     commands:
+       - '[LOGG] summoned!'
+       - '[SET_MATERIAL] SOUL_CAMPFIRE'
+       - '[SET_REGION]'
+       - '[SET_TIME_TO_START] 30'
+       - '[HOLOGRAM] [CREATE] hologramTimeStart holo3'

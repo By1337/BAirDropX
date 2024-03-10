@@ -21,11 +21,14 @@ import org.by1337.bairx.nbt.NBTParser;
 import org.by1337.bairx.nbt.impl.CompoundTag;
 import org.by1337.bairx.nbt.impl.StringNBT;
 import org.by1337.bairx.nbt.io.ByteBuffer;
+import org.by1337.bairx.summon.Summoner;
 import org.by1337.bairx.util.Placeholder;
 import org.by1337.bairx.util.Validate;
+import org.by1337.blib.command.Command;
+import org.by1337.blib.command.CommandException;
+import org.by1337.blib.command.argument.ArgumentIntegerAllowedMath;
 import org.by1337.blib.configuration.YamlConfig;
 import org.by1337.blib.configuration.YamlContext;
-import org.by1337.blib.configuration.adapter.AdapterRegistry;
 import org.by1337.blib.util.NameKey;
 import org.by1337.blib.util.SpacedNameKey;
 import org.by1337.blib.world.BlockPosition;
@@ -37,7 +40,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.*;
 
-public class ClassicAirDrop extends Placeholder implements AirDrop {
+public class ClassicAirDrop extends Placeholder implements AirDrop, Summonable {
     public static final String TYPE = "classic";
     private NameKey id;
     private final File dataFolder;
@@ -70,6 +73,10 @@ public class ClassicAirDrop extends Placeholder implements AirDrop {
     private InventoryManager inventoryManager;
     private final Map<String, Effect> loadedEffects = new HashMap<>();
     private boolean lockSave;
+    private boolean summoned;
+    private String summonerName;
+    private boolean remove;
+    private Command<Event> command;
 
     public static AirDrop createNew(NameKey id, File dataFolder) {
         try {
@@ -93,6 +100,7 @@ public class ClassicAirDrop extends Placeholder implements AirDrop {
             ClassicAirDrop airDrop = new ClassicAirDrop(dataFolder, metaData);
             airDrop.id = id;
             airDrop.lockSave = true;
+            airDrop.remove = true;
             return airDrop;
         } catch (IOException | InvalidConfigurationException e) {
             throw new RuntimeException("Error while creating AirDrop mirror", e);
@@ -157,6 +165,7 @@ public class ClassicAirDrop extends Placeholder implements AirDrop {
         id = cfg.getAsNameKey("id");
         load(cfg);
         registerPlaceholders();
+        initCommand();
     }
 
     private ClassicAirDrop(NameKey id, File dataFolder) throws IOException, InvalidConfigurationException {
@@ -188,8 +197,8 @@ public class ClassicAirDrop extends Placeholder implements AirDrop {
         if (metaData.exists()) metaData.delete();
         metaData.createNewFile();
         Files.write(metaData.toPath(), buffer.toByteArray());
-
         save();
+        initCommand();
     }
 
     private void load(YamlContext context) {
@@ -396,6 +405,7 @@ public class ClassicAirDrop extends Placeholder implements AirDrop {
     }
 
     private void end() {
+        callEvent(null, EventType.END);
         started = false;
         opened = false;
         timeToStart = timeToStartConst;
@@ -403,7 +413,11 @@ public class ClassicAirDrop extends Placeholder implements AirDrop {
         timeToEnd = timeToEndConst;
         location.getBlock().setType(Material.AIR);
         location = null;
-        callEvent(null, EventType.END);
+        summoned = false;
+        summonerName = null;
+        if (remove) {
+            BAirDropX.unregisterAirDrop(id);
+        }
     }
 
     private BukkitTask generateTask;
@@ -488,6 +502,9 @@ public class ClassicAirDrop extends Placeholder implements AirDrop {
         registerPlaceholder("{clicked}", () -> opened);
         registerPlaceholder("{airdrop_type}", () -> TYPE);
         registerPlaceholder("{id}", id::getName);
+        registerPlaceholder("{summoned}", () -> summoned);
+        registerPlaceholder("{summoner_name}", () -> summonerName);
+        registerPlaceholder("{remove}", () -> remove);
 
         registerPlaceholder("{x}", () -> location == null ? "?" : location.getBlockX());
         registerPlaceholder("{y}", () -> location == null ? "?" : location.getBlockY());
@@ -512,6 +529,7 @@ public class ClassicAirDrop extends Placeholder implements AirDrop {
             throw new IllegalStateException("Эффект " + id + " не был загружен!");
         }
     }
+
     @Override
     public void stopAllEffects() {
         loadedEffects.values().forEach(Effect::stop);
@@ -555,5 +573,127 @@ public class ClassicAirDrop extends Placeholder implements AirDrop {
     @Override
     public GeneratorSetting getGeneratorSetting() {
         return generatorSetting;
+    }
+
+    @Override
+    public Summoner.Result canBeSummoned(@NotNull Player player, @NotNull Summoner summoner) {
+        if (!started || summoner.isSpawnMirror()) {
+            return new Summoner.Result(Summoner.ResultStatus.SUCCESSFULLY, null);
+        } else {
+            return new Summoner.Result(Summoner.ResultStatus.FAILED, "&cВы не можете призвать аирдроп так как он уже запущен!");
+        }
+    }
+
+    @Override
+    public void summon(@NotNull Player player, @Nullable Location location, @NotNull Summoner summoner) {
+        if (started) {
+            throw new IllegalStateException("Аирдроп не может быть вызван так как он уже запущен!");
+        }
+        summoned = true;
+        summonerName = player.getName();
+        if (summoner.isUsePlayerLoc())
+            this.location = location;
+    }
+
+    @Override
+    public void executeCustomCommand(Event event, String cmd) {
+        try {
+            command.process(event, cmd.split(" "));
+        } catch (CommandException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public boolean hasCommand(String command) {
+        return this.command.getSubcommands().containsKey(command);// todo aliases?
+    }
+
+    private void initCommand() {
+        command = new Command<>("air");
+        command.addSubCommand(new Command<Event>("[SET_TIME_TO_START]")
+                .argument(new ArgumentIntegerAllowedMath<>("time"))
+                .executor((pair, args) -> {
+                    timeToStart = (int) args.getOrThrow("time", "[SET_TIME_TO_START] <time>");
+                })
+        );
+        command.addSubCommand(new Command<Event>("[SET_TIME_TO_OPEN]")
+                .argument(new ArgumentIntegerAllowedMath<>("time"))
+                .executor((pair, args) -> {
+                    timeToOpen = (int) args.getOrThrow("time", "[SET_TIME_TO_OPEN] <time>");
+                })
+        );
+        command.addSubCommand(new Command<Event>("[SET_TIME_TO_END]")
+                .argument(new ArgumentIntegerAllowedMath<>("time"))
+                .executor((pair, args) -> {
+                    timeToEnd = (int) args.getOrThrow("time", "[SET_TIME_TO_END] <time>");
+                })
+        );
+        command.addSubCommand(new Command<Event>("[START]")
+                .executor((pair, args) -> {
+                    if (started) {
+                        throw new IllegalArgumentException("Аирдроп уже запущен!");
+                    }
+                    start();
+                })
+        );
+        command.addSubCommand(new Command<Event>("[UNLOCK]")
+                .executor((pair, args) -> {
+                    if (!started) {
+                        throw new IllegalArgumentException("Аирдроп не запущен!");
+                    }
+                    unlock();
+                })
+        );
+        command.addSubCommand(new Command<Event>("[STOP]")
+                .executor((pair, args) -> {
+                    if (!started) {
+                        throw new IllegalArgumentException("Аирдроп не запущен!");
+                    }
+                    end();
+                })
+        );
+        command.addSubCommand(new Command<Event>("[SET_LOC_X]")
+                .argument(new ArgumentIntegerAllowedMath<>("x"))
+                .executor((pair, args) -> {
+                    int x = (int) args.getOrThrow("x", "[SET_LOC_X] <x>");
+                    if (location == null) {
+                        location = new Location(world, 0, 0, 0);
+                    }
+                    location.setX(x);
+                })
+        );
+        command.addSubCommand(new Command<Event>("[SET_LOC_Y]")
+                .argument(new ArgumentIntegerAllowedMath<>("y"))
+                .executor((pair, args) -> {
+                    int y = (int) args.getOrThrow("y", "[SET_LOC_Y] <y>");
+                    if (location == null) {
+                        location = new Location(world, 0, 0, 0);
+                    }
+                    location.setY(y);
+                })
+        );
+        command.addSubCommand(new Command<Event>("[SET_LOC_Z]")
+                .argument(new ArgumentIntegerAllowedMath<>("z"))
+                .executor((pair, args) -> {
+                    int z = (int) args.getOrThrow("z", "[SET_LOC_Z] <z>");
+                    if (location == null) {
+                        location = new Location(world, 0, 0, 0);
+                    }
+                    location.setZ(z);
+                })
+        );
+
+    }
+
+    @Override
+    public boolean isSummoned() {
+        return summoned;
+    }
+
+    @Override
+    @Nullable
+    public String getSummonerName() {
+        return summonerName;
     }
 }

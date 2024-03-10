@@ -32,7 +32,7 @@ public class AirdropLoader {
                     AirDropMetaData metaData = AirDropMetaData.read(new ByteBuffer(Files.readAllBytes(meta.toPath())));
 
                     AirDrop airDrop = AirdropRegistry.byId(new NameKey(metaData.getType())).getCreator().load(f, metaData);
-                    BAirDropX.getAirDropMap().put(airDrop.getId(), airDrop);
+                    BAirDropX.registerAirDrop(airDrop);
 
                 } catch (IOException e) {
                     BAirDropX.getMessage().error("failed to load airdrop from %s", e, f.getPath());

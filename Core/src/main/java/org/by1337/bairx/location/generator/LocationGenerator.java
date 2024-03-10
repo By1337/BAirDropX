@@ -55,29 +55,7 @@ public abstract class LocationGenerator {
         return -1;
     }
 
-    protected boolean isRegionEmpty(BlockPosition radius, @NotNull Location location) {
-        try {
-            RegionContainer container = WorldGuard.getInstance().getPlatform().getRegionContainer();
-            RegionManager regions = container.get((BukkitAdapter.adapt(location.getWorld())));
 
-            Location point1 = new Location(location.getWorld(), location.getX() + radius.getX(), location.getY() + radius.getY(), location.getZ() + radius.getZ());
-            Location point2 = new Location(location.getWorld(), location.getX() - radius.getX(), location.getY() - radius.getY(), location.getZ() - radius.getZ());
-
-            ProtectedCuboidRegion region = new ProtectedCuboidRegion(UUID.randomUUID() + "_region",
-                    BlockVector3.at(point1.getX(), point1.getY(), point1.getZ()),
-                    BlockVector3.at(point2.getX(), point2.getY(), point2.getZ()));
-
-            Map<String, ProtectedRegion> rg = regions.getRegions();
-            List<ProtectedRegion> candidates = new ArrayList<>(rg.values());
-
-            List<ProtectedRegion> overlapping = region.getIntersectingRegions(candidates);
-
-            return overlapping.isEmpty();
-        } catch (Exception e) {
-            BAirDropX.getMessage().error(e);
-            return true;
-        }
-    }
     protected boolean hasBlock(Chunk chunk, BlockPosition blockPosition) {
         Material type = chunk.getBlock(blockPosition.getX(), blockPosition.getY(), blockPosition.getZ()).getType();
         return !setting.ignoreBlocks.contains(type);

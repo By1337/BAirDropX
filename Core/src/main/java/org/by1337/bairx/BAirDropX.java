@@ -15,6 +15,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;*/
 //import net.kyori.adventure.text.minimessage.MiniMessage;
 
+import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -44,6 +45,7 @@ import org.by1337.bairx.observer.Observer;
 import org.by1337.bairx.observer.ObserverManager;
 import org.by1337.bairx.observer.requirement.Requirement;
 import org.by1337.bairx.schematics.SchematicsLoader;
+import org.by1337.bairx.summon.SummonerManager;
 import org.by1337.bairx.timer.TimerManager;
 import org.by1337.bairx.util.ConfigUtil;
 import org.by1337.bairx.util.FileUtil;
@@ -74,6 +76,7 @@ public final class BAirDropX extends JavaPlugin {
     private Command<CommandSender> command;
     private final Map<NameKey, AirDrop> airDropMap = new HashMap<>();
     private AddonLoader addonLoader;
+    private YamlConfig cfg;
 
     @Override
     public void onLoad() {
@@ -106,8 +109,10 @@ public final class BAirDropX extends JavaPlugin {
             SchematicsLoader.load();
             HologramLoader.load();
             HologramManager.INSTANCE.registerCommands();
-
-            timerManager.load(new YamlConfig(new File(getDataFolder() + "/config.yml")));
+            cfg = new YamlConfig(new File(getDataFolder() + "/config.yml"));
+            SummonerManager.load();
+            SummonerManager.registerBAirCommands();
+            timerManager.load(cfg);
 
             AirdropLoader.load();
 
@@ -146,7 +151,6 @@ public final class BAirDropX extends JavaPlugin {
         for (AirDrop value : airDropMap.values()) {
             value.forceStop();
         }
-        //  PacketEvents.getAPI().terminate();
     }
 
     @Override
@@ -240,11 +244,11 @@ public final class BAirDropX extends JavaPlugin {
                         .argument(new ArgumentWorld<>("world"))
                         .executor(((sender, args) -> {
                             AirDrop airDrop = airDropMap.get(new NameKey((String) args.getOrThrow("air", "&c/bairx start at <id> <x> <y> <z> <?world>")));
-                            int x = ((Double) args.getOrThrow("x", "&c/bairx start at <id> <x> <y> <z> <?world>")).intValue();
-                            int y = ((Double) args.getOrThrow("y", "&c/bairx start at <id> <x> <y> <z> <?world>")).intValue();
-                            int z = ((Double) args.getOrThrow("z", "&c/bairx start at <id> <x> <y> <z> <?world>")).intValue();
+                            double x = ((Double) args.getOrThrow("x", "&c/bairx start at <id> <x> <y> <z> <?world>"));
+                            double y = ((Double) args.getOrThrow("y", "&c/bairx start at <id> <x> <y> <z> <?world>"));
+                            double z = ((Double) args.getOrThrow("z", "&c/bairx start at <id> <x> <y> <z> <?world>"));
                             World world = (World) args.getOrDefault("world", airDrop.getWorld());
-                            airDrop.forceStart(sender, new Location(world, x, y, z));
+                            airDrop.forceStart(sender, new Location(world, x, y, z).getBlock().getLocation());
                         }))
                 )
         );
@@ -356,6 +360,9 @@ public final class BAirDropX extends JavaPlugin {
         );
     }
 
+    public static void registerBAirCommand(Command<CommandSender> command) {
+        instance.command.addSubCommand(command);
+    }
 
     public static Message getMessage() {
         return instance.message;
@@ -365,8 +372,29 @@ public final class BAirDropX extends JavaPlugin {
         return instance;
     }
 
-    public static Map<NameKey, AirDrop> getAirDropMap() {
-        return instance.airDropMap;
+    public static Collection<AirDrop> airdrops() {
+        return instance.airDropMap.values();
+    }
+
+    public static Set<NameKey> allIdAirdrops() {
+        return instance.airDropMap.keySet();
+    }
+
+    public static void registerAirDrop(@NotNull AirDrop airDrop) {
+        if (instance.airDropMap.containsKey(airDrop.getId())) {
+            throw new IllegalStateException(String.format("Аирдроп с id %s уже есть!", airDrop.getId()));
+        }
+        instance.airDropMap.put(airDrop.getId(), airDrop);
+    }
+
+    public static YamlConfig getCfg() {
+        return instance.cfg;
+    }
+
+    @Nullable
+    @CanIgnoreReturnValue
+    public static AirDrop unregisterAirDrop(@NotNull NameKey airDrop) {
+        return instance.airDropMap.remove(airDrop);
     }
 
     public static void setInstance(BAirDropX instance) {

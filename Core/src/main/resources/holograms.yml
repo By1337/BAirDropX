@@ -20,3 +20,14 @@ holograms:
     lines:
       - '{air_name}'
       - '&aДо удаления: {time_to_end} секунд.'
+
+  timeToStart:
+    provider: DecentHolograms
+    name: hologramTimeStart
+    offsets:
+      x: 0.5
+      y: 2
+      z: 0.5
+    lines:
+      - '{air_name}'
+      - '&aДо появления: {time_to_start} секунд.'

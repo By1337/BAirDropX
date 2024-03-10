@@ -8,6 +8,7 @@ import org.by1337.bairx.event.EventListener;
 import org.by1337.bairx.event.EventListenerManager;
 import org.by1337.bairx.event.EventType;
 import org.by1337.bairx.exception.PluginInitializationException;
+import org.by1337.bairx.random.WeightedAirDrop;
 import org.by1337.bairx.random.WeightedItem;
 import org.by1337.bairx.random.WeightedRandomItemSelector;
 import org.by1337.bairx.timer.strategy.TimerRegistry;
@@ -77,9 +78,9 @@ public class Ticker implements Timer, EventListener {
     private AirDrop nextAirDrop() {
         var wair = randomAirdropSelector.getRandomItem();
         if (wair != null) {
-            var air = BAirDropX.getAirdropById(wair.id);
+            var air = BAirDropX.getAirdropById(wair.getId());
             if (air == null) {
-                BAirDropX.getMessage().warning("Таймер %s не найден аирдроп %s", name, wair.id);
+                BAirDropX.getMessage().warning("Таймер %s не найден аирдроп %s", name, wair.getChance());
             } else if (!air.isStarted()) {
                 return air;
             }
@@ -130,18 +131,4 @@ public class Ticker implements Timer, EventListener {
         BY_CHANCE
     }
 
-    private class WeightedAirDrop implements WeightedItem {
-        private final NameKey id;
-        private final int chance;
-
-        public WeightedAirDrop(NameKey id, int chance) {
-            this.id = id;
-            this.chance = chance;
-        }
-
-        @Override
-        public int getWeight() {
-            return chance;
-        }
-    }
 }

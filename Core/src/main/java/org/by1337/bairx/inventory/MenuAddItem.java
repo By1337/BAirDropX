@@ -36,9 +36,9 @@ public class MenuAddItem extends AsyncClickListener {
 
     private void generate() {
         inventory.clear();
-        inventory.setItem(45, new ItemBuilder().setMaterial(Material.ARROW).setName("&cНазад").setLore("").build());
-        inventory.setItem(53, new ItemBuilder().setMaterial(Material.ARROW).setName("&aВперёд").setLore("").build());
-        ItemStack gui = new ItemBuilder().setMaterial(Material.BLACK_STAINED_GLASS_PANE).setName(" ").setLore("").build();
+        inventory.setItem(45, new ItemBuilder().material(Material.ARROW).name("&cНазад").lore("").build());
+        inventory.setItem(53, new ItemBuilder().material(Material.ARROW).name("&aВперёд").lore("").build());
+        ItemStack gui = new ItemBuilder().material(Material.BLACK_STAINED_GLASS_PANE).name(" ").lore("").build();
         for (int i = 46; i < 53; i++) {
             inventory.setItem(i, gui);
         }

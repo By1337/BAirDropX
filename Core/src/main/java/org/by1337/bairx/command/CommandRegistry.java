@@ -1,6 +1,8 @@
 package org.by1337.bairx.command;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -18,13 +20,20 @@ import org.by1337.blib.command.CommandException;
 import org.by1337.blib.command.argument.*;
 import org.by1337.blib.util.NameKey;
 
+import java.util.Arrays;
+
 public class CommandRegistry {
 
     private static final Command<Event> commands;
 
     public static void run(Event event, String command) {
         try {
-            commands.process(event, command.split(" "));
+            String[] arr = command.split(" ");
+            if (event.getAirDrop().hasCommand(arr[0])) {
+                event.getAirDrop().executeCustomCommand(event, command);
+                return;
+            }
+            commands.process(event, arr);
         } catch (CommandException e) {
             throw new RuntimeException(e);
         }
@@ -143,10 +152,10 @@ public class CommandRegistry {
                 .executor((event, args) -> BAirDropX.getMessage().logger((String) args.getOrThrow("cmd", "Отсутствует сообщение!")))
         );
         registerCommand(new Command<Event>("[EXECUTE_AT]")
-                .argument(new ArgumentSetList<>("airdrop", () -> BAirDropX.getAirDropMap().keySet().stream().map(NameKey::getName).toList()))
+                .argument(new ArgumentSetList<>("airdrop", () -> BAirDropX.allIdAirdrops().stream().map(NameKey::getName).toList()))
                 .argument(new ArgumentStrings<>("cmd"))
                 .executor((event, args) -> {
-                    AirDrop airDrop = Validate.notNull(BAirDropX.getAirDropMap().get(new NameKey((String) args.getOrThrow("airdrop"))), "аирдроп не найден!");
+                    AirDrop airDrop = Validate.notNull(BAirDropX.getAirdropById(new NameKey((String) args.getOrThrow("airdrop"))), "аирдроп не найден!");
                     String cmd = (String) args.getOrThrow("cmd", "В команде не указана команда!");
                     run(event.getWithAirDrop(airDrop), cmd);
                 })
@@ -265,6 +274,28 @@ public class CommandRegistry {
                 .aliases("[SCHEM_UNDO]")
                 .executor((event, args) -> {
                     SchematicPaster.undo(event.getAirDrop());
+                })
+        );
+        registerCommand(new Command<Event>("[SET_MATERIAL]")
+                .argument(new ArgumentEnumValue<>("material", Material.class))
+                .argument(new ArgumentIntegerAllowedMath<>("x"))
+                .argument(new ArgumentIntegerAllowedMath<>("y"))
+                .argument(new ArgumentIntegerAllowedMath<>("z"))
+                .executor((event, args) -> {
+                    Material material = (Material) args.getOrThrow("material", "[SET_MATERIAL] <material> <?x> <?y> <?z>");
+                    int x = (int) args.getOrDefault("x", -999);
+                    int y = (int) args.getOrDefault("y", -999);
+                    int z = (int) args.getOrDefault("z", -999);
+
+                    var loc = Validate.notNull(event.getAirDrop().getLocation(), "Локация аирдропа ещё не определена!");
+                    if (x != -999)
+                        loc.setX(x);
+                    if (y != -999)
+                        loc.setY(y);
+                    if (z != -999)
+                        loc.setZ(z);
+                    loc.getBlock().setType(material);
+
                 })
         );
     }
