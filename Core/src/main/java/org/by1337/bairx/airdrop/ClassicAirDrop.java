@@ -21,6 +21,7 @@ import org.by1337.bairx.nbt.NBTParser;
 import org.by1337.bairx.nbt.impl.CompoundTag;
 import org.by1337.bairx.nbt.impl.StringNBT;
 import org.by1337.bairx.nbt.io.ByteBuffer;
+import org.by1337.bairx.random.RandomPlaceholders;
 import org.by1337.bairx.summon.Summoner;
 import org.by1337.bairx.util.Placeholder;
 import org.by1337.bairx.util.Validate;
@@ -77,6 +78,7 @@ public class ClassicAirDrop extends Placeholder implements AirDrop, Summonable {
     private String summonerName;
     private boolean remove;
     private Command<Event> command;
+    private boolean unloaded;
 
     public static AirDrop createNew(NameKey id, File dataFolder) {
         try {
@@ -153,7 +155,7 @@ public class ClassicAirDrop extends Placeholder implements AirDrop, Summonable {
         YamlConfig invCfg = new YamlConfig(invManagerCfgFile);
 
         if (invItemsFile.exists()) {
-            CompoundTag compoundTag1 = NBTParser.parse(Files.readString(invItemsFile.toPath()));
+            CompoundTag compoundTag1 = NBTParser.parseAsCompoundTag(Files.readString(invItemsFile.toPath()));
             inventoryManager = InventoryManager.load(compoundTag1, invCfg);
         } else {
             inventoryManager = InventoryManager.load(null, invCfg);
@@ -166,6 +168,7 @@ public class ClassicAirDrop extends Placeholder implements AirDrop, Summonable {
         load(cfg);
         registerPlaceholders();
         initCommand();
+        callEvent(null, EventType.LOAD);
     }
 
     private ClassicAirDrop(NameKey id, File dataFolder) throws IOException, InvalidConfigurationException {
@@ -199,6 +202,7 @@ public class ClassicAirDrop extends Placeholder implements AirDrop, Summonable {
         Files.write(metaData.toPath(), buffer.toByteArray());
         save();
         initCommand();
+        callEvent(null, EventType.LOAD);
     }
 
     private void load(YamlContext context) {
@@ -226,7 +230,9 @@ public class ClassicAirDrop extends Placeholder implements AirDrop, Summonable {
     }
 
     public void close() {
+        callEvent(null, EventType.UNLOAD);
         inventoryManager.close();
+        unloaded = true;
     }
 
     public void trySave() {
@@ -452,6 +458,10 @@ public class ClassicAirDrop extends Placeholder implements AirDrop, Summonable {
             } else {
                 callEvent(event.getAs(this, event.getPlayer(), EventType.CLICK_CLOSE));
             }
+            if (!clicked) {
+                clicked = true;
+                callEvent(event.getAs(this, event.getPlayer(), EventType.ACTIVATE));
+            }
         }
         EventListenerManager.call(event, this);
         for (SpacedNameKey listener : signedListeners) {
@@ -482,6 +492,7 @@ public class ClassicAirDrop extends Placeholder implements AirDrop, Summonable {
     }
 
     private void registerPlaceholders() {
+        registerPlaceholders(RandomPlaceholders.INSTANCE);
         registerPlaceholder("{world}", () -> world.getName());
         registerPlaceholder("{air_name}", () -> airName);
         registerPlaceholder("{time_to_start}", () -> timeToStart);
@@ -499,7 +510,7 @@ public class ClassicAirDrop extends Placeholder implements AirDrop, Summonable {
         registerPlaceholder("{enable}", () -> enable);
         registerPlaceholder("{started}", () -> started);
         registerPlaceholder("{opened}", () -> opened);
-        registerPlaceholder("{clicked}", () -> opened);
+        registerPlaceholder("{clicked}", () -> clicked);
         registerPlaceholder("{airdrop_type}", () -> TYPE);
         registerPlaceholder("{id}", id::getName);
         registerPlaceholder("{summoned}", () -> summoned);
@@ -695,5 +706,9 @@ public class ClassicAirDrop extends Placeholder implements AirDrop, Summonable {
     @Nullable
     public String getSummonerName() {
         return summonerName;
+    }
+
+    public boolean isUnloaded() {
+        return unloaded;
     }
 }

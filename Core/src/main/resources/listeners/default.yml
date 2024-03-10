@@ -62,7 +62,7 @@ listeners:
      commands:
        - '[SET_REGION]'
        - '[MESSAGE_ALL] {air_name} Заспавнился!'
-       - '[EFFECT_START] circle newEffect'
+       - '[EFFECT_START] expanding_circle newEffect'
        - '[HOLOGRAM] [CREATE] hologramTimeToOpen holo1'
        - '[HOLOGRAM] [REMOVE] holo3 -ifexist'
 

@@ -7,4 +7,5 @@ import org.jetbrains.annotations.NotNull;
 public interface Effect {
     void start(@NotNull Location location);
     void stop();
+    boolean isStopped();
 }

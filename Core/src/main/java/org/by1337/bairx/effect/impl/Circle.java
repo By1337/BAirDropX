@@ -24,17 +24,19 @@ public class Circle implements Effect {
     }
 
     @Override
-    public void stop(){
+    public void stop() {
         Validate.notNull(runnable, "Unable to stop the effect as it was never initiated!");
         runnable.cancel();
         runnable = null;
     }
+
     @Override
     public void start(@NotNull Location location) {
         Validate.notNull(location, "location is null!");
         Validate.notNull(location.getWorld(), "World is null!");
         runnable = new BukkitRunnable() {
             int x;
+
             @Override
             public void run() {
                 for (double i = 0; i <= Math.PI * 2; i += config.step) {
@@ -53,6 +55,11 @@ public class Circle implements Effect {
         } else {
             runnable.runTaskAsynchronously(BAirDropX.getInstance());
         }
+    }
+
+    @Override
+    public boolean isStopped() {
+        return runnable.isCancelled();
     }
 
 

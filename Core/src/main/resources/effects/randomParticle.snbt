@@ -1,0 +1,45 @@
+{
+    effect-type: "random_particle",
+    period: 2,
+    repeat: 'true',
+    count: 0,
+    name: "random_particle",
+    pos1: {
+        x: -10.0d,
+        y: -10.0d,
+        z: -10.0d
+    },
+    pos2: {
+        x: 10.0d,
+        y: 10.0d,
+        z: 10.0d
+    },
+    maxSpeed: 0.0f,
+    particles:  [
+        {
+            particle: "FLAME",
+            type: "default"
+        },
+        {
+            particle: "PORTAL",
+            type: "default"
+        },
+        {
+            particle: "FALLING_OBSIDIAN_TEAR",
+            type: "default"
+        },
+        {
+            particle: "SOUL_FIRE_FLAME",
+            type: "default"
+        },
+        {
+            particle: "ENCHANTMENT_TABLE",
+            type: "default"
+        },
+        {
+            particle: "TOTEM",
+            type: "default"
+        }
+    ],
+    repeatCount: 9999
+}

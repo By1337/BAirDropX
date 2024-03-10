@@ -84,43 +84,43 @@ public class CompoundTag extends NBT {
     public byte getAsByte(String name) {
         var v = get(name);
         if (v == null) throw new NullPointerException("unknown tag " + name);
-        return (byte) v.getAsObject();
+        return ((Number)v.getAsObject()).byteValue();
     }
 
     public boolean getAsBoolean(String name) {
         var v = get(name);
         if (v == null) throw new NullPointerException("unknown tag " + name);
-        return (byte) v.getAsObject() == 1;
+        return ((Number)v.getAsObject()).byteValue() == 1;
     }
 
     public double getAsDouble(String name) {
         var v = get(name);
         if (v == null) throw new NullPointerException("unknown tag " + name);
-        return (double) v.getAsObject();
+        return ((Number)v.getAsObject()).doubleValue();
     }
 
     public float getAsFloat(String name) {
         var v = get(name);
         if (v == null) throw new NullPointerException("unknown tag " + name);
-        return (float) v.getAsObject();
+        return ((Number)v.getAsObject()).floatValue();
     }
 
     public int getAsInt(String name) {
         var v = get(name);
         if (v == null) throw new NullPointerException("unknown tag " + name);
-        return (int) v.getAsObject();
+        return ((Number)v.getAsObject()).intValue();
     }
 
     public long getAsLong(String name) {
         var v = get(name);
         if (v == null) throw new NullPointerException("unknown tag " + name);
-        return (long) v.getAsObject();
+        return ((Number)v.getAsObject()).longValue();
     }
 
     public short getAsShort(String name) {
         var v = get(name);
         if (v == null) throw new NullPointerException("unknown tag " + name);
-        return (short) v.getAsObject();
+        return ((Number)v.getAsObject()).shortValue();
     }
 
     public String getAsString(String name) {

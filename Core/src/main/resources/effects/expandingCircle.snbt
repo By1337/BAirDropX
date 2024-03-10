@@ -1,0 +1,24 @@
+{
+    period: 5,
+    count: 0,
+    maxSpeed: 0.0f,
+    type: "XZ",
+    offsets.x: 0.5d,
+    offsets.y: 0.5d,
+    offsets.z: 0.5d,
+    endRadius: 5.0d,
+    effect-type: "expanding_circle",
+    velocity.y: 0.0d,
+    velocity.z: 0.0d,
+    repeat: 'true',
+    name: "expanding_circle",
+    step: 0.05d,
+    particle: {
+        particle: "FLAME",
+        type: "default"
+    },
+    stepRadius: 0.3d,
+    radius: 2.0d,
+    velocity.x: 0.0d,
+    repeatCount: 20
+}

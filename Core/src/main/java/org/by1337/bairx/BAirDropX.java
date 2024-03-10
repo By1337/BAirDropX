@@ -26,6 +26,7 @@ import org.by1337.bairx.addon.*;
 import org.by1337.bairx.airdrop.AirDrop;
 import org.by1337.bairx.airdrop.loader.AirdropLoader;
 import org.by1337.bairx.airdrop.loader.AirdropRegistry;
+import org.by1337.bairx.command.bair.EffectCommand;
 import org.by1337.bairx.config.adapter.AdapterGeneratorSetting;
 import org.by1337.bairx.config.adapter.AdapterObserver;
 import org.by1337.bairx.config.adapter.AdapterRequirement;
@@ -150,6 +151,7 @@ public final class BAirDropX extends JavaPlugin {
 
         for (AirDrop value : airDropMap.values()) {
             value.forceStop();
+            value.close();
         }
     }
 
@@ -295,20 +297,7 @@ public final class BAirDropX extends JavaPlugin {
                     }
                 }))
         );
-        command.addSubCommand(new Command<CommandSender>("effect")
-                .requires(new RequiresPermission<>("bair.effect"))
-                .addSubCommand(new Command<CommandSender>("start")
-                        .requires(new RequiresPermission<>("bair.effect.start"))
-                        .requires((sender -> sender instanceof Player))
-                        .argument(new ArgumentSetList<>("effect", () -> EffectLoader.keys().stream().toList()))
-                        .executor(((sender, args) -> {
-                            String effectS = (String) args.getOrThrow("effect", "Укажите эффект");
-                            EffectCreator creator = EffectLoader.getByName(effectS);
-                            Effect effect = creator.create();
-                            effect.start(((Player) sender).getLocation());
-                        }))
-                )
-        );
+        command.addSubCommand(new EffectCommand());
         command.addSubCommand(new Command<CommandSender>("addons")
                 .requires(new RequiresPermission<>("bair.addons"))
                 .addSubCommand(new Command<CommandSender>("list")
@@ -394,7 +383,9 @@ public final class BAirDropX extends JavaPlugin {
     @Nullable
     @CanIgnoreReturnValue
     public static AirDrop unregisterAirDrop(@NotNull NameKey airDrop) {
-        return instance.airDropMap.remove(airDrop);
+        var air = instance.airDropMap.remove(airDrop);
+        if (air != null && !air.isUnloaded()) air.close();
+        return air;
     }
 
     public static void setInstance(BAirDropX instance) {

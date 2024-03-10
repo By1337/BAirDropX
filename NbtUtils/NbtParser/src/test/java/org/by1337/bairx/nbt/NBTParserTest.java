@@ -1,7 +1,5 @@
 package org.by1337.bairx.nbt;
 
-import org.by1337.bairx.nbt.NBT;
-import org.by1337.bairx.nbt.NBTParser;
 import org.by1337.bairx.nbt.impl.CompoundTag;
 import org.by1337.bairx.nbt.impl.ListNBT;
 import org.by1337.bairx.nbt.impl.LongArrNBT;
@@ -306,12 +304,19 @@ public class NBTParserTest {
 
 
     @Test
+    public void parseDecimalNumber() {
+        String number = "3.1415926";
+        NBT nbt1 = NBTParser.parseNBT(number);
+        System.out.println(nbt1);
+    }
+
+    @Test
     public void parseTest() {
-        CompoundTag compoundTag = NBTParser.parse(nbt);
+        CompoundTag compoundTag = NBTParser.parseAsCompoundTag(nbt);
 
         Assert.assertEquals(compoundTag.toStringBeautifier(0), nbtBeautifiered);
 
-        assertEquals(compoundTag, NBTParser.parse(nbtBeautifiered));
+        assertEquals(compoundTag, NBTParser.parseAsCompoundTag(nbtBeautifiered));
 
         LongArrNBT longArrNBT = (LongArrNBT) NBTParser.parseList("""
                 [\t\t\t\tL\t\t\t\t;\t\t

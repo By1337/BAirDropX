@@ -11,6 +11,11 @@ public class RedStoneParticle implements SpawnableParticle {
     private final Particle particle;
     private final Particle.DustOptions options;
 
+    public RedStoneParticle(Particle particle, Particle.DustOptions options) {
+        this.particle = particle;
+        this.options = options;
+    }
+
     public RedStoneParticle(CompoundTag compoundTag) {
         particle = Validate.invokeAndHandleException(
                 () -> Particle.valueOf(compoundTag.getAsString("particle")),

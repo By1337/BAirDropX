@@ -4,12 +4,21 @@ import org.by1337.bairx.nbt.io.ByteBuffer;
 
 public abstract class NBT {
     public abstract String toString();
+
     public abstract NbtType getType();
+
     public abstract String toStringBeautifier(int lvl);
+
+    public String toStringBeautifier() {
+        return toStringBeautifier(0);
+    }
+
     public abstract Object getAsObject();
-    public void write(ByteBuffer buffer){
+
+    public void write(ByteBuffer buffer) {
         getType().write(buffer, this);
     }
+
     public String quoteAndEscape(String raw) {
         StringBuilder var1 = new StringBuilder(" ");
         int var2 = 0;

@@ -1,0 +1,26 @@
+{
+    period: 15,
+    heightStep: 0.3d,
+    count: 0,
+    offsets.x: 0.5d,
+    offsets.y: 0.5d,
+    offsets.z: 0.5d,
+    maxSpeed: 0.0f,
+    type: "XZ",
+    effect-type: "helix",
+    velocity.y: 0.0d,
+    velocity.z: 0.0d,
+    repeat: 'true',
+    name: "helix",
+    step: 0.05d,
+    particle: {
+        size: 3.0f,
+        particle: "REDSTONE",
+        hex: "#ff0000",
+        type: "redstone"
+    },
+    radius: 2.0d,
+    velocity.x: 0.0d,
+    repeatCount: 20,
+    height: 20.0d
+}

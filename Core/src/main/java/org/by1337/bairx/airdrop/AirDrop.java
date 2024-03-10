@@ -41,4 +41,6 @@ public interface AirDrop extends Placeholderable {
     AirDrop createMirror(NameKey id);
     void executeCustomCommand(Event event,String cmd);
     boolean hasCommand(String command);
+    void close();
+    boolean isUnloaded();
 }

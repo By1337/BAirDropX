@@ -2,7 +2,6 @@ package org.by1337.bairx.nbt;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.nbt.*;
-import org.by1337.bairx.nbt.impl.ByteArrNBT;
 import org.by1337.bairx.nbt.impl.CompoundTag;
 import org.by1337.bairx.nbt.impl.ListNBT;
 import org.by1337.bairx.nbt.io.ByteBuffer;
@@ -19,13 +18,13 @@ public class NbtTypeTest {
     public void test() throws IOException {
         var nms = buildNmsCompoundTag();
         System.out.println(nms);
-        CompoundTag parsed = NBTParser.parse(nms.toString());
+        CompoundTag parsed = NBTParser.parseAsCompoundTag(nms.toString());
 
         var v = parsed.toStringBeautifier(0);
 
         System.out.println(v);
 
-        CompoundTag parsed1 = NBTParser.parse(v);
+        CompoundTag parsed1 = NBTParser.parseAsCompoundTag(v);
 
         assertEqualsCustom(parsed1, parsed);
 
@@ -40,7 +39,7 @@ public class NbtTypeTest {
 //            System.out.println(nms);
 //            return;
 //        }
-        CompoundTag parsed = NBTParser.parse(nms.toString());
+        CompoundTag parsed = NBTParser.parseAsCompoundTag(nms.toString());
 
         ByteBuffer buffer = new ByteBuffer();
         parsed.getType().write(buffer, parsed);

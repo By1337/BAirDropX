@@ -12,6 +12,9 @@ public abstract class Placeholder implements Placeholderable {
         placeholders.put(placeholder, supplier);
     }
 
+    public void registerPlaceholders(Placeholder placeholder) {
+        registerPlaceholders(placeholder.placeholders.entrySet());
+    }
     public void registerPlaceholders(Collection<Map.Entry<String, Supplier<Object>>> list) {
         for (var entry : list) {
             registerPlaceholder(entry.getKey(), entry.getValue());

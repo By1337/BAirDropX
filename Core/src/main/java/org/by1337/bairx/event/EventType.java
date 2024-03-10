@@ -21,6 +21,7 @@ public final class EventType {
     public static final EventType CLICK_OPEN = register("click_open");
     public static final EventType CLICK_CLOSE = register("click_close");
     public static final EventType SUMMONED = register("summoned");
+    public static final EventType ACTIVATE = register("activate");
 
     private EventType(String nameKey) {
         this(new NameKey(nameKey));

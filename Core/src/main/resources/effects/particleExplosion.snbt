@@ -1,0 +1,17 @@
+{
+    effect-type: "particle_explosion",
+    period: 0,
+    repeat: 'false',
+    offsets.x: 0.5d,
+    count: 300,
+    name: "particle_explosion",
+    offsets.y: 1.5d,
+    particle: {
+        particle: "SOUL",
+        type: "default"
+    },
+    maxSpeed: 0.15f,
+    radius: 0.1d,
+    offsets.z: 0.5d,
+    repeatCount: 0
+}

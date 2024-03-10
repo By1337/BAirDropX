@@ -1,6 +1,6 @@
 package org.by1337.bairx.effect;
 
-import org.by1337.bairx.effect.impl.Circle;
+import org.by1337.bairx.effect.impl.*;
 import org.by1337.bairx.nbt.impl.CompoundTag;
 import org.by1337.blib.util.NameKey;
 import org.jetbrains.annotations.Nullable;
@@ -12,6 +12,10 @@ public class EffectCreatorType {
     private final static Map<NameKey, EffectCreatorType> types = new HashMap<>();
 
     public static final EffectCreatorType CIRCLE = register(new NameKey("circle"), Circle.Config::new);
+    public static final EffectCreatorType EXPANDING_CIRCLE = register(new NameKey("expanding_circle"), ExpandingCircle.Config::new);
+    public static final EffectCreatorType HELIX = register(new NameKey("helix"), Helix.Config::new);
+    public static final EffectCreatorType PARTICLE_EXPLOSION = register(new NameKey("particle_explosion"), ParticleExplosion.Config::new);
+    public static final EffectCreatorType RANDOM_PARTICLE = register(new NameKey("random_particle"), RandomParticle.Config::new);
     private final NameKey id;
     private final EffectCfg creator;
 

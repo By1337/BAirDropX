@@ -36,6 +36,9 @@ public interface SpawnableParticle {
     default void spawnParticle(World world, Location location, int count, double offsetX, double offsetY, double offsetZ, double extra, boolean force) {
         spawnParticle(world, location.getX(), location.getY(), location.getZ(), count, offsetX, offsetY, offsetZ, extra, force);
     }
+    default void spawnParticle(World world, Location pos, int count, Vector offsets, double extra, boolean force) {
+        spawnParticle(world, pos.getX(), pos.getY(), pos.getZ(), count, offsets.getX(), offsets.getY(), offsets.getZ(), extra, force);
+    }
 
     default void spawnParticle(World world, Vector pos, int count, Vector offsets, double extra, boolean force) {
         spawnParticle(world, pos.getX(), pos.getY(), pos.getZ(), count, offsets.getX(), offsets.getY(), offsets.getZ(), extra, force);

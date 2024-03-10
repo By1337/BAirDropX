@@ -11,12 +11,12 @@ import java.util.List;
 
 public class NBTParser {
 
-    private static CompoundTag parse(File file) throws IOException {
+    private static CompoundTag parseAsCompoundTag(File file) throws IOException {
         byte[] encoded = Files.readAllBytes(file.toPath());
-        return parse(new String(encoded, StandardCharsets.UTF_8));
+        return parseAsCompoundTag(new String(encoded, StandardCharsets.UTF_8));
     }
 
-    public static CompoundTag parse(String raw) {
+    public static CompoundTag parseAsCompoundTag(String raw) {
         List<Lexeme> list = parseExp(raw);
 
         LexemeBuffer buffer = new LexemeBuffer(list);
@@ -90,6 +90,14 @@ public class NBTParser {
     public static NBT parseNBT(LexemeBuffer buffer) {
         Lexeme lexeme = buffer.next();
         LexemeType type = lexeme.type;
+        if (type == LexemeType.LIST_OPEN){
+            buffer.back();
+            return parseList(buffer);
+        }
+        if (type == LexemeType.STRUCT_OPEN){
+            buffer.back();
+            return parseCompoundTag(buffer);
+        }
         String val = lexeme.value;
         boolean isByte = false;
         if (type == LexemeType.STRING && (val.equals("true") || val.equals("false"))) {
