@@ -1,8 +1,8 @@
 package org.by1337.bairx.airdrop;
 
-import org.by1337.bairx.nbt.NbtType;
-import org.by1337.bairx.nbt.impl.CompoundTag;
-import org.by1337.bairx.nbt.io.ByteBuffer;
+import org.by1337.blib.nbt.NbtType;
+import org.by1337.blib.nbt.impl.CompoundTag;
+import org.by1337.blib.io.ByteBuffer;
 
 import java.util.Arrays;
 

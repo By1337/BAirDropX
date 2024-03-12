@@ -1,8 +1,8 @@
 package org.by1337.bairx.loot;
 
 import org.bukkit.inventory.ItemStack;
-import org.by1337.bairx.nbt.impl.CompoundTag;
-import org.by1337.bairx.nbt.nms.ParseCompoundTagManager;
+import org.by1337.blib.BLib;
+import org.by1337.blib.nbt.impl.CompoundTag;
 
 public class Item {
     private final ItemStack itemStack;
@@ -28,14 +28,14 @@ public class Item {
         this.randomAmount = randomAmount;
     }
     public void save(CompoundTag compoundTag){
-        compoundTag.putTag("item", ParseCompoundTagManager.get().copy(itemStack));
+        compoundTag.putTag("item", BLib.getApi().getParseCompoundTag().copy(itemStack));
         compoundTag.putInt("chance", chance);
         compoundTag.putInt("maxAmount", maxAmount);
         compoundTag.putInt("minAmount", minAmount);
         compoundTag.putBoolean("randomAmount", randomAmount);
     }
     public static Item load(CompoundTag compoundTag){
-        ItemStack itemStack = ParseCompoundTagManager.get().create(compoundTag.getAsCompoundTag("item"));
+        ItemStack itemStack = BLib.getApi().getParseCompoundTag().create(compoundTag.getAsCompoundTag("item"));
         int chance = compoundTag.getAsInt("chance");
         int maxAmount = compoundTag.getAsInt("maxAmount");
         int minAmount = compoundTag.getAsInt("minAmount");

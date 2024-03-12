@@ -3,7 +3,7 @@ package org.by1337.bairx.airdrop.loader;
 import org.by1337.bairx.BAirDropX;
 import org.by1337.bairx.airdrop.AirDrop;
 import org.by1337.bairx.airdrop.AirDropMetaData;
-import org.by1337.bairx.nbt.io.ByteBuffer;
+import org.by1337.blib.io.ByteBuffer;
 import org.by1337.blib.util.NameKey;
 
 import java.io.File;

@@ -9,8 +9,6 @@
 
   <modules>
     <module>Core</module>
-    <module>NbtUtils</module>
-
   </modules>
   <distributionManagement>
     <repository>

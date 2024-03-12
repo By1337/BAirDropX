@@ -1,8 +1,8 @@
 package org.by1337.bairx.airdrop;
 
 import junit.framework.TestCase;
-import org.by1337.bairx.nbt.impl.CompoundTag;
-import org.by1337.bairx.nbt.io.ByteBuffer;
+import org.by1337.blib.nbt.impl.CompoundTag;
+import org.by1337.blib.io.ByteBuffer;
 import org.junit.Test;
 ;import static org.junit.Assert.*;
 

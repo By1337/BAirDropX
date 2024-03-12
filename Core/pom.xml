@@ -114,19 +114,6 @@
             <version>1.16.5-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
-        <!--compile-->
-        <dependency>
-            <groupId>org.by1337.bairx.nbt.parser</groupId>
-            <artifactId>NbtParser</artifactId>
-            <version>1.0</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.by1337.bairx.nbt.nms</groupId>
-            <artifactId>NMSUtil</artifactId>
-            <version>1.0</version>
-            <scope>compile</scope>
-        </dependency>
         <!--libs-->
         <dependency>
             <groupId>com.mojang</groupId>
@@ -143,7 +130,7 @@
         <dependency>
             <groupId>org.by1337.blib</groupId>
             <artifactId>Blib-api</artifactId>
-            <version>1.0.5.3</version>
+            <version>1.0.6</version>
             <scope>provided</scope>
         </dependency>
         <dependency>

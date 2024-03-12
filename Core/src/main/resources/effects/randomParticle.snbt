@@ -41,5 +41,6 @@
             type: "default"
         }
     ],
-    repeatCount: 9999
+    repeatCount: 9999,
+    velocity: 0d
 }

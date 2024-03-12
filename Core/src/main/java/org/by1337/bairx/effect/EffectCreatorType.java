@@ -1,7 +1,7 @@
 package org.by1337.bairx.effect;
 
 import org.by1337.bairx.effect.impl.*;
-import org.by1337.bairx.nbt.impl.CompoundTag;
+import org.by1337.blib.nbt.impl.CompoundTag;
 import org.by1337.blib.util.NameKey;
 import org.jetbrains.annotations.Nullable;
 

@@ -1,18 +1,5 @@
 package org.by1337.bairx;
 
-/*import com.github.retrooper.packetevents.PacketEvents;
-import com.github.retrooper.packetevents.protocol.entity.data.EntityData;
-import com.github.retrooper.packetevents.protocol.entity.type.EntityTypes;
-import com.github.retrooper.packetevents.protocol.npc.NPC;
-import com.github.retrooper.packetevents.protocol.player.GameMode;
-import com.github.retrooper.packetevents.protocol.player.UserProfile;
-import com.github.retrooper.packetevents.protocol.world.Location;
-import com.github.retrooper.packetevents.util.Vector3d;
-import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerEntityMetadata;
-import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSpawnLivingEntity;
-import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;*/
 //import net.kyori.adventure.text.minimessage.MiniMessage;
 
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
@@ -33,7 +20,6 @@ import org.by1337.bairx.config.adapter.AdapterRequirement;
 import org.by1337.bairx.effect.Effect;
 import org.by1337.bairx.effect.EffectCreator;
 import org.by1337.bairx.effect.EffectLoader;
-//import org.by1337.bairx.entity.metadata.MetaDataProviderArmorStand;
 import org.by1337.bairx.exception.PluginInitializationException;
 import org.by1337.bairx.hologram.HologramLoader;
 import org.by1337.bairx.hologram.HologramManager;

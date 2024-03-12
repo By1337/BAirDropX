@@ -1,6 +1,6 @@
 package org.by1337.bairx.effect.particle;
 
-import org.by1337.bairx.nbt.impl.CompoundTag;
+import org.by1337.blib.nbt.impl.CompoundTag;
 import org.by1337.bairx.util.Validate;
 import org.by1337.blib.util.NameKey;
 

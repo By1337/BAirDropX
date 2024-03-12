@@ -7,7 +7,7 @@ import org.by1337.bairx.BAirDropX;
 import org.by1337.bairx.effect.Effect;
 import org.by1337.bairx.effect.EffectCreatorType;
 import org.by1337.bairx.effect.particle.SpawnableParticle;
-import org.by1337.bairx.nbt.impl.CompoundTag;
+import org.by1337.blib.nbt.impl.CompoundTag;
 import org.by1337.bairx.util.Validate;
 import org.jetbrains.annotations.NotNull;
 

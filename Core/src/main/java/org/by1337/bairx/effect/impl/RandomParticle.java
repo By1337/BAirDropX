@@ -9,9 +9,9 @@ import org.by1337.bairx.effect.EffectCreator;
 import org.by1337.bairx.effect.EffectCreatorType;
 import org.by1337.bairx.effect.particle.ParticleType;
 import org.by1337.bairx.effect.particle.SpawnableParticle;
-import org.by1337.bairx.nbt.NBT;
-import org.by1337.bairx.nbt.impl.CompoundTag;
-import org.by1337.bairx.nbt.impl.ListNBT;
+import org.by1337.blib.nbt.NBT;
+import org.by1337.blib.nbt.impl.CompoundTag;
+import org.by1337.blib.nbt.impl.ListNBT;
 import org.by1337.bairx.util.NBTUtil;
 import org.by1337.bairx.util.Validate;
 import org.by1337.blib.util.NameKey;
@@ -51,7 +51,7 @@ public class RandomParticle implements Effect {
                     double randomX = minX + (maxX - minX) * random.nextDouble();
                     double randomY = minY + (maxY - minY) * random.nextDouble();
                     double randomZ = minZ + (maxZ - minZ) * random.nextDouble();
-                    particle.spawnParticle(location.getWorld(), randomX, randomY, randomZ, config.count, 0, 0, 0, config.maxSpeed, true);
+                    particle.spawnParticle(location.getWorld(), randomX, randomY, randomZ, config.count, config.velocity, config.velocity, config.velocity, config.maxSpeed, true);
                 }
 
                 if (config.repeat && x >= config.repeatCount) {
@@ -90,8 +90,9 @@ public class RandomParticle implements Effect {
         final Vector pos1;
         final Vector pos2;
         final List<SpawnableParticle> particles;
+        final double velocity;
 
-        public Config(int count, boolean repeat, int period, int repeatCount, String name, float maxSpeed, Vector pos1, Vector pos2, List<SpawnableParticle> particles) {
+        public Config(int count, boolean repeat, int period, int repeatCount, String name, float maxSpeed, Vector pos1, Vector pos2, List<SpawnableParticle> particles, double velocity) {
             this.count = count;
             this.repeat = repeat;
             this.period = period;
@@ -101,6 +102,7 @@ public class RandomParticle implements Effect {
             this.pos1 = pos1;
             this.pos2 = pos2;
             this.particles = particles;
+            this.velocity = velocity;
         }
 
         public Config(CompoundTag nbt) {
@@ -108,6 +110,7 @@ public class RandomParticle implements Effect {
             pos2 = NBTUtil.getAsVector(nbt.getAsCompoundTag("pos2"));
 
             maxSpeed = nbt.getAsFloat("maxSpeed");
+            velocity = nbt.getAsDouble("velocity");
             count = nbt.getAsInt("count");
             period = nbt.getAsInt("period");
             repeatCount = nbt.getAsInt("repeatCount");
@@ -139,6 +142,7 @@ public class RandomParticle implements Effect {
             nbt.putInt("repeatCount", repeatCount);
             nbt.putBoolean("repeat", repeat);
             nbt.putString("name", name);
+            nbt.putDouble("velocity", velocity);
             nbt.putTag("pos1", NBTUtil.setVector(pos1));
             nbt.putTag("pos2", NBTUtil.setVector(pos2));
             ListNBT listNBT = new ListNBT();

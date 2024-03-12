@@ -2,8 +2,8 @@ package org.by1337.bairx.inventory.item;
 
 import org.bukkit.inventory.ItemStack;
 import org.by1337.bairx.exception.ConfigurationReadException;
-import org.by1337.bairx.nbt.impl.CompoundTag;
-import org.by1337.bairx.nbt.nms.ParseCompoundTagManager;
+import org.by1337.blib.BLib;
+import org.by1337.blib.nbt.impl.CompoundTag;
 import org.by1337.bairx.random.WeightedItem;
 import org.by1337.bairx.util.Placeholder;
 import org.by1337.bairx.util.Validate;
@@ -48,7 +48,7 @@ public class InventoryItem extends Placeholder implements WeightedItem {
                 NullPointerException.class,
                 ConfigurationReadException::new,
                 "Не удалось загрузить предмет так как параметр `randomAmount` отсутствует");
-        ItemStack itemStack = ParseCompoundTagManager.get().create(
+        ItemStack itemStack = BLib.getApi().getParseCompoundTag().create(
                 (CompoundTag) Validate.invokeAndHandleException(() -> compoundTag.getOrThrow("item"),
                         NullPointerException.class,
                         ConfigurationReadException::new,
@@ -58,7 +58,7 @@ public class InventoryItem extends Placeholder implements WeightedItem {
     }
 
     public void save(CompoundTag compoundTag) {
-        compoundTag.putTag("item", ParseCompoundTagManager.get().copy(itemStack));
+        compoundTag.putTag("item", BLib.getApi().getParseCompoundTag().copy(itemStack));
         compoundTag.putInt("chance", chance);
         compoundTag.putInt("minAmount", minAmount);
         compoundTag.putInt("maxAmount", maxAmount);

@@ -1,7 +1,7 @@
 package org.by1337.bairx.util;
 
 import org.bukkit.util.Vector;
-import org.by1337.bairx.nbt.impl.CompoundTag;
+import org.by1337.blib.nbt.impl.CompoundTag;
 
 public class NBTUtil {
     public static Vector getAsVector(CompoundTag compoundTag){

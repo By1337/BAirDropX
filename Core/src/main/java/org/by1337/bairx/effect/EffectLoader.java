@@ -1,11 +1,11 @@
 package org.by1337.bairx.effect;
 
 import org.by1337.bairx.BAirDropX;
-import org.by1337.bairx.nbt.NBT;
-import org.by1337.bairx.nbt.NBTParser;
-import org.by1337.bairx.nbt.impl.CompoundTag;
-import org.by1337.bairx.nbt.impl.ListNBT;
-import org.by1337.bairx.nbt.impl.StringNBT;
+import org.by1337.blib.nbt.NBT;
+import org.by1337.blib.nbt.NBTParser;
+import org.by1337.blib.nbt.impl.CompoundTag;
+import org.by1337.blib.nbt.impl.ListNBT;
+import org.by1337.blib.nbt.impl.StringNBT;
 import org.by1337.bairx.util.ConfigUtil;
 import org.by1337.bairx.util.FileUtil;
 import org.by1337.bairx.util.Validate;
