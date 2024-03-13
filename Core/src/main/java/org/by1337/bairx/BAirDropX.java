@@ -23,6 +23,7 @@ import org.by1337.bairx.effect.EffectLoader;
 import org.by1337.bairx.exception.PluginInitializationException;
 import org.by1337.bairx.hologram.HologramLoader;
 import org.by1337.bairx.hologram.HologramManager;
+import org.by1337.bairx.hook.metric.Metrics;
 import org.by1337.bairx.inventory.MenuAddItem;
 import org.by1337.bairx.inventory.MenuEditChance;
 import org.by1337.bairx.listener.ClickListener;
@@ -116,6 +117,7 @@ public final class BAirDropX extends JavaPlugin {
             getLogger().log(Level.SEVERE, "failed to enable plugin!", t);
             Bukkit.getPluginManager().disablePlugin(this);
         }
+        new Metrics(this, 21314);
     }
 
     private long currentTick;
