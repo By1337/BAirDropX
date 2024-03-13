@@ -12,10 +12,10 @@ public final class EventType {
     private final NameKey nameKey;
 
     public static final EventType LOAD = register("load");
+    public static final EventType UNLOAD = register("unload");
     public static final EventType START = register("start");
     public static final EventType OPEN = register("open");
     public static final EventType END = register("end");
-    public static final EventType UNLOAD = register("unload");
     public static final EventType TICK = register("tick");
     public static final EventType CLICK = register("click");
     public static final EventType CLICK_OPEN = register("click_open");

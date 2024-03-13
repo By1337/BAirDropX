@@ -1,21 +1,36 @@
-#   alert-5:
-#    icon: OBSERVER
-#    description: '&fMessage about opening in 5 seconds'
-#    event: 'start'
-#    requirement:
-#      check-1:
-#        type: 'math'
-#        input: '{time-to-open} == 5'
-#      check-2:
-#        type: 'string'
-#        input: 'str equals str' # can be !equals, '==' and '!='
-#      check-3:
-#        type: 'string'
-#        input: 'strstr contains str' # can be !contains
-#    commands:
-#      - '[MESSAGE_ALL] {air-name}&7 will open in 5 seconds'
-#    deny-commands:
-#      - 'deny'
+# Команды: http://by1337-plugins.space/navigator/command.html
+# Ивенты:
+#   load - когда аирдроп загружается
+#   unload - когда аирдроп выгружается
+#   start - когда аирдроп появляется
+#   open - когда аирдроп открывается
+#   end - когда аирдроп заканчивается
+#   tick - вызывается каждый тик аирдроп (по умолчанию каждую секунду)
+#   click - когда кликают по аирдропу
+#   click_open - когда кликают по открытому аирдропу
+#   click_close - когда кликают по закрытому аирдропу
+#   summoned - когда аирдроп призывают с помощью предмета
+#   activate - когда аирдроп активируют кликом по нему
+#
+# alert-5:
+#   icon: OBSERVER
+#   description: '&fПример слушателя со всеми возможными проверками'
+#   event: start
+#   requirement:
+#     check-1:
+#       type: math
+#       input: '{time-to-open} == 5'
+#     check-2:
+#       type: string
+#       input: 'str equals str' # может быть !equals, '==' и '!='
+#     check-3:
+#       type: string
+#       input: 'strstr contains str' # может быть !contains
+#   commands:
+#     - '[MESSAGE_ALL] все условия прошли!'
+#   deny-commands:
+#     - '[MESSAGE_ALL] один или несколько условий не прошли!'
+
 listeners:
   spawn_message:
     icon: OBSERVER
