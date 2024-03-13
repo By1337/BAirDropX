@@ -15,4 +15,7 @@ commands:
       - bair
       - air
       - airdrop
-    permission: bairdropx
+    permission: bair
+permissions:
+  bair.*:
+    default: op

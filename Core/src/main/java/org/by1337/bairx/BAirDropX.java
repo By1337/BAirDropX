@@ -7,6 +7,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.by1337.bairx.addon.*;
@@ -37,6 +38,7 @@ import org.by1337.bairx.summon.SummonerManager;
 import org.by1337.bairx.timer.TimerManager;
 import org.by1337.bairx.util.ConfigUtil;
 import org.by1337.bairx.util.FileUtil;
+import org.by1337.bairx.util.VersionChecker;
 import org.by1337.blib.chat.util.Message;
 import org.by1337.blib.command.Command;
 import org.by1337.blib.command.CommandException;
@@ -81,32 +83,7 @@ public final class BAirDropX extends JavaPlugin {
     @Override
     public void onEnable() {
         try {
-            addonLoader.loadAll();
-            addonLoader.enableAll();
-            initCommand();
-            ConfigUtil.trySave("listeners/default.yml");
-            ConfigUtil.trySave("config.yml");
-            timerManager = new TimerManager();
-
-            AdapterRegistry.registerAdapter(GeneratorSetting.class, new AdapterGeneratorSetting());
-            AdapterRegistry.registerAdapter(Requirement.class, new AdapterRequirement());
-            AdapterRegistry.registerAdapter(Observer.class, new AdapterObserver());
-
-            observerManager = new ObserverManager();
-            EffectLoader.load();
-            SchematicsLoader.load();
-            HologramLoader.load();
-            HologramManager.INSTANCE.registerCommands();
-            cfg = new YamlConfig(new File(getDataFolder() + "/config.yml"));
-            SummonerManager.load();
-            SummonerManager.registerBAirCommands();
-            timerManager.load(cfg);
-
-            AirdropLoader.load();
-
-            Bukkit.getScheduler().runTaskTimer(this, this::tick, 0, 1);
-
-            Bukkit.getPluginManager().registerEvents(new ClickListener(), this);
+            onEnable0();
         } catch (Exception e) {
             Throwable t;
             if (e instanceof PluginInitializationException) {
@@ -117,9 +94,38 @@ public final class BAirDropX extends JavaPlugin {
             getLogger().log(Level.SEVERE, "failed to enable plugin!", t);
             Bukkit.getPluginManager().disablePlugin(this);
         }
-        new Metrics(this, 21314);
     }
 
+    private void onEnable0() throws IOException, InvalidConfigurationException {
+        addonLoader.loadAll();
+        addonLoader.enableAll();
+        initCommand();
+        ConfigUtil.trySave("listeners/default.yml");
+        ConfigUtil.trySave("config.yml");
+        timerManager = new TimerManager();
+
+        AdapterRegistry.registerAdapter(GeneratorSetting.class, new AdapterGeneratorSetting());
+        AdapterRegistry.registerAdapter(Requirement.class, new AdapterRequirement());
+        AdapterRegistry.registerAdapter(Observer.class, new AdapterObserver());
+
+        observerManager = new ObserverManager();
+        EffectLoader.load();
+        SchematicsLoader.load();
+        HologramLoader.load();
+        HologramManager.INSTANCE.registerCommands();
+        cfg = new YamlConfig(new File(getDataFolder() + "/config.yml"));
+        SummonerManager.load();
+        SummonerManager.registerBAirCommands();
+        timerManager.load(cfg);
+
+        AirdropLoader.load();
+
+        Bukkit.getScheduler().runTaskTimer(this, this::tick, 0, 1);
+
+        Bukkit.getPluginManager().registerEvents(new ClickListener(), this);
+        new Metrics(this, 21314);
+        new VersionChecker();
+    }
     private long currentTick;
 
     private void tick() {
