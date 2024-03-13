@@ -11,9 +11,9 @@
     velocity.z: 0.0d,
     repeat: 'true',
     name: "circle",
-    step: 0.05d,
+    step: 0.1d,
     particle: {
-        particle: "CLOUD",
+        particle: "SOUL",
         type: "default"
     },
     radius: 2.0d,

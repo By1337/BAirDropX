@@ -17,92 +17,111 @@
 #    deny-commands:
 #      - 'deny'
 listeners:
-   test:
+  spawn_message:
     icon: OBSERVER
-    description: '&fMessage about opening in 5 seconds'
+    description: '&Сообщение о спавне за 30, 20, 10, 5...1 секунд'
     event: 'tick'
+    requirement:
+      check-1:
+        type: 'math'
+        # Это условие проверяет что до старта осталось 30 или 20 или 10 или 5...1 секунд. Вы можете делать более простые условие например {time_to_start} == 10
+        input: '({time_to_start} <= 30 && {time_to_start} % 10 == 0 || {time_to_start} <= 5) && {time_to_start} != 0'
     commands:
-      - '[MESSAGE_ALL] {air_name}&f time_to_start={time_to_start}, time_to_open={time_to_open}, time_to_end={time_to_end} x={x}, y={y}, z={z} '
-
-   click_open:
-     description: '&fоткрывает инвентарь аирдропа игроку'
-     event: 'click_open'
-     commands:
-       - '[INV_MANAGER] [OPEN_INVENTORY]'
-
-   click_close:
-     description: '&fоткрывает инвентарь аирдропа игроку'
-     event: 'click_close'
-     commands:
-       - '[MESSAGE] &cАирдроп закрыт!'
+      - '[MESSAGE_ALL] {air_name}&f Появится через {time_to_start} сек.'
 
 
-   open:
-     description: '&fоткрывает инвентарь аирдропа игроку'
-     event: 'open'
-     commands:
-       - '[INV_MANAGER] [GENERATE_LOOT]'
-       - '[HOLOGRAM] [REMOVE] holo1'
-       - '[HOLOGRAM] [CREATE] hologramTimeToEnd holo2'
+  start:
+    description: '&fОсновной слушатель на спавн аирдропа'
+    event: 'start'
+    commands:
+      - '[SET_REGION]'
+      - '[MESSAGE_ALL] {air_name}&f Появился!'
+      - '[MESSAGE_ALL] На координатах x:{x} y:{y} z:{z}'
+      - '[EFFECT_START] random_particle rnd_particles'
+      - '[HOLOGRAM] [CREATE] hologramClickWait holoClickWait'
+      - '[HOLOGRAM] [REMOVE] holoTimeStart -ifexist' # если аирдроп был призван маяком
 
-   end:
-     description: '&fоткрывает инвентарь аирдропа игроку'
-     event: 'end'
-     commands:
-       - '[INV_MANAGER] [CLEAR_INVENTORY]'
-       - '[REMOVE_REGION]'
-       - '[EFFECT_STOP] newEffect'
-       - '[HOLOGRAM] [REMOVE] holo2 -ifexist'
-       - '[HOLOGRAM] [REMOVE] holo3 -ifexist'
-       - '[HOLOGRAM] [REMOVE] holo1 -ifexist' # если аир был стопнут до `open` ивента, то голограмма не holo1 не будет удалена, эта команда удалит эту голограмму если она существует
+  activate:
+    icon: OBSERVER
+    description: '&Слушает активацию аирдропа'
+    event: 'activate'
+    commands:
+      - '[MESSAGE_ALL] &fИгрок %player_name%&f активировал {air_name}!'
+      - '[HOLOGRAM] [CREATE] hologramTimeToOpen holoTimeToOpen'
+      - '[HOLOGRAM] [REMOVE] holoClickWait'
+      - '[EFFECT_START] circle circle_particles'
 
-   start:
-     description: '&fStart'
-     event: 'start'
-     commands:
-       - '[SET_REGION]'
-       - '[MESSAGE_ALL] {air_name} Заспавнился!'
-       - '[EFFECT_START] expanding_circle newEffect'
-       - '[HOLOGRAM] [CREATE] hologramTimeToOpen holo1'
-       - '[HOLOGRAM] [REMOVE] holo3 -ifexist'
+  holoTimeToOpen-updater:
+    description: '&fОбновляет голограмму holoTimeToOpen'
+    event: 'tick'
+    requirement:
+      check:
+        type: 'math'
+        input: '{started} && {clicked} && !{opened}'
+    commands:
+      - '[HOLOGRAM] [UPDATE] holoTimeToOpen'
 
+  click_open:
+    description: '&fОткрывает инвентарь аирдропа игроку'
+    event: 'click_open'
+    commands:
+      - '[INV_MANAGER] [OPEN_INVENTORY]'
 
-   holo1-updater:
-     description: '&fHolo updater'
-     event: 'tick'
-     requirement:
-       check:
-         type: 'math'
-         input: '{started} && !{opened}'
-     commands:
-       - '[HOLOGRAM] [UPDATE] holo1'
+  click_close:
+    description: '&fСообщение игроку о том что аирдроп закрыт'
+    event: 'click_close'
+    commands:
+      - '[MESSAGE] &cАирдроп закрыт!'
 
-   holo2-updater:
-     description: '&fHolo updater'
-     event: 'tick'
-     requirement:
-       check:
-         type: 'math'
-         input: '{opened}'
-     commands:
-       - '[HOLOGRAM] [UPDATE] holo2'
+  open:
+    description: '&fГенерирует лут в аирдропе'
+    event: 'open'
+    commands:
+      - '[INV_MANAGER] [GENERATE_LOOT]'
+      - '[HOLOGRAM] [REMOVE] holoTimeToOpen'
+      - '[HOLOGRAM] [CREATE] hologramTimeToEnd holoTimeToEnd'
 
-   holo3-updater:
-     description: '&fHolo updater'
-     event: 'tick'
-     requirement:
-       check:
-         type: 'math'
-         input: '{summoned} && !{started}'
-     commands:
-       - '[HOLOGRAM] [UPDATE] holo3'
+  end:
+    description: '&fоткрывает инвентарь аирдропа игроку'
+    event: 'end'
+    commands:
+      - '[INV_MANAGER] [CLEAR_INVENTORY]'
+      - '[REMOVE_REGION]'
+      - '[EFFECT_STOP_ALL]'
+      - '[HOLOGRAM] [REMOVE] holoTimeToEnd -ifexist' # На всякий случай пытаемся удалить все голограммы
+      - '[HOLOGRAM] [REMOVE] holoTimeToOpen -ifexist'
+      - '[HOLOGRAM] [REMOVE] holoTimeToStart -ifexist'
+      - '[HOLOGRAM] [REMOVE] holoClickWait -ifexist'
+      - '[HOLOGRAM] [REMOVE] holoTimeStart -ifexist'
 
-   summoned:
-     description: '&fСлушает призыв аирдропа'
-     event: 'summoned'
-     commands:
-       - '[LOGG] summoned!'
-       - '[SET_MATERIAL] SOUL_CAMPFIRE'
-       - '[SET_REGION]'
-       - '[SET_TIME_TO_START] 30'
-       - '[HOLOGRAM] [CREATE] hologramTimeStart holo3'
+  hologramTimeToEnd-updater:
+    description: '&fОбновляет голограмму holoTimeToOpen'
+    event: 'tick'
+    requirement:
+      check:
+        type: 'math'
+        input: '{started} && {opened}'
+    commands:
+      - '[HOLOGRAM] [UPDATE] holoTimeToEnd'
+
+  hologramTimeStart-updater:
+    description: '&fОбновляет голограмму holoTimeStart'
+    event: 'tick'
+    requirement:
+      check:
+        type: 'math'
+        input: '{summoned} && !{started}'
+    commands:
+      - '[HOLOGRAM] [UPDATE] holoTimeStart'
+
+  summoned:
+    description: '&fСлушает призыв аирдропа'
+    event: 'summoned'
+    commands:
+      - '[LOGG] summoned!'
+      - '[SET_MATERIAL] SOUL_CAMPFIRE'
+      - '[SET_REGION]'
+      - '[SET_TIME_TO_START] 30'
+      - '[HOLOGRAM] [CREATE] hologramTimeStart holoTimeStart'
+      - '[MESSAGE_ALL] Игрок %player_name% призвал аирдроп {air_name}!'
+      - '[MESSAGE_ALL] На координаты x:{x} y:{y} z:{z}'

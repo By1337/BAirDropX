@@ -21,6 +21,7 @@ public class WeightedRandomItemSelector<T extends WeightedItem> {
     }
 
     public T getRandomItem() {
+        if (totalWeight <= 0 || items.isEmpty()) return null;
         int randomWeight = random.nextInt(totalWeight);
 
         for (T item : items) {

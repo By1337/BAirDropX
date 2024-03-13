@@ -15,3 +15,4 @@ commands:
       - bair
       - air
       - airdrop
+    permission: bairdropx

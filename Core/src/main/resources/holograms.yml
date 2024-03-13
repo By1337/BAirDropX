@@ -1,4 +1,14 @@
 holograms:
+  click_wait:
+    provider: DecentHolograms
+    name: hologramClickWait
+    offsets:
+      x: 0.5
+      y: 2
+      z: 0.5
+    lines:
+      - '{air_name}'
+      - '&cНе активирован'
   timeToOpen:
     provider: DecentHolograms
     name: hologramTimeToOpen

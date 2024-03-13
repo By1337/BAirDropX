@@ -5,7 +5,7 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataType;
 import org.by1337.bairx.BAirDropX;
-import org.by1337.bairx.hook.wg.basehead.BaseHeadHook;
+import org.by1337.bairx.hook.basehead.BaseHeadHook;
 import org.by1337.blib.util.Pair;
 
 import java.util.ArrayList;

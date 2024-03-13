@@ -1,4 +1,4 @@
-package org.by1337.bairx.hook.wg.basehead;
+package org.by1337.bairx.hook.basehead;
 
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;

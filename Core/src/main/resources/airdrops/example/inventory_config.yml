@@ -1,0 +1,18 @@
+extensions:
+  smooth_add_item:
+    insertTickMax: 40
+    insertTickMin: 20
+    enable: false
+    name: smooth_add_item
+  anti_steal:
+    cooldown: 200
+    maxWarnings: 5
+    interval: 5
+    minIntervalToIgnore: 250
+    command: close_inventory
+    enable: false
+    name: anti_steal
+genItemCount: 54
+invSize: 54
+invName: '&7AirDrop inventory'
+emptySlotChance: 0

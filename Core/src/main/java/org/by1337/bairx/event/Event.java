@@ -34,9 +34,9 @@ public class Event extends Placeholder {
 
     @Override
     public String replace(String string) {
-        return MathParser.mathSave(
-                BAirDropX.getMessage().messageBuilder(airDrop.replace(super.replace(string)), player)
-        );
+        return BAirDropX.getMessage().messageBuilder(MathParser.mathSave(
+                airDrop.replace(super.replace(string))
+        ), player);
     }
 
     public Event getWithPlayer(@Nullable Player player) {
@@ -50,6 +50,7 @@ public class Event extends Placeholder {
     public Event getWith(@NotNull AirDrop airDrop, @Nullable Player player) {
         return getAs(airDrop, player, eventType);
     }
+
     public Event getAs(@NotNull AirDrop airDrop, @Nullable Player player, @NotNull EventType eventType) {
         Event event = new Event(airDrop, player, eventType);
         event.registerPlaceholders(super.placeholders.entrySet());

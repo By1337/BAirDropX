@@ -29,8 +29,9 @@ public abstract class Placeholder implements Placeholderable {
             int len = placeholder.length();
             int pos = sb.indexOf(placeholder);
             while (pos != -1) {
-                sb.replace(pos, pos + len, String.valueOf(entry.getValue().get()));
-                pos = sb.indexOf(placeholder, pos + len - 2);
+                var replaceTo = String.valueOf(entry.getValue().get());
+                sb.replace(pos, pos + len, replaceTo);
+                pos = sb.indexOf(placeholder, pos + replaceTo.length());
             }
         }
         return sb.toString();
