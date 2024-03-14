@@ -6,7 +6,7 @@ timers:
     tick-speed: 20 # Один тик аирдропа каждые 20 тиков сервера (раз в секунду)
     type: ticker # тип тикающий
     tick-type: all # all | by_chance all - вызывает тик у всех аирдропов, by_chance - выбирает случайный и вызывает тик только у него
-    licked-airdrops:
+    linked-airdrops:
       custom_airdrop_id: '100' # <airdrop id>: 'extra' extra - это дополнительная информация. При типе by_chance в extra указывается шанс того что этот аирдроп будет тикать. при all можно ничего не указывать
 
 ### ПОКА НЕ РАБОТАЕТ
@@ -15,7 +15,7 @@ timers:
 #    time-zone: 'Europe/Moscow'
 #    tick-speed: 20 # Один тик аирдропа каждые 20 тиков сервера (раз в секунду)
 #    type: waiter # тип ожидающий, запускает таймер аирдропов по времени
-#    licked-airdrops:
+#    linked-airdrops:
 #      default: # здесь extra представлен в виде листа
 #        - '10:00'
 #        - '15:00'
@@ -40,5 +40,7 @@ summoners:
     regionCheck: true # проверять регион
     minY: 30 # минимальная высота для призыва
     maxY: 120 # максимальная высота для призыва
+    black-list-worlds: # в каких мирах запрещено призывать аирдроп
+      - spawn
     airDrops: # аирдропы которые может призвать этот "маяк"
       - 'example:100'

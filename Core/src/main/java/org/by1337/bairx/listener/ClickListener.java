@@ -25,7 +25,11 @@ public class ClickListener implements Listener {
             Block block = e.getClickedBlock();
             AirDrop air = null;
             for (AirDrop airDrop : BAirDropX.airdrops()) {
-                if (airDrop.isStarted() && airDrop.getLocation() != null && airDrop.getLocation().getBlock().equals(block)) {
+                if (airDrop.getLocation() != null && airDrop.getLocation().getBlock().equals(block)) {
+                    if (!airDrop.isStarted()){
+                        e.setCancelled(true);
+                        break;
+                    }
                     air = airDrop;
                     break;
                 }

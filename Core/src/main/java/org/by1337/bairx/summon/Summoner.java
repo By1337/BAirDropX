@@ -22,6 +22,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -42,8 +43,9 @@ public class Summoner {
     private final List<WeightedAirDrop> airDrops;
     private final WeightedRandomItemSelector<WeightedAirDrop> airSelector;
     private final NameKey id;
+    private final List<String> blackListWorlds;
 
-    public Summoner(int modelData, String material, String name, List<String> lore, boolean spawnMirror, boolean usePlayerLoc, boolean checkUpBlocks, boolean regionCheck, int minY, int maxY, List<WeightedAirDrop> airDrops, NameKey id) {
+    public Summoner(int modelData, String material, String name, List<String> lore, boolean spawnMirror, boolean usePlayerLoc, boolean checkUpBlocks, boolean regionCheck, int minY, int maxY, List<WeightedAirDrop> airDrops, NameKey id, List<String> blackListWorlds) {
         this.modelData = modelData;
         this.material = material;
         this.name = name;
@@ -56,6 +58,7 @@ public class Summoner {
         this.maxY = maxY;
         this.airDrops = airDrops;
         this.id = id;
+        this.blackListWorlds = blackListWorlds;
         airSelector = new WeightedRandomItemSelector<>(this.airDrops, new Random());
     }
 
@@ -71,6 +74,7 @@ public class Summoner {
         regionCheck = context.getAsBoolean("regionCheck");
         minY = context.getAsInteger("minY");
         maxY = context.getAsInteger("maxY");
+        blackListWorlds = context.getList("black-list-worlds", String.class, Collections.emptyList());
         airDrops = new ArrayList<>();
         for (String air : context.getList("airDrops", String.class)) {
             String[] arr = air.split(":");
@@ -122,6 +126,9 @@ public class Summoner {
         }
         if (location.getBlockY() > maxY) {
             return new Result(ResultStatus.FAILED, "&cМаксимальная высота для призыва аирдропа %s", maxY);
+        }
+        if (blackListWorlds.contains(location.getWorld().getName())) {
+            return new Result(ResultStatus.FAILED, "&cВы не можете призвать аирдроп в этот мир!");
         }
         if (usePlayerLoc && checkUpBlocks) {
             if (location.getBlockY() -1 != location.getWorld().getHighestBlockAt(location).getY()) {

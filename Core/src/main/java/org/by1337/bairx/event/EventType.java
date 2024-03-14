@@ -22,6 +22,9 @@ public final class EventType {
     public static final EventType CLICK_CLOSE = register("click_close");
     public static final EventType SUMMONED = register("summoned");
     public static final EventType ACTIVATE = register("activate");
+    public static final EventType NONE = register("none");
+    public static final EventType RUN_COMMAND = register("run_command");
+    public static final EventType FIRST_OPEN = register("first_open");
 
     private EventType(String nameKey) {
         this(new NameKey(nameKey));

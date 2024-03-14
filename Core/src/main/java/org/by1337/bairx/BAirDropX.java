@@ -15,6 +15,7 @@ import org.by1337.bairx.airdrop.AirDrop;
 import org.by1337.bairx.airdrop.loader.AirdropLoader;
 import org.by1337.bairx.airdrop.loader.AirdropRegistry;
 import org.by1337.bairx.command.bair.EffectCommand;
+import org.by1337.bairx.command.bair.ExecuteCommand;
 import org.by1337.bairx.config.adapter.AdapterGeneratorSetting;
 import org.by1337.bairx.config.adapter.AdapterObserver;
 import org.by1337.bairx.config.adapter.AdapterRequirement;
@@ -97,16 +98,16 @@ public final class BAirDropX extends JavaPlugin {
     }
 
     private void onEnable0() throws IOException, InvalidConfigurationException {
+        AdapterRegistry.registerAdapter(GeneratorSetting.class, new AdapterGeneratorSetting());
+        AdapterRegistry.registerAdapter(Requirement.class, new AdapterRequirement());
+        AdapterRegistry.registerAdapter(Observer.class, new AdapterObserver());
+
         addonLoader.loadAll();
         addonLoader.enableAll();
         initCommand();
         ConfigUtil.trySave("listeners/default.yml");
         ConfigUtil.trySave("config.yml");
         timerManager = new TimerManager();
-
-        AdapterRegistry.registerAdapter(GeneratorSetting.class, new AdapterGeneratorSetting());
-        AdapterRegistry.registerAdapter(Requirement.class, new AdapterRequirement());
-        AdapterRegistry.registerAdapter(Observer.class, new AdapterObserver());
 
         observerManager = new ObserverManager();
         EffectLoader.load();
@@ -272,16 +273,9 @@ public final class BAirDropX extends JavaPlugin {
 //                    airDropMap.put(id, mirror);
 //                }))
 //        );
-        command.addSubCommand(new Command<CommandSender>("run")
-                .argument(new ArgumentIntegerAllowedMath<>("delay"))
-                .argument(new ArgumentStrings<>("cmd"))
-                .executor(((sender, args) -> {
-                   Player player = Bukkit.getPlayer("_By1337_");
-                   int delay = (int) args.getOrThrow("delay");
-                   String cmd = (String) args.getOrThrow("cmd");
-                   Bukkit.getScheduler().runTaskLater(instance, () -> player.performCommand(cmd), delay);
-                }))
-        );
+
+        command.addSubCommand(new ExecuteCommand());
+
         command.addSubCommand(new Command<CommandSender>("tp")
                 .requires(new RequiresPermission<>("bair.tp"))
                 .requires(sender -> sender instanceof Player)

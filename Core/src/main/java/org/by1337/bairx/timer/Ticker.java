@@ -1,6 +1,7 @@
 package org.by1337.bairx.timer;
 
 import org.bukkit.configuration.MemorySection;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.by1337.bairx.BAirDropX;
 import org.by1337.bairx.airdrop.AirDrop;
 import org.by1337.bairx.event.Event;
@@ -41,7 +42,7 @@ public class Ticker implements Timer, EventListener {
         tickType = tickTypeString.equals("all") ? TickType.ALL : TickType.BY_CHANCE;
 
 
-        Map<?, ?> airdropsRawMap = context.getAs("licked-airdrops", MemorySection.class).getValues(false);
+        Map<?, ?> airdropsRawMap = context.getAs("linked-airdrops", MemorySection.class, new YamlConfiguration()).getValues(false);
 
         for (Map.Entry<?, ?> entry : airdropsRawMap.entrySet()) {
             Object key = entry.getKey();

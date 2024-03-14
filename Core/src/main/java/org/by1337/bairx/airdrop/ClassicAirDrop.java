@@ -68,6 +68,7 @@ public class ClassicAirDrop extends Placeholder implements AirDrop, Summonable {
     private boolean enable;
     private boolean started;
     private boolean opened;
+    private boolean wasOpened;
     private boolean clicked;
     private Location location;
     private LocationManager locationManager;
@@ -411,6 +412,7 @@ public class ClassicAirDrop extends Placeholder implements AirDrop, Summonable {
     }
 
     private void unlock() {
+        timeToOpen = 0;
         opened = true;
         location.getBlock().setType(materialWhenOpened);
         callEvent(null, EventType.OPEN);
@@ -427,11 +429,13 @@ public class ClassicAirDrop extends Placeholder implements AirDrop, Summonable {
         location = null;
         summoned = false;
         clicked = false;
+        wasOpened = false;
         summonerName = null;
         if (remove) {
             BAirDropX.unregisterAirDrop(id);
         }
     }
+
     private BukkitTask generateTask;
 
     private void generateLocation0() {
@@ -460,8 +464,13 @@ public class ClassicAirDrop extends Placeholder implements AirDrop, Summonable {
     public void callEvent(@NotNull Event event) {
         if (event.getEventType() == EventType.CLICK) {
             if (opened) {
-                callEvent(event.getAs(this, event.getPlayer(), EventType.CLICK_OPEN));
-            } else {
+                if (!wasOpened) {
+                    wasOpened = true;
+                    callEvent(event.getAs(this, event.getPlayer(), EventType.FIRST_OPEN));
+                } else {
+                    callEvent(event.getAs(this, event.getPlayer(), EventType.CLICK_OPEN));
+                }
+            } else if (clicked || !triggeredTimeToOpen) {
                 callEvent(event.getAs(this, event.getPlayer(), EventType.CLICK_CLOSE));
             }
             if (!clicked) {
@@ -522,6 +531,7 @@ public class ClassicAirDrop extends Placeholder implements AirDrop, Summonable {
         registerPlaceholder("{summoned}", () -> summoned);
         registerPlaceholder("{summoner_name}", () -> summonerName);
         registerPlaceholder("{remove}", () -> remove);
+        registerPlaceholder("{was-opened}", () -> wasOpened);
 
         registerPlaceholder("{x}", () -> location == null ? "?" : location.getBlockX());
         registerPlaceholder("{y}", () -> location == null ? "?" : location.getBlockY());
@@ -619,6 +629,12 @@ public class ClassicAirDrop extends Placeholder implements AirDrop, Summonable {
         } catch (CommandException e) {
             throw new RuntimeException(e);
         }
+
+    }
+
+    @Override
+    public List<String> tabCompleter(Event event, String cmd) {
+        return command.getTabCompleter(event, cmd.split(" "));
     }
 
     @Override

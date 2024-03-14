@@ -4,6 +4,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.by1337.bairx.BAirDropX;
@@ -11,6 +12,7 @@ import org.by1337.bairx.airdrop.AirDrop;
 import org.by1337.bairx.effect.EffectCreator;
 import org.by1337.bairx.effect.EffectLoader;
 import org.by1337.bairx.event.Event;
+import org.by1337.bairx.event.EventType;
 import org.by1337.bairx.hook.wg.RegionManager;
 import org.by1337.bairx.hook.wg.SchematicPaster;
 import org.by1337.bairx.schematics.SchematicsLoader;
@@ -21,6 +23,7 @@ import org.by1337.blib.command.argument.*;
 import org.by1337.blib.util.NameKey;
 
 import java.util.Arrays;
+import java.util.List;
 
 public class CommandRegistry {
 
@@ -50,6 +53,19 @@ public class CommandRegistry {
         if (commands.getSubcommands().remove(cmd) == null) {
             throw new IllegalArgumentException("command not-exist!");
         }
+    }
+
+    public static void runAirDropCommand(Player player, AirDrop airDrop, String cmd) {
+        airDrop.executeCustomCommand(new Event(airDrop, player, EventType.RUN_COMMAND), cmd);
+    }
+    public static List<String> getAirDropCompleter(Player player, AirDrop airDrop, String cmd) {
+      return   airDrop.tabCompleter(new Event(airDrop, player, EventType.RUN_COMMAND), cmd);
+    }
+    public static List<String> getDefaultCompleter(Player player, AirDrop airDrop, String[] args) {
+        return commands.getTabCompleter(new Event(airDrop, player, EventType.RUN_COMMAND), args);
+    }
+    public static void runDefaultCommand(Player player, AirDrop airDrop, String[] args) throws CommandException {
+        commands.process(new Event(airDrop, player, EventType.RUN_COMMAND), args);
     }
 
     static {
