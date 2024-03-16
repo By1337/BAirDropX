@@ -174,7 +174,7 @@ public final class BAirDropX extends JavaPlugin {
                         .argument(new ArgumentSetList<>("type", () -> Arrays.stream(AirdropRegistry.values()).map(t -> t.getId().getName()).toList()))
                         .argument(new ArgumentValidCharacters<>("name", List.of("[name]")))
                         .executor(((sender, args) -> {
-                            String type = (String) args.getOrThrow("type", "&c/bairx load <type> <id>");
+                            String type = (String) args.getOrThrow("type", "&c/bairx create <type> <id>");
                             NameKey nameKey = new NameKey((String) args.getOrThrow("name", "&c/bairx load <type> <id>"));
 
                             if (airDropMap.containsKey(nameKey)) {

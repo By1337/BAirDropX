@@ -6,7 +6,7 @@
 
     <groupId>org.by1337.bairx</groupId>
     <artifactId>BAirDropX</artifactId>
-    <version>1.0.0-BETTA</version>
+    <version>1.0.1-BETTA</version>
     <packaging>jar</packaging>
 
     <distributionManagement>

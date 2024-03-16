@@ -4,6 +4,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
+import org.bukkit.block.Lidded;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -58,12 +59,15 @@ public class CommandRegistry {
     public static void runAirDropCommand(Player player, AirDrop airDrop, String cmd) {
         airDrop.executeCustomCommand(new Event(airDrop, player, EventType.RUN_COMMAND), cmd);
     }
+
     public static List<String> getAirDropCompleter(Player player, AirDrop airDrop, String cmd) {
-      return   airDrop.tabCompleter(new Event(airDrop, player, EventType.RUN_COMMAND), cmd);
+        return airDrop.tabCompleter(new Event(airDrop, player, EventType.RUN_COMMAND), cmd);
     }
+
     public static List<String> getDefaultCompleter(Player player, AirDrop airDrop, String[] args) {
         return commands.getTabCompleter(new Event(airDrop, player, EventType.RUN_COMMAND), args);
     }
+
     public static void runDefaultCommand(Player player, AirDrop airDrop, String[] args) throws CommandException {
         commands.process(new Event(airDrop, player, EventType.RUN_COMMAND), args);
     }
@@ -292,6 +296,22 @@ public class CommandRegistry {
                     SchematicPaster.undo(event.getAirDrop());
                 })
         );
+        registerCommand(new Command<Event>("[SET_LID_STATE]")
+                .argument(new ArgumentSetList<>("state", List.of("OPEN", "CLOSE")))
+                .executor((event, args) -> {
+                    String state = (String) args.getOrThrow("state", "[SET_LID_STATE] <OPEN/CLOSE>");
+                    var loc = Validate.notNull(event.getAirDrop().getLocation(), "Локация аирдропа ещё не определена!");
+                    var blockState = loc.getBlock().getState();
+                    if (!(blockState instanceof Lidded lidded)) {
+                        throw new CommandException("Блок типа %s не поддерживает такую операцию!", loc.getBlock().getType());
+                    }
+                    if (state.equals("OPEN")) {
+                        lidded.open();
+                    } else {
+                        lidded.close();
+                    }
+                })
+        );
         registerCommand(new Command<Event>("[SET_MATERIAL]")
                 .argument(new ArgumentEnumValue<>("material", Material.class))
                 .argument(new ArgumentIntegerAllowedMath<>("x"))
@@ -316,3 +336,4 @@ public class CommandRegistry {
         );
     }
 }
+

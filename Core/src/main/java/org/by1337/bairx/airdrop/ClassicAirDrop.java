@@ -300,7 +300,7 @@ public class ClassicAirDrop extends Placeholder implements AirDrop, Summonable {
         CompoundTag compoundTag1 = new CompoundTag();
         inventoryManager.save(compoundTag1, invCfg);
 
-        Files.writeString(invItemsFile.toPath(), compoundTag1.toStringBeautifier(0));
+        Files.writeString(invItemsFile.toPath(), compoundTag1.toString());
         invCfg.save();
     }
 
