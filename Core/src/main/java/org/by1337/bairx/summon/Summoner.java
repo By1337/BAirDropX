@@ -1,7 +1,6 @@
 package org.by1337.bairx.summon;
 
 import org.bukkit.Location;
-import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataType;
@@ -148,7 +147,7 @@ public class Summoner {
 
         AirDrop summon;
         if (spawnMirror) {
-            summon = airDrop.createMirror(new NameKey(id.getName() + "-clone-" + counter.getAndIncrement()));
+            summon = airDrop.createTempMirror(new NameKey(id.getName() + "-clone-" + counter.getAndIncrement()));
             BAirDropX.registerAirDrop(summon);
         } else {
             summon = airDrop;

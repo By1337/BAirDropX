@@ -99,7 +99,7 @@ public class ClassicAirDrop extends Placeholder implements AirDrop, Summonable {
     }
 
     @Override
-    public AirDrop createMirror(NameKey id) {
+    public AirDrop createTempMirror(NameKey id) {
         try {
             ClassicAirDrop airDrop = new ClassicAirDrop(dataFolder, metaData);
             airDrop.id = id;
@@ -363,6 +363,12 @@ public class ClassicAirDrop extends Placeholder implements AirDrop, Summonable {
     public void forceStop() {
         if (!started) return;
         end();
+    }
+
+    @Override
+    public boolean canSpawn() {
+        if (started) return false;
+        return Bukkit.getOnlinePlayers().size() >= requiredNumberOfPlayersOnline;
     }
 
     public void tick() {

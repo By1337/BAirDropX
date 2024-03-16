@@ -269,7 +269,7 @@ public final class BAirDropX extends JavaPlugin {
 //                        message.sendMsg(sender, "&cАирдроп с id '%s' уже существует");
 //                        return;
 //                    }
-//                    AirDrop mirror = airDrop.createMirror(id);
+//                    AirDrop mirror = airDrop.createTempMirror(id);
 //                    airDropMap.put(id, mirror);
 //                }))
 //        );
