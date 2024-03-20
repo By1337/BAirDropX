@@ -18,7 +18,7 @@ public class DefaultParticle implements SpawnableParticle {
                 () -> Particle.valueOf(compoundTag.getAsString("particle")),
                 IllegalArgumentException.class,
                 IllegalArgumentException::new,
-                "Не удалось загрузить партикл так как он не указан! " + compoundTag.toString()
+                "Не удалось загрузить партикл так как он не указан или указан не правильно! Проверь все существующие партиклы здесь https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Particle.html " + compoundTag.toString()
         );
         if (particle.getDataType() != Void.class) {
             throw new IllegalStateException("не удалось загрузить партикл так как он не поддерживается этим типом! " + compoundTag);

@@ -9,6 +9,7 @@ import java.util.List;
 public class PipelineManager<T> {
     private final List<Pair<String, PipelineHandler<T>>> handlers = new ArrayList<>();
 
+
     @CanIgnoreReturnValue
     public PipelineManager<T> add(String name, PipelineHandler<T> handler) {
         handlers.add(Pair.of(name, handler));

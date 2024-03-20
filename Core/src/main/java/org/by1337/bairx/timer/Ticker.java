@@ -82,7 +82,7 @@ public class Ticker implements Timer, EventListener {
             var air = BAirDropX.getAirdropById(wair.getId());
             if (air == null) {
                 BAirDropX.getMessage().warning("Таймер %s не найден аирдроп %s", name, wair.getChance());
-            } else if (!air.isStarted()) {
+            } else if (!air.isStarted() && air.canSpawn()) {
                 return air;
             }
         }

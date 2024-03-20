@@ -49,7 +49,7 @@ public class MenuAddItem extends AsyncClickListener {
             if (list.size() <= i) break;
             var item = list.get(i);
             var itemStack = item.getItemStack();
-            itemsOnScreen.put(i, item);
+            itemsOnScreen.put(slot, item);
             inventory.setItem(slot, itemStack);
         }
     }
@@ -85,6 +85,7 @@ public class MenuAddItem extends AsyncClickListener {
     protected void onClick(InventoryClickEvent e) {
         if (e.getClickedInventory() != inventory) {
             e.setCancelled(false);
+            syncUtil(this::update, 1);
             return;
         }
         if (e.getSlot() < 44) {

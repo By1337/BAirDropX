@@ -3,12 +3,28 @@ package org.by1337.bairx;
 //import net.kyori.adventure.text.minimessage.MiniMessage;
 
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+//import net.kyori.adventure.text.BlockNBTComponent;
+//import net.kyori.adventure.text.Component;
+//import net.kyori.adventure.text.event.ClickEvent;
+//import net.kyori.adventure.text.event.HoverEvent;
+//import net.kyori.adventure.text.format.Style;
+//import net.kyori.adventure.text.format.TextColor;
+//import net.kyori.adventure.text.format.TextDecoration;
+//import net.kyori.adventure.text.minimessage.MiniMessage;
+//import net.kyori.adventure.text.serializer.ComponentSerializer;
+//import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
+//import net.kyori.adventure.text.serializer.json.JSONComponentSerializer;
+//import net.kyori.adventure.translation.GlobalTranslator;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.block.ShulkerBox;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Shulker;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.by1337.bairx.addon.*;
 import org.by1337.bairx.airdrop.AirDrop;
@@ -55,6 +71,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.function.Supplier;
+import java.util.function.UnaryOperator;
 import java.util.logging.Level;
 
 public final class BAirDropX extends JavaPlugin {
@@ -140,14 +157,14 @@ public final class BAirDropX extends JavaPlugin {
     @Override
     public void onDisable() {
         addonLoader.disableAll();
-        AdapterRegistry.unregisterAdapter(GeneratorSetting.class);
-        AdapterRegistry.unregisterAdapter(Requirement.class);
-        AdapterRegistry.unregisterAdapter(Observer.class);
-
+        addonLoader.unloadAll();
         for (AirDrop value : airDropMap.values()) {
             value.forceStop();
             value.close();
         }
+        AdapterRegistry.unregisterAdapter(GeneratorSetting.class);
+        AdapterRegistry.unregisterAdapter(Requirement.class);
+        AdapterRegistry.unregisterAdapter(Observer.class);
     }
 
     @Override
@@ -168,6 +185,20 @@ public final class BAirDropX extends JavaPlugin {
 
     private void initCommand() {
         command = new Command<>("bair");
+//        command.addSubCommand(
+//                new Command<CommandSender>("test")
+//                        .argument(new ArgumentStrings<>("str"))
+//                        .executor(((sender, args) -> {
+//                          String str = (String) args.getOrThrow("str");
+//
+//
+//                            final Component component = MiniMessage.miniMessage().deserialize(str);
+//
+//
+//
+//                            System.out.println(GsonComponentSerializer.gson().serialize(component));
+//                        }))
+//        );
         command.addSubCommand(
                 new Command<CommandSender>("create")
                         .requires(new RequiresPermission<>("bair.create"))
@@ -257,23 +288,6 @@ public final class BAirDropX extends JavaPlugin {
                     airDrop.forceStop();
                 }))
         );
-//        command.addSubCommand(new Command<CommandSender>("clone")
-//                .requires(new RequiresPermission<>("bair.clone"))
-//                .argument(new ArgumentSetList<>("air", () -> airDropMap.values().stream().map(air -> air.getId().getName()).toList()))
-//                .argument(new ArgumentString<>("id"))
-//                .executor(((sender, args) -> {
-//                    AirDrop airDrop = airDropMap.get(new NameKey((String) args.getOrThrow("air", "&c/bairx stop <id>")));
-//                    String id0 = (String) args.getOrThrow("id", "&c/bairx <air> <id>");
-//                    NameKey id = new NameKey(id0);
-//                    if (airDropMap.containsKey(id)){
-//                        message.sendMsg(sender, "&cАирдроп с id '%s' уже существует");
-//                        return;
-//                    }
-//                    AirDrop mirror = airDrop.createTempMirror(id);
-//                    airDropMap.put(id, mirror);
-//                }))
-//        );
-
         command.addSubCommand(new ExecuteCommand());
 
         command.addSubCommand(new Command<CommandSender>("tp")
@@ -295,6 +309,7 @@ public final class BAirDropX extends JavaPlugin {
                     }
                 }))
         );
+
         command.addSubCommand(new EffectCommand());
         command.addSubCommand(new Command<CommandSender>("addons")
                 .requires(new RequiresPermission<>("bair.addons"))
@@ -304,45 +319,48 @@ public final class BAirDropX extends JavaPlugin {
                             message.sendMsg(sender, addonLoader.getAddonList());
                         }))
                 )
-                .addSubCommand(new Command<CommandSender>("unload")
-                        .argument(new ArgumentSetList<>("addon", () -> addonLoader.getAddons().stream().map(JavaAddon::getName).toList()))
-                        .executor(((sender, args) -> {
-                            String addon = (String) args.getOrThrow("addon", "&c/addons unload <addon>");
-                            addonLoader.disable(addon);
-                            addonLoader.unload(addon);
-                            message.sendMsg(sender, "&aDone");
-                        }))
-                )
-                .addSubCommand(new Command<CommandSender>("load")
-                        .requires(new RequiresPermission<>("bair.addons.load"))
-                        .argument(new ArgumentSetList<>("file", () -> {
-                            List<File> files = FileUtil.findFiles(addonLoader.getDir(), f -> f.getName().endsWith(".jar"));
-                            List<String> names = new ArrayList<>();
-                            for (File file : files) {
-                                try {
-                                    AddonDescriptionFile descriptionFile = new AddonDescriptionFile(AddonLoader.readFileContentFromJar(file.getPath()));
-                                    if (addonLoader.getAddon(descriptionFile.getName()) == null) {
-                                        names.add(file.getName());
+                .addSubCommand(new Command<CommandSender>("unsafe")
+                        .requires(new RequiresPermission<>("bair.addons.unsafe"))
+                        .addSubCommand(new Command<CommandSender>("unload")
+                                .argument(new ArgumentSetList<>("addon", () -> addonLoader.getAddons().stream().map(JavaAddon::getName).toList()))
+                                .executor(((sender, args) -> {
+                                    String addon = (String) args.getOrThrow("addon", "&c/addons unload <addon>");
+                                    addonLoader.disable(addon);
+                                    addonLoader.unload(addon);
+                                    message.sendMsg(sender, "&aDone");
+                                }))
+                        )
+                        .addSubCommand(new Command<CommandSender>("load")
+                                .requires(new RequiresPermission<>("bair.addons.load"))
+                                .argument(new ArgumentStrings<>("file", () -> {
+                                    List<File> files = FileUtil.findFiles(addonLoader.getDir(), f -> f.getName().endsWith(".jar"));
+                                    List<String> names = new ArrayList<>();
+                                    for (File file : files) {
+                                        try {
+                                            AddonDescriptionFile descriptionFile = new AddonDescriptionFile(AddonLoader.readFileContentFromJar(file.getPath()));
+                                            if (addonLoader.getAddon(descriptionFile.getName()) == null) {
+                                                names.add(file.getName());
+                                            }
+                                        } catch (Exception e) {
+                                        }
                                     }
-                                } catch (Exception e) {
-                                }
-                            }
-                            return names;
-                        }))
-                        .executor(((sender, args) -> {
-                            String file = (String) args.getOrThrow("file", "&c/addons load <file>");
-                            File file1 = new File(addonLoader.getDir() + "/" + file + ".jar");
-                            if (!file1.exists()) {
-                                message.sendMsg(sender, "Файл не существует!");
-                                return;
-                            }
-                            try {
-                                addonLoader.loadAddon(file1);
-                            } catch (IOException | InvalidAddonException e) {
-                                message.error(e);
-                                message.sendMsg(sender, e.getLocalizedMessage());
-                            }
-                        }))
+                                    return names;
+                                }))
+                                .executor(((sender, args) -> {
+                                    String file = (String) args.getOrThrow("file", "&c/addons load <file>");
+                                    File file1 = new File(addonLoader.getDir() + "/" + file + ".jar");
+                                    if (!file1.exists()) {
+                                        message.sendMsg(sender, "Файл не существует!");
+                                        return;
+                                    }
+                                    try {
+                                        addonLoader.loadAddon(file1);
+                                    } catch (IOException | InvalidAddonException e) {
+                                        message.error(e);
+                                        message.sendMsg(sender, e.getLocalizedMessage());
+                                    }
+                                }))
+                        )
                 )
         );
     }

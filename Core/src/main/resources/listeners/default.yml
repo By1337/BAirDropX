@@ -50,6 +50,7 @@ listeners:
     event: 'start'
     commands:
       - '[SET_REGION]'
+      - '[CONSOLE] execute in {minecraft_current_world} run setblock {x} {y} {z} minecraft:respawn_anchor[charges=4] replace'
       - '[MESSAGE_ALL] {air_name}&f Появился!'
       - '[MESSAGE_ALL] На координатах x:{x} y:{y} z:{z}'
       - '[EFFECT_START] random_particle rnd_particles'

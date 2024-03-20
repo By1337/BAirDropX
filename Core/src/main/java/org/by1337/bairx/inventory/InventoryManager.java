@@ -22,6 +22,7 @@ import org.by1337.blib.nbt.impl.ListNBT;
 import org.by1337.bairx.random.WeightedRandomItemSelector;
 import org.by1337.blib.configuration.YamlConfig;
 import org.by1337.blib.configuration.YamlContext;
+import org.by1337.blib.util.Pair;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -147,12 +148,22 @@ public class InventoryManager implements PipelineHandler<ItemStack>, Listener {
 
     public void release() {
         inventory.clear();
-        randomItemSelector = null;
-        for (PipelineHandler<?> value : loadedExtensions.values()) {
-            if (value instanceof Releasable releasable){
+     //   randomItemSelector = null;
+        for (Pair<String, PipelineHandler<ItemStack>> handler : pipeline.getHandlers()) {
+            if (handler.getRight() instanceof Releasable releasable){
                 releasable.release();
             }
         }
+        for (Pair<String, PipelineHandler<InventoryEvent>> handler : clickPipeline.getHandlers()) {
+            if (handler.getRight() instanceof Releasable releasable){
+                releasable.release();
+            }
+        }
+//        for (PipelineHandler<?> value : loadedExtensions.values()) {
+//            if (value instanceof Releasable releasable){
+//                releasable.release();
+//            }
+//        }
         for (HumanEntity viewer : inventory.getViewers().toArray(new HumanEntity[0])) {
             viewer.closeInventory();
         }
@@ -163,6 +174,7 @@ public class InventoryManager implements PipelineHandler<ItemStack>, Listener {
         HandlerList.unregisterAll(this);
     }
 
+    @SuppressWarnings("unchecked")
     public void reloadExtensions() {
         loadedExtensions.forEach((k, v) -> {
             if (k.getType() == HandlerRegistry.Type.ITEM) {

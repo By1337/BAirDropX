@@ -201,4 +201,5 @@ public interface AirDrop extends Placeholderable {
      * @return true if {@link AirDrop#close()} has been called, false otherwise.
      */
     boolean isUnloaded();
+    void openEditMenu(Player player);
 }

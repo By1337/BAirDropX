@@ -137,6 +137,7 @@ public class ClassicAirDrop extends Placeholder implements AirDrop, Summonable {
             genSettingFile.createNewFile();
             YamlConfig config = new YamlConfig(genSettingFile);
             config.set("setting", generatorSetting);
+            config.save();
         }
 
         if (!invManagerCfgFile.exists()) {
@@ -381,18 +382,20 @@ public class ClassicAirDrop extends Placeholder implements AirDrop, Summonable {
         if (!started) {
             if (Bukkit.getOnlinePlayers().size() < requiredNumberOfPlayersOnline) return;
             timeToStart--;
-            if (timeToStart == 0) {
+            if (timeToStart <= 0) {
+                timeToStart = 0;
                 start();
             }
         } else if (!opened && (!triggeredTimeToOpen || clicked)) {
             timeToOpen--;
-            if (timeToOpen == 0) {
+            if (timeToOpen <= 0) {
+                timeToOpen = 0;
                 unlock();
             }
         }
         if (timeToOpen == 0 || independentTimeToEnd) {
             timeToEnd--;
-            if (timeToEnd == 0) {
+            if (timeToEnd <= 0) {
                 end();
             }
         }
@@ -409,11 +412,6 @@ public class ClassicAirDrop extends Placeholder implements AirDrop, Summonable {
         timeToStart = 0;
         started = true;
         location.getBlock().setType(materialWhenClosed);
-        if (materialWhenClosed == Material.RESPAWN_ANCHOR) { // todo временная мера
-            RespawnAnchor ra = (RespawnAnchor) location.getBlock().getBlockData();
-            ra.setCharges(4);
-            location.getBlock().setBlockData(ra);
-        }
         callEvent(null, EventType.START);
     }
 
@@ -514,7 +512,7 @@ public class ClassicAirDrop extends Placeholder implements AirDrop, Summonable {
 
     private void registerPlaceholders() {
         registerPlaceholders(RandomPlaceholders.INSTANCE);
-        registerPlaceholder("{world}", () -> world.getName());
+        registerPlaceholder("{world}", world::getName);
         registerPlaceholder("{air_name}", () -> airName);
         registerPlaceholder("{time_to_start}", () -> timeToStart);
         registerPlaceholder("{time_to_open}", () -> timeToOpen);
@@ -525,8 +523,8 @@ public class ClassicAirDrop extends Placeholder implements AirDrop, Summonable {
         registerPlaceholder("{use_static_loc}", () -> useStaticLoc);
         registerPlaceholder("{triggered_time_to_open}", () -> triggeredTimeToOpen);
         registerPlaceholder("{independent_time_to_end}", () -> independentTimeToEnd);
-        registerPlaceholder("{material_when_closed}", () -> materialWhenClosed.name());
-        registerPlaceholder("{material_when_opened}", () -> materialWhenOpened.name());
+        registerPlaceholder("{material_when_closed}", materialWhenClosed::name);
+        registerPlaceholder("{material_when_opened}", materialWhenOpened::name);
         registerPlaceholder("{required_number_of_players_online}", () -> requiredNumberOfPlayersOnline);
         registerPlaceholder("{enable}", () -> enable);
         registerPlaceholder("{started}", () -> started);
@@ -537,7 +535,10 @@ public class ClassicAirDrop extends Placeholder implements AirDrop, Summonable {
         registerPlaceholder("{summoned}", () -> summoned);
         registerPlaceholder("{summoner_name}", () -> summonerName);
         registerPlaceholder("{remove}", () -> remove);
-        registerPlaceholder("{was-opened}", () -> wasOpened);
+        registerPlaceholder("{was_opened}", () -> wasOpened);
+        registerPlaceholder("{minecraft_world}", () -> world.getName().equals("world") ? "overworld" : world.getName());
+        registerPlaceholder("{current_world}", () -> location == null ? "none" : location.getWorld().getName());
+        registerPlaceholder("{minecraft_current_world}", () -> location == null ? "none" : location.getWorld().getName().equals("world") ? "overworld" : world.getName());
 
         registerPlaceholder("{x}", () -> location == null ? "?" : location.getBlockX());
         registerPlaceholder("{y}", () -> location == null ? "?" : location.getBlockY());
@@ -738,5 +739,10 @@ public class ClassicAirDrop extends Placeholder implements AirDrop, Summonable {
 
     public boolean isUnloaded() {
         return unloaded;
+    }
+
+    @Override
+    public void openEditMenu(Player player) {
+
     }
 }

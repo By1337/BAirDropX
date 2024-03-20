@@ -19,7 +19,6 @@ public class AirdropLoader {
             file.mkdir();
             ConfigUtil.trySave("airdrops/example/config.yml");
             ConfigUtil.trySave("airdrops/example/desc.metadata");
-            ConfigUtil.trySave("airdrops/example/generator_setting.yml");
             ConfigUtil.trySave("airdrops/example/inventory_config.yml");
             ConfigUtil.trySave("airdrops/example/items.snbt");
         }
