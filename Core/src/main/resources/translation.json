@@ -1,0 +1,76 @@
+{
+  "use-locale": "auto-detect",
+  "default-locale": "ru_RU",
+  "version": 1,
+  "messages": {
+    "command.create.air.already.exist": {
+      "ru_RU": "&cАирдроп с именем %s уже существует!"
+    },
+    "command.tp.air.loc.null": {
+      "ru_RU": "&cАирдроп ещё не нашёл локацию для спавна!"
+    },
+    "command.tp.air.is.not.spawned": {
+      "ru_RU": "&cАирдроп пока не появился, но он должен появиться здесь."
+    },
+    "command.addon.load.file.does.not.exist": {
+      "ru_RU": "&cФайл не существует!"
+    },
+    "register.airdrop.air.already.exist": {
+      "ru_RU": "Аирдроп с id %s уже есть!"
+    },
+    "version.checker.update-msg": {
+      "ru_RU": "<green>[BAirDropX]</green><gray> вышла новая версия! Текущая '</gray><red>%s</red><gray>' новая '</gray><green>%s</green><gray>' ссылка для скачивания: <hover:show_text:'%s'><click:open_url:'%s'><green><b>клик</b></green></click></gray>"
+    },
+    "timer.ticker.missing.name": {
+      "ru_RU": "Параметр `name` не указан!"
+    },
+    "timer.ticker.missing.tick-speed": {
+      "ru_RU": "Параметр `tick-speed` не указан!"
+    },
+    "timer.ticker.missing.tick-type": {
+      "ru_RU": "Параметр `tick-type` не указан!"
+    },
+    "timer.ticker.incorrectly.tick-type": {
+      "ru_RU": "Параметр `tick-type` может быть только 'all' или 'by_chance'"
+    },
+    "number.must.be.number": {
+      "ru_RU": "%s должен быть числом!"
+    },
+    "timer.ticker.unknown.airdrop": {
+      "ru_RU": "Таймер %s не найден аирдроп %s"
+    },
+    "command.summon.successfully": {
+      "ru_RU": "&aУспешно выдано %s&a игроку %s"
+    },
+    "summoner.incorrectly.airDrops": {
+      "ru_RU": "Ожидалось `<airdrop>:<chance>`, а не %s"
+    },
+    "airdrop.failed.summon.none": {
+      "ru_RU": "&cНе получилось призвать не один аирдроп"
+    },
+    "airdrop.unknown": {
+      "ru_RU": "Неизвестный аирдроп %s"
+    },
+    "airdrop.not.summonable": {
+      "ru_RU": "Невозможно призвать аирдроп %s так как он не реализует интерфейс Summonable!"
+    },
+    "airdrop.min.height": {
+      "ru_RU": "&cМинимальная высота для призыва аирдропа %s"
+    },
+    "airdrop.max.height": {
+      "ru_RU": "&cМаксимальная высота для призыва аирдропа %s"
+    },
+    "airdrop.world.blacklist": {
+      "ru_RU": "&cВы не можете призвать аирдроп в этот мир!"
+    },
+    "airdrop.sky.blocked": {
+      "ru_RU": "&cВы можете призвать аирдроп только под открытым небом!"
+    },
+    "airdrop.region.occupied": {
+      "ru_RU": "&cВы можете призвать аирдроп в чей-то регион!"
+    },
+    "schematics-loader.failed": {
+      "ru_RU": "Не удалось загрузить настройки схематики"
+    }
+  }
+}

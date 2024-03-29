@@ -17,9 +17,9 @@ import com.google.gson.GsonBuilder;
 //import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 //import net.kyori.adventure.text.serializer.json.JSONComponentSerializer;
 //import net.kyori.adventure.translation.GlobalTranslator;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.World;
+import net.kyori.adventure.text.Component;
+//import net.kyori.adventure.text.minimessage.MiniMessage;
+import org.bukkit.*;
 import org.bukkit.block.ShulkerBox;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.InvalidConfigurationException;
@@ -42,6 +42,7 @@ import org.by1337.bairx.exception.PluginInitializationException;
 import org.by1337.bairx.hologram.HologramLoader;
 import org.by1337.bairx.hologram.HologramManager;
 import org.by1337.bairx.hook.metric.Metrics;
+import org.by1337.bairx.hook.papi.PapiHook;
 import org.by1337.bairx.inventory.MenuAddItem;
 import org.by1337.bairx.inventory.MenuEditChance;
 import org.by1337.bairx.listener.ClickListener;
@@ -68,7 +69,10 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
@@ -85,11 +89,16 @@ public final class BAirDropX extends JavaPlugin {
     private final Map<NameKey, AirDrop> airDropMap = new HashMap<>();
     private AddonLoader addonLoader;
     private YamlConfig cfg;
+    private PapiHook papiHook;
 
     @Override
     public void onLoad() {
         setInstance(this);
-        message = new Message(getLogger());
+        try (FileReader reader = new FileReader(ConfigUtil.trySave("translation.json"), StandardCharsets.UTF_8)){
+            message = new Message(getLogger(), reader);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         getDataFolder().mkdir();
         File addons = new File(getDataFolder(), "addons");
         if (!addons.exists()) {
@@ -102,6 +111,8 @@ public final class BAirDropX extends JavaPlugin {
     public void onEnable() {
         try {
             onEnable0();
+            getCommand("bairdropx").setExecutor(this);;
+            getCommand("bairdropx").setTabCompleter(this);
         } catch (Exception e) {
             Throwable t;
             if (e instanceof PluginInitializationException) {
@@ -141,6 +152,8 @@ public final class BAirDropX extends JavaPlugin {
         Bukkit.getScheduler().runTaskTimer(this, this::tick, 0, 1);
 
         Bukkit.getPluginManager().registerEvents(new ClickListener(), this);
+        papiHook = new PapiHook();
+        papiHook.register();
         new Metrics(this, 21314);
         new VersionChecker();
     }
@@ -149,7 +162,15 @@ public final class BAirDropX extends JavaPlugin {
     private void tick() {
         timerManager.tick(currentTick);
         if (currentTick % 20 == 0) {
-            airDropMap.values().stream().filter(AirDrop::isUseDefaultTimer).forEach(AirDrop::tick);
+            for (AirDrop airDrop : airDropMap.values().toArray(new AirDrop[0])) {
+                try {
+                    if (airDrop.isUseDefaultTimer()){
+                        airDrop.tick();
+                    }
+                }catch (Throwable t){
+                    message.error("failed to tick airdrop %s", t, airDrop.getId());
+                }
+            }
         }
         currentTick++;
     }
@@ -162,6 +183,7 @@ public final class BAirDropX extends JavaPlugin {
             value.forceStop();
             value.close();
         }
+        papiHook.unregister();
         AdapterRegistry.unregisterAdapter(GeneratorSetting.class);
         AdapterRegistry.unregisterAdapter(Requirement.class);
         AdapterRegistry.unregisterAdapter(Observer.class);
@@ -185,20 +207,6 @@ public final class BAirDropX extends JavaPlugin {
 
     private void initCommand() {
         command = new Command<>("bair");
-//        command.addSubCommand(
-//                new Command<CommandSender>("test")
-//                        .argument(new ArgumentStrings<>("str"))
-//                        .executor(((sender, args) -> {
-//                          String str = (String) args.getOrThrow("str");
-//
-//
-//                            final Component component = MiniMessage.miniMessage().deserialize(str);
-//
-//
-//
-//                            System.out.println(GsonComponentSerializer.gson().serialize(component));
-//                        }))
-//        );
         command.addSubCommand(
                 new Command<CommandSender>("create")
                         .requires(new RequiresPermission<>("bair.create"))
@@ -209,7 +217,7 @@ public final class BAirDropX extends JavaPlugin {
                             NameKey nameKey = new NameKey((String) args.getOrThrow("name", "&c/bairx load <type> <id>"));
 
                             if (airDropMap.containsKey(nameKey)) {
-                                throw new CommandException("&cАирдроп с именем %s уже существует!");
+                                throw new CommandException(String.format(message.getTranslation().translate("command.create.air.already.exist"), nameKey.getName()));
                             }
 
                             AirdropRegistry airdropRegistry = AirdropRegistry.byId(new NameKey(type));
@@ -297,7 +305,7 @@ public final class BAirDropX extends JavaPlugin {
                 .executor(((sender, args) -> {
                     AirDrop airDrop = airDropMap.get(new NameKey((String) args.getOrThrow("air", "&c/bairx tp <id>")));
                     if (airDrop.getLocation() == null) {
-                        message.sendMsg(sender, "&cАирдроп ещё не нашёл локацию для спавна!");
+                        message.sendMsg(sender, Component.translatable("command.tp.air.loc.null"));
                         return;
                     }
                     Player player = (Player) sender;
@@ -305,7 +313,7 @@ public final class BAirDropX extends JavaPlugin {
                         player.teleport(airDrop.getLocation());
                     } else {
                         player.teleport(airDrop.getLocation());
-                        message.sendMsg(sender, "&cАирдроп пока не появился, но он должен появиться здесь.");
+                        message.sendMsg(sender, Component.translatable("command.tp.air.is.not.spawned"));
                     }
                 }))
         );
@@ -350,7 +358,7 @@ public final class BAirDropX extends JavaPlugin {
                                     String file = (String) args.getOrThrow("file", "&c/addons load <file>");
                                     File file1 = new File(addonLoader.getDir() + "/" + file + ".jar");
                                     if (!file1.exists()) {
-                                        message.sendMsg(sender, "Файл не существует!");
+                                        message.sendMsg(sender, Component.translatable("command.addon.load.file.does.not.exist"));
                                         return;
                                     }
                                     try {
@@ -365,6 +373,9 @@ public final class BAirDropX extends JavaPlugin {
         );
     }
 
+    public static String translate(String key){
+        return getMessage().getTranslation().translate(key);
+    }
     public static void registerBAirCommand(Command<CommandSender> command) {
         instance.command.addSubCommand(command);
     }
@@ -387,7 +398,7 @@ public final class BAirDropX extends JavaPlugin {
 
     public static void registerAirDrop(@NotNull AirDrop airDrop) {
         if (instance.airDropMap.containsKey(airDrop.getId())) {
-            throw new IllegalStateException(String.format("Аирдроп с id %s уже есть!", airDrop.getId()));
+            throw new IllegalStateException(String.format(getMessage().getTranslation().translate("register.airdrop.air.already.exist"), airDrop.getId()));
         }
         instance.airDropMap.put(airDrop.getId(), airDrop);
     }
@@ -420,6 +431,10 @@ public final class BAirDropX extends JavaPlugin {
         if (debug) {
             getMessage().debug(message.get());
         }
+    }
+
+    public static PapiHook getPapiHook() {
+        return instance.papiHook;
     }
 
     @Nullable

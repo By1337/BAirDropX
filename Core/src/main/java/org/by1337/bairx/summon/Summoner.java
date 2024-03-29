@@ -78,10 +78,10 @@ public class Summoner {
         for (String air : context.getList("airDrops", String.class)) {
             String[] arr = air.split(":");
             if (arr.length != 2) {
-                throw new ConfigurationReadException("Ожидалось `<airdrop>:<chance>`, а не " + air);
+                throw new ConfigurationReadException(BAirDropX.translate("summoner.incorrectly.airDrops"), air);
             }
             NameKey id = new NameKey(arr[0]);
-            int chance = Validate.tryMap(arr[1], Integer::parseInt, "Ожидалось число, а не '%s'", arr[1]);
+            int chance = Validate.tryMap(arr[1], Integer::parseInt, BAirDropX.translate("number.must.be.number"), arr[1]);
             airDrops.add(new WeightedAirDrop(id, chance));
         }
         airSelector = new WeightedRandomItemSelector<>(this.airDrops, new Random());
@@ -109,34 +109,34 @@ public class Summoner {
     public Result summon(Player player, Location location) {
         NameKey id = airSelector.getRandomItem().getId();
         if (id == null) {
-            return new Result(ResultStatus.FAILED, "&cНе получилось призвать не один аирдроп");
+            return new Result(ResultStatus.FAILED, BAirDropX.translate("airdrop.failed.summon.none"));
         }
         AirDrop airDrop = BAirDropX.getAirdropById(id);
         if (airDrop == null) {
-            BAirDropX.getMessage().error("Неизвестный аирдроп %s", id);
-            return new Result(ResultStatus.FAILED, "&cНе получилось призвать не один аирдроп");
+            BAirDropX.getMessage().error(BAirDropX.translate("airdrop.unknown"), id);
+            return new Result(ResultStatus.FAILED, BAirDropX.translate("airdrop.failed.summon.none"));
         }
         if (!(airDrop instanceof Summonable summonable)) {
-            BAirDropX.getMessage().error("Невозможно призвать аирдроп %s так как он не реализует интерфейс Summonable!", id);
-            return new Result(ResultStatus.FAILED, "&cНе получилось призвать не один аирдроп");
+            BAirDropX.getMessage().error(BAirDropX.translate("airdrop.not.summonable"), id);
+            return new Result(ResultStatus.FAILED, BAirDropX.translate("airdrop.failed.summon.none"));
         }
         if (location.getBlockY() < minY) {
-            return new Result(ResultStatus.FAILED, "&cМинимальная высота для призыва аирдропа %s", minY);
+            return new Result(ResultStatus.FAILED, BAirDropX.translate("airdrop.min.height"), minY);
         }
         if (location.getBlockY() > maxY) {
-            return new Result(ResultStatus.FAILED, "&cМаксимальная высота для призыва аирдропа %s", maxY);
+            return new Result(ResultStatus.FAILED, BAirDropX.translate("airdrop.max.height"), maxY);
         }
         if (blackListWorlds.contains(location.getWorld().getName())) {
-            return new Result(ResultStatus.FAILED, "&cВы не можете призвать аирдроп в этот мир!");
+            return new Result(ResultStatus.FAILED, BAirDropX.translate("airdrop.world.blacklist"));
         }
         if (usePlayerLoc && checkUpBlocks) {
             if (location.getBlockY() -1 != location.getWorld().getHighestBlockAt(location).getY()) {
-                return new Result(ResultStatus.FAILED, "&cВы можете призвать аирдроп только под открытым небом!");
+                return new Result(ResultStatus.FAILED, BAirDropX.translate("airdrop.sky.blocked"));
             }
         }
         if (regionCheck) {
             if (!RegionManager.isRegionEmpty(airDrop.getGeneratorSetting().regionRadius, location)) {
-                return new Result(ResultStatus.FAILED, "&cВы можете призвать аирдроп в чей-то регион!");
+                return new Result(ResultStatus.FAILED, BAirDropX.translate("airdrop.region.occupied"));
             }
         }
 

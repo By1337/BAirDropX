@@ -1,5 +1,6 @@
 package org.by1337.bairx.schematics;
 
+import net.kyori.adventure.text.Component;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.util.Vector;
 import org.by1337.bairx.BAirDropX;
@@ -48,7 +49,7 @@ public class SchematicsLoader {
                 SchematicsConfig cfg = new SchematicsConfig(config);
                 schematicsCfg.put(cfg.name, cfg);
             } catch (IOException | InvalidConfigurationException e) {
-                BAirDropX.getMessage().error("Не удалось загрузить настройки схематики", e);
+                BAirDropX.getMessage().error(Component.translatable("schematics-loader.failed"), e);
             }
         }
     }

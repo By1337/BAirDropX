@@ -50,7 +50,7 @@ public class SchematicPaster {
 
             Operation operation = new ClipboardHolder(clipboard).createPaste(editSession)
                     .to(BlockVector3.at(
-                                    location.getBlockX() + cfg.getOffsets().getZ(),
+                                    location.getBlockX() + cfg.getOffsets().getX(),
                                     location.getBlockY() + cfg.getOffsets().getY(),
                                     location.getBlockZ() + cfg.getOffsets().getZ()
                             )

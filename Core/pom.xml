@@ -6,7 +6,7 @@
 
     <groupId>org.by1337.bairx</groupId>
     <artifactId>BAirDropX</artifactId>
-    <version>1.0.1-BETA-inv-fix</version>
+    <version>1.0.2-BETA</version>
     <packaging>jar</packaging>
 
     <distributionManagement>
@@ -65,13 +65,13 @@
                             <goal>shade</goal>
                         </goals>
                         <configuration>
-                            <createDependencyReducedPom>false</createDependencyReducedPom>
-                            <relocations>
-                                <relocation>
-                                    <pattern>net.kyori</pattern>
-                                    <shadedPattern>org.by1337.bairx.lib.net.kyori</shadedPattern>
-                                </relocation>
-                            </relocations>
+<!--                            <createDependencyReducedPom>false</createDependencyReducedPom>-->
+<!--                            <relocations>-->
+<!--                                <relocation>-->
+<!--                                    <pattern>net.kyori</pattern>-->
+<!--                                    <shadedPattern>org.by1337.bairx.lib.net.kyori</shadedPattern>-->
+<!--                                </relocation>-->
+<!--                            </relocations>-->
                         </configuration>
                     </execution>
                 </executions>
@@ -95,10 +95,6 @@
             <url>https://oss.sonatype.org/content/groups/public/</url>
         </repository>
         <repository>
-            <id>by1337</id>
-            <url>https://by1337.space/repository/maven-releases/</url>
-        </repository>
-        <repository>
             <id>sk89q-repo</id>
             <url>https://maven.enginehub.org/repo/</url>
         </repository>
@@ -114,44 +110,33 @@
             <id>jitpack.io</id>
             <url>https://jitpack.io</url>
         </repository>
+        <repository>
+            <id>by1337</id>
+            <url>https://by1337.space/repository/maven-releases/</url>
+        </repository>
+        <repository>
+            <id>placeholderapi</id>
+            <url>https://repo.extendedclip.com/content/repositories/placeholderapi/</url>
+        </repository>
     </repositories>
 
     <dependencies>
         <dependency>
-            <groupId>org.spigotmc</groupId>
-            <artifactId>spigot-api</artifactId>
+            <groupId>org.by1337.blib</groupId>
+            <artifactId>Blib</artifactId>
+            <version>1.0.7.1-beta</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.destroystokyo.paper</groupId>
+            <artifactId>paper-api</artifactId>
             <version>1.16.5-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
-        <!--libs-->
-<!--        <dependency>-->
-<!--            <groupId>net.kyori</groupId>-->
-<!--            <artifactId>adventure-text-serializer-gson</artifactId>-->
-<!--            <version>4.16.0</version>-->
-<!--            <scope>compile</scope>-->
-<!--        </dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>net.kyori</groupId>-->
-<!--            <artifactId>adventure-api</artifactId>-->
-<!--            <version>4.16.0</version>-->
-<!--            <scope>compile</scope>-->
-<!--        </dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>net.kyori</groupId>-->
-<!--            <artifactId>adventure-text-minimessage</artifactId>-->
-<!--            <version>4.16.0</version>-->
-<!--            <scope>compile</scope>-->
-<!--        </dependency>-->
         <dependency>
             <groupId>com.github.decentsoftware-eu</groupId>
             <artifactId>decentholograms</artifactId>
             <version>2.8.6</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.by1337.blib</groupId>
-            <artifactId>Blib-api</artifactId>
-            <version>1.0.6</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -184,13 +169,18 @@
             <version>1.5.21</version>
             <scope>provided</scope>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>com.google.code.gson</groupId>-->
-<!--            <artifactId>gson</artifactId>-->
-<!--            <version>2.10.1</version>-->
-<!--            <scope>compile</scope>-->
-<!--        </dependency>-->
-        <!-- tests -->
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.10.1</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>me.clip</groupId>
+            <artifactId>placeholderapi</artifactId>
+            <version>2.11.3</version>
+            <scope>provided</scope>
+        </dependency>
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>

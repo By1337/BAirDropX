@@ -1,5 +1,6 @@
 package org.by1337.bairx.summon;
 
+import net.kyori.adventure.text.Component;
 import org.bukkit.NamespacedKey;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -49,7 +50,7 @@ public class SummonerManager {
                             itemStack.setAmount(count);
                             PlayerUtil.giveItems(player, itemStack);
                             if (sender instanceof Player) {
-                                BAirDropX.getMessage().sendMsg(sender, "&aУспешно выдано %s&a игроку %s", summoner.getName(), player.getName());
+                                BAirDropX.getMessage().sendMsg(sender, Component.translatable("command.summon.successfully"), summoner.getName(), player.getName());
                             }
                         }))
                 )

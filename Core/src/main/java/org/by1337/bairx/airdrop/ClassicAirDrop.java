@@ -18,6 +18,8 @@ import org.by1337.bairx.event.EventType;
 import org.by1337.bairx.inventory.InventoryManager;
 import org.by1337.bairx.location.generator.GeneratorSetting;
 import org.by1337.bairx.location.generator.LocationManager;
+import org.by1337.bairx.util.NumberUtil;
+import org.by1337.blib.command.argument.ArgumentBoolean;
 import org.by1337.blib.nbt.NBTParser;
 import org.by1337.blib.nbt.impl.CompoundTag;
 import org.by1337.blib.nbt.impl.StringNBT;
@@ -515,8 +517,11 @@ public class ClassicAirDrop extends Placeholder implements AirDrop, Summonable {
         registerPlaceholder("{world}", world::getName);
         registerPlaceholder("{air_name}", () -> airName);
         registerPlaceholder("{time_to_start}", () -> timeToStart);
+        registerPlaceholder("{time_to_start_format}", () -> NumberUtil.format(timeToStart));
         registerPlaceholder("{time_to_open}", () -> timeToOpen);
+        registerPlaceholder("{time_to_open_format}", () -> NumberUtil.format(timeToOpen));
         registerPlaceholder("{time_to_end}", () -> timeToEnd);
+        registerPlaceholder("{time_to_end_format}", () -> NumberUtil.format(timeToEnd));
         registerPlaceholder("{time_to_start_const}", () -> timeToStartConst);
         registerPlaceholder("{time_to_open_const}", () -> timeToOpenConst);
         registerPlaceholder("{time_to_end_const}", () -> timeToEndConst);
@@ -721,6 +726,12 @@ public class ClassicAirDrop extends Placeholder implements AirDrop, Summonable {
                         location = new Location(world, 0, 0, 0);
                     }
                     location.setZ(z);
+                })
+        );
+        command.addSubCommand(new Command<Event>("[SET_ENABLE]")
+                .argument(new ArgumentBoolean<>("flag"))
+                .executor((pair, args) -> {
+                    enable = (boolean) args.getOrDefault("flag", !enable);
                 })
         );
 

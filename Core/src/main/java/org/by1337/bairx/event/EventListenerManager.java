@@ -6,57 +6,44 @@ import org.bukkit.plugin.Plugin;
 import java.util.*;
 
 import org.bukkit.event.Listener;
-import org.bukkit.plugin.Plugin;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
 import org.bukkit.event.server.PluginDisableEvent;
 import org.by1337.bairx.BAirDropX;
 import org.by1337.bairx.airdrop.AirDrop;
 import org.by1337.blib.BLib;
+import org.by1337.blib.util.collection.LockableList;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class EventListenerManager implements Listener {
-    private static final HashMap<Plugin, List<EventListener>> listeners = new HashMap<>();
+    private static final LockableList<EventListener> listeners = LockableList.createThreadSaveList();
 
-    public static void load() {
-        Bukkit.getPluginManager().registerEvents(new EventListenerManager(), BAirDropX.getInstance());
-    }
 
+    @Deprecated
     public static void register(Plugin plugin, EventListener listener) {
+        register(listener);
+    }
+    public static void register(EventListener listener) {
         BLib.catchOp("async listener registering");
-        listeners.computeIfAbsent(plugin, k -> new ArrayList<>()).add(listener);
+        listeners.add(listener);
     }
 
+    @Deprecated
     public static void unregister(Plugin plugin, EventListener listener) {
+        unregister(listener);
+    }
+    public static void unregister(EventListener listener) {
         BLib.catchOp("async listener unregistering");
-        List<EventListener> pluginListeners = listeners.get(plugin);
-        if (pluginListeners != null) {
-            pluginListeners.remove(listener);
-            if (pluginListeners.isEmpty()) {
-                listeners.remove(plugin);
-            }
-        }
+        listeners.remove(listener);
     }
 
     public static void call(Event event, AirDrop airDrop) {
-        for (List<EventListener> list : listeners.values().toArray(new List[0])) {
-            for (EventListener listener : list.toArray(new EventListener[0])) {
-                listener.onEvent(event, airDrop);
-            }
+        listeners.lock();
+        for (EventListener listener : listeners) {
+            listener.onEvent(event, airDrop);
         }
+        listeners.unlock();
     }
 
-    @EventHandler
-    public void onPluginUnload(PluginDisableEvent event) {
-        Plugin plugin = event.getPlugin();
-        if (listeners.containsKey(plugin)) {
-            List<EventListener> pluginListeners = listeners.get(plugin);
-            for (EventListener listener : pluginListeners) {
-                unregister(plugin, listener);
-            }
-        }
-    }
 }

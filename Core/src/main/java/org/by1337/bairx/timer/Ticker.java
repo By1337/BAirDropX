@@ -35,10 +35,10 @@ public class Ticker implements Timer, EventListener {
     private final WeightedRandomItemSelector<WeightedAirDrop> randomAirdropSelector;
 
     public Ticker(YamlContext context) {
-        name = Validate.notNull(context.getAsNameKey("name"), "Параметр `name` не указан!");
-        tickSpeed = Validate.notNull(context.getAsInteger("tick-speed"), "Параметр `tick-speed` не указан!");
-        String tickTypeString = Validate.notNull(context.getAsString("tick-type"), "Параметр `tick-type` не указан!");
-        Validate.test(tickTypeString, str -> !str.equals("all") && !str.equals("by_chance"), () -> new PluginInitializationException("Параметр `tick-type` может быть только 'all' или 'by_chance'"));
+        name = Validate.notNull(context.getAsNameKey("name"), BAirDropX.translate("timer.ticker.missing.name"));
+        tickSpeed = Validate.notNull(context.getAsInteger("tick-speed"), BAirDropX.translate("timer.ticker.missing.tick-speed"));
+        String tickTypeString = Validate.notNull(context.getAsString("tick-type"), BAirDropX.translate("timer.ticker.missing.tick-type"));
+        Validate.test(tickTypeString, str -> !str.equals("all") && !str.equals("by_chance"), () -> new PluginInitializationException(BAirDropX.translate("timer.ticker.incorrectly.tick-type")));
         tickType = tickTypeString.equals("all") ? TickType.ALL : TickType.BY_CHANCE;
 
 
@@ -52,7 +52,7 @@ public class Ticker implements Timer, EventListener {
                 airdrops.add(new WeightedAirDrop(id, 100));
             } else {
                 airdrops.add(new WeightedAirDrop(id,
-                        Validate.tryMap(value, (obj) -> Integer.parseInt(String.valueOf(obj)), "%s должен быть числом!", value)));
+                        Validate.tryMap(value, (obj) -> Integer.parseInt(String.valueOf(obj)), BAirDropX.translate("number.must.be.number"), value)));
             }
             lickedAirDrops.add(id);
         }
@@ -81,7 +81,7 @@ public class Ticker implements Timer, EventListener {
         if (wair != null) {
             var air = BAirDropX.getAirdropById(wair.getId());
             if (air == null) {
-                BAirDropX.getMessage().warning("Таймер %s не найден аирдроп %s", name, wair.getChance());
+                BAirDropX.getMessage().warning(BAirDropX.translate("timer.ticker.unknown.airdrop"), name, wair.getChance());
             } else if (!air.isStarted() && air.canSpawn()) {
                 return air;
             }

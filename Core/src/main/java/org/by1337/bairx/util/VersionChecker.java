@@ -1,5 +1,6 @@
 package org.by1337.bairx.util;
 
+import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -20,14 +21,8 @@ public class VersionChecker implements Listener {
     public final String currentVersion;
     private String actualVersion;
     private String downloadLink;
-    private String message;
-    private String messageRaw = """
-            ["",{"text":"[BAirDropX]","color":"green"},{"text":" Вышла новая версия плагина!"},{"text":" Текущая '"},{"text":"%s","color":"red"},{"text":"', новая '"},{"text":"%s","color":"green"},{"text":"'","color":"#6AAB73"},{"text":"\\n"},{"text":"[BAirDropX]","color":"green"},{"text":" Ссылка на скачивание "},{"text":"%s","italic":true,"color":"aqua","clickEvent":{"action":"open_url","value":"%s"},"hoverEvent":{"action":"show_text","contents":"%s"}}]
-            """;
-    private final Listener listener;
 
     public VersionChecker() {
-        listener = this;
         currentVersion = BAirDropX.getInstance().getDescription().getVersion();
         new Thread(() -> {
             String result = parsePage();
@@ -36,8 +31,7 @@ public class VersionChecker implements Listener {
                 actualVersion = args[0];
                 downloadLink = args[1];
                 if (actualVersion.equals(currentVersion)) return;
-                message = String.format(messageRaw, currentVersion, actualVersion, downloadLink, downloadLink, downloadLink);
-                Bukkit.getPluginManager().registerEvents(listener, BAirDropX.getInstance());
+                Bukkit.getPluginManager().registerEvents(VersionChecker.this, BAirDropX.getInstance());
                 Bukkit.getOnlinePlayers().forEach(this::trySendUpdateMessage);
             }
         }).start();
@@ -51,10 +45,7 @@ public class VersionChecker implements Listener {
 
     private void trySendUpdateMessage(Player player) {
         if (player.hasPermission("bair.update")) {
-            BLib.getApi().getCommandUtil().tellRaw(
-                    message,
-                    player
-            );
+            BAirDropX.getMessage().sendMsg(player, Component.translatable("version.checker.update-msg"), currentVersion, actualVersion, downloadLink, downloadLink);
         }
     }
 
