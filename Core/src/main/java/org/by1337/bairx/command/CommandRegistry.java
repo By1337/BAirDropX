@@ -156,10 +156,12 @@ public class CommandRegistry {
                 .argument(new ArgumentInteger<>("radius"))
                 .argument(new ArgumentStrings<>("cmd"))
                 .executor((event, args) -> {
-                    int radius = (int) args.getOrThrow("radius", "В команду не указан радиус!");
+                    int radius = (int) args.getOrThrow("radius", "В команде не указан радиус!");
                     String cmd = (String) args.getOrThrow("cmd", "В команде не указана команда!");
                     var loc = Validate.notNull(event.getAirDrop().getLocation(), "Локация аирдропа ещё не определена!");
-                    loc.getWorld().getNearbyEntities(loc, radius, radius, radius).stream().filter(e -> e instanceof Player).map(e -> (Player) e).forEach(pl -> run(event.getWithPlayer(pl), cmd));
+                    loc.getWorld().getNearbyEntities(loc, radius, radius, radius)
+                            .stream().filter(e -> e instanceof Player).map(e -> (Player) e)
+                            .forEach(pl -> run(event.getWithPlayer(pl), cmd.replace("{player}", pl.getName())));
                 })
         );
         registerCommand(new Command<Event>("[ERROR]")
