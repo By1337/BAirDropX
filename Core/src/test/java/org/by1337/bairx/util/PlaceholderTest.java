@@ -10,7 +10,7 @@ public class PlaceholderTest extends TestCase {
         Assert.assertEquals("123123123123123123123123", test.replace("{test}{test}{test}{test}{test}{test}{test}{test}"));
     }
 
-    private class PlaceholderableTest extends Placeholder {
+    private static class PlaceholderableTest extends Placeholder {
         public PlaceholderableTest() {
             registerPlaceholder("{test}", () -> "123");
             registerPlaceholder("{test1}", () -> "321");

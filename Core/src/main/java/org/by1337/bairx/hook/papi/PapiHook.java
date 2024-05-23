@@ -24,6 +24,7 @@ public class PapiHook extends PlaceholderExpansion {
                     if (airDrop == null) return "unknown airdrop " + param[0];
                     return airDrop.replace(String.format("{%s}", param[1]));
                 }));
+        placeholder.build();
     }
 
 
@@ -47,12 +48,13 @@ public class PapiHook extends PlaceholderExpansion {
         return true;
     }
 
-
-
     @Override
     @Nullable
     public String onPlaceholderRequest(final Player player, @NotNull final String params) {
         return placeholder.process(player, params.split("_"));
     }
 
+    public Placeholder getPlaceholder() {
+        return placeholder;
+    }
 }

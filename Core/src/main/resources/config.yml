@@ -5,7 +5,7 @@ timers:
     name: timer-1
     tick-speed: 20 # Один тик аирдропа каждые 20 тиков сервера (раз в секунду)
     type: ticker # тип тикающий
-    tick-type: all # all | by_chance all - вызывает тик у всех аирдропов, by_chance - выбирает случайный и вызывает тик только у него
+    tick-type: all # all | by_chance - вызывает тик у всех аирдропов, by_chance - выбирает случайный и вызывает тик только у него
     linked-airdrops:
       custom_airdrop_id: '100' # <airdrop id>: 'extra' extra - это дополнительная информация. При типе by_chance в extra указывается шанс того что этот аирдроп будет тикать. при all можно ничего не указывать
 

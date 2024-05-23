@@ -325,7 +325,7 @@ public class ClassicAirDrop extends Placeholder implements AirDrop, Summonable {
         materialWhenOpened = Material.ENDER_CHEST;
         requiredNumberOfPlayersOnline = 1;
         signedListeners = new HashSet<>();
-        signedListeners.add(new SpacedNameKey("default:test"));
+        //signedListeners.add(new SpacedNameKey("default:test"));
         enable = true;
         started = false;
         opened = false;
@@ -395,7 +395,7 @@ public class ClassicAirDrop extends Placeholder implements AirDrop, Summonable {
                 unlock();
             }
         }
-        if (timeToOpen == 0 || independentTimeToEnd) {
+        if (started && (timeToOpen == 0 || independentTimeToEnd)) {
             timeToEnd--;
             if (timeToEnd <= 0) {
                 end();
@@ -688,6 +688,12 @@ public class ClassicAirDrop extends Placeholder implements AirDrop, Summonable {
                         throw new IllegalArgumentException("Аирдроп не запущен!");
                     }
                     unlock();
+                })
+        );
+        command.addSubCommand(new Command<Event>("[SET_CLICKED]")
+                .argument(new ArgumentBoolean<>("flag"))
+                .executor((pair, args) -> {
+                    clicked = (boolean) args.getOrDefault("flag", !clicked);
                 })
         );
         command.addSubCommand(new Command<Event>("[STOP]")

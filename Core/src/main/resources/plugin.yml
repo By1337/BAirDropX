@@ -13,7 +13,6 @@ commands:
     aliases:
       - bairx
       - bair
-      - air
       - airdrop
     permission: bair
 permissions:

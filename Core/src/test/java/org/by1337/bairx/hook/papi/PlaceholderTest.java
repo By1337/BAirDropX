@@ -31,6 +31,9 @@ public class PlaceholderTest {
         placeholder.addSubPlaceholder(
                 new Placeholder("test_test_test2_sub1_123123").executor(((player, args) -> "sub_123123"))
         );
+        placeholder.addSubPlaceholder(
+                new Placeholder("test1").executor(((player, args) -> "123321"))
+        );
 
         placeholder.build();
 
@@ -42,6 +45,7 @@ public class PlaceholderTest {
         Assert.assertEquals(placeholder.process(null, "test_test_test2_sub1".split("_")), "sub_ok3");
         Assert.assertEquals(placeholder.process(null, "test_test_test2_sub1_321321".split("_")), "sub_ok3");
         Assert.assertEquals(placeholder.process(null, "test_test_test2_sub1_123123".split("_")), "sub_123123");
+        Assert.assertEquals(placeholder.process(null, "test1".split("_")), "123321");
 
         for (String placeHolderS : placeholder.getAllPlaceHolders()) {
             Assert.assertNotNull(placeholder.process(

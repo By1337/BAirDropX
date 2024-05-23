@@ -54,7 +54,8 @@ public class SchematicPaster {
                                     location.getBlockY() + cfg.getOffsets().getY(),
                                     location.getBlockZ() + cfg.getOffsets().getZ()
                             )
-                    ).ignoreAirBlocks(cfg.isIgnoreAirBlocks()).build();
+                    ).
+                    ignoreAirBlocks(cfg.isIgnoreAirBlocks()).build();
 
             Operations.complete(operation);
             editSession.close();

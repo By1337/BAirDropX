@@ -25,6 +25,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Shulker;
+import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.by1337.bairx.addon.*;
 import org.by1337.bairx.airdrop.AirDrop;
@@ -57,6 +58,7 @@ import org.by1337.bairx.timer.TimerManager;
 import org.by1337.bairx.util.ConfigUtil;
 import org.by1337.bairx.util.FileUtil;
 import org.by1337.bairx.util.VersionChecker;
+import org.by1337.bairx.util.plugin.PluginEnablerManager;
 import org.by1337.blib.chat.util.Message;
 import org.by1337.blib.command.Command;
 import org.by1337.blib.command.CommandException;
@@ -90,11 +92,12 @@ public final class BAirDropX extends JavaPlugin {
     private AddonLoader addonLoader;
     private YamlConfig cfg;
     private PapiHook papiHook;
+    private PluginEnablerManager enablerManager;
 
     @Override
     public void onLoad() {
         setInstance(this);
-        try (FileReader reader = new FileReader(ConfigUtil.trySave("translation.json"), StandardCharsets.UTF_8)){
+        try (FileReader reader = new FileReader(ConfigUtil.trySave("translation.json"), StandardCharsets.UTF_8)) {
             message = new Message(getLogger(), reader);
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -105,58 +108,102 @@ public final class BAirDropX extends JavaPlugin {
             addons.mkdir();
         }
         addonLoader = new AddonLoader(new AddonLogger("Addons", this.getClass(), getLogger()), addons);
+        enablerManager = new PluginEnablerManager(this);
+        initManager();
     }
 
     @Override
     public void onEnable() {
-        try {
-            onEnable0();
-            getCommand("bairdropx").setExecutor(this);;
-            getCommand("bairdropx").setTabCompleter(this);
-        } catch (Exception e) {
-            Throwable t;
-            if (e instanceof PluginInitializationException) {
-                t = e;
-            } else {
-                t = new PluginInitializationException(e);
-            }
-            getLogger().log(Level.SEVERE, "failed to enable plugin!", t);
-            Bukkit.getPluginManager().disablePlugin(this);
-        }
+        enablerManager.onEnable();
     }
 
-    private void onEnable0() throws IOException, InvalidConfigurationException {
-        AdapterRegistry.registerAdapter(GeneratorSetting.class, new AdapterGeneratorSetting());
-        AdapterRegistry.registerAdapter(Requirement.class, new AdapterRequirement());
-        AdapterRegistry.registerAdapter(Observer.class, new AdapterObserver());
-
-        addonLoader.loadAll();
-        addonLoader.enableAll();
-        initCommand();
-        ConfigUtil.trySave("listeners/default.yml");
-        ConfigUtil.trySave("config.yml");
-        timerManager = new TimerManager();
-
-        observerManager = new ObserverManager();
-        EffectLoader.load();
-        SchematicsLoader.load();
-        HologramLoader.load();
-        HologramManager.INSTANCE.registerCommands();
-        cfg = new YamlConfig(new File(getDataFolder() + "/config.yml"));
-        SummonerManager.load();
-        SummonerManager.registerBAirCommands();
-        timerManager.load(cfg);
-
-        AirdropLoader.load();
-
-        Bukkit.getScheduler().runTaskTimer(this, this::tick, 0, 1);
-
-        Bukkit.getPluginManager().registerEvents(new ClickListener(), this);
-        papiHook = new PapiHook();
-        papiHook.register();
-        new Metrics(this, 21314);
-        new VersionChecker();
+    @Override
+    public void onDisable() {
+        enablerManager.onDisable();
     }
+
+    private void initManager() {
+        enablerManager
+                .enable("enable", () -> {
+                })
+                .enable("register adapters", () -> {
+                    AdapterRegistry.registerAdapter(GeneratorSetting.class, new AdapterGeneratorSetting());
+                    AdapterRegistry.registerAdapter(Requirement.class, new AdapterRequirement());
+                    AdapterRegistry.registerAdapter(Observer.class, new AdapterObserver());
+                })
+                .enable("load addons", () -> {
+                    addonLoader.loadAll();
+                    addonLoader.enableAll();
+                })
+                .enable("init commands", this::initCommand)
+                .enable("cfg save", () -> {
+                    ConfigUtil.trySave("listeners/default.yml");
+                    ConfigUtil.trySave("config.yml");
+                })
+                .enable("create timer manager", () -> {
+                    timerManager = new TimerManager();
+                })
+                .enable("load observer manager", () -> {
+                    observerManager = new ObserverManager();
+                    observerManager.load();
+                })
+                .enable("load effects", EffectLoader::load)
+                .enable("load schematics", SchematicsLoader::load)
+                .enable("load holograms", HologramLoader::load)
+                .enable("holograms register commands", HologramManager.INSTANCE::registerCommands)
+                .enable("load config", () -> cfg = new YamlConfig(new File(getDataFolder() + "/config.yml")))
+                .enable("enable summoner manager", () -> {
+                    SummonerManager.load();
+                    SummonerManager.registerBAirCommands();
+                })
+                .enable("load timer manager", () -> {
+                    timerManager.load(cfg);
+                })
+                .enable("load airdrops", AirdropLoader::load)
+                .enable("start main tick timer", () -> {
+                    Bukkit.getScheduler().runTaskTimer(this, this::tick, 0, 1);
+                })
+                .enable("register listeners", () -> {
+                    Bukkit.getPluginManager().registerEvents(new ClickListener(), this);
+                })
+                .enable("init papi hook", () -> {
+                    papiHook = new PapiHook();
+                    papiHook.register();
+                })
+                .enable("Metrics & version checker", () -> {
+                    new Metrics(this, 21314);
+                    new VersionChecker();
+                })
+                // disable
+                .disable("enable", () -> {
+                    Bukkit.getScheduler().cancelTasks(this);
+                    HandlerList.unregisterAll(this);
+                })
+                .disable("Metrics & version checker", () -> {
+                    papiHook.unregister();
+                })
+                .disable("load airdrops", () -> {
+                    for (AirDrop value : airDropMap.values()) {
+                        value.forceStop();
+                        value.close();
+                    }
+                    airDropMap.clear();
+                })
+                .disable("load addons", () -> {
+                    addonLoader.disableAll();
+                    addonLoader.unloadAll();
+                })
+                .disable("load effects", EffectLoader::close)
+                .disable("load schematics", SchematicsLoader::close)
+                .disable("load holograms", HologramLoader::close)
+                .disable("register adapters", () -> {
+                    AdapterRegistry.unregisterAdapter(GeneratorSetting.class);
+                    AdapterRegistry.unregisterAdapter(Requirement.class);
+                    AdapterRegistry.unregisterAdapter(Observer.class);
+                })
+        ;
+    }
+
     private long currentTick;
 
     private void tick() {
@@ -164,10 +211,10 @@ public final class BAirDropX extends JavaPlugin {
         if (currentTick % 20 == 0) {
             for (AirDrop airDrop : airDropMap.values().toArray(new AirDrop[0])) {
                 try {
-                    if (airDrop.isUseDefaultTimer()){
+                    if (airDrop.isUseDefaultTimer()) {
                         airDrop.tick();
                     }
-                }catch (Throwable t){
+                } catch (Throwable t) {
                     message.error("failed to tick airdrop %s", t, airDrop.getId());
                 }
             }
@@ -175,19 +222,6 @@ public final class BAirDropX extends JavaPlugin {
         currentTick++;
     }
 
-    @Override
-    public void onDisable() {
-        addonLoader.disableAll();
-        addonLoader.unloadAll();
-        for (AirDrop value : airDropMap.values()) {
-            value.forceStop();
-            value.close();
-        }
-        papiHook.unregister();
-        AdapterRegistry.unregisterAdapter(GeneratorSetting.class);
-        AdapterRegistry.unregisterAdapter(Requirement.class);
-        AdapterRegistry.unregisterAdapter(Observer.class);
-    }
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull org.bukkit.command.Command cmd, @NotNull String label, @NotNull String[] args) {
@@ -207,6 +241,17 @@ public final class BAirDropX extends JavaPlugin {
 
     private void initCommand() {
         command = new Command<>("bair");
+        command.addSubCommand(new Command<CommandSender>("unsafe")
+                        .requires(new RequiresPermission<>("bair.unsafe"))
+                        .addSubCommand(
+                                new Command<CommandSender>("reload")
+                                        .requires(new RequiresPermission<>("bair.reload"))
+                                        .executor(((sender, args) -> {
+                                            enablerManager.onDisable();
+                                            enablerManager.onEnable();
+                                        }))
+                        )
+        );
         command.addSubCommand(
                 new Command<CommandSender>("create")
                         .requires(new RequiresPermission<>("bair.create"))
@@ -373,9 +418,10 @@ public final class BAirDropX extends JavaPlugin {
         );
     }
 
-    public static String translate(String key){
+    public static String translate(String key) {
         return getMessage().getTranslation().translate(key);
     }
+
     public static void registerBAirCommand(Command<CommandSender> command) {
         instance.command.addSubCommand(command);
     }

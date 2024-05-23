@@ -45,4 +45,7 @@ public class HologramLoader {
         holo.load(context);
         return holo;
     }
+    public static void close(){
+        loaded.clear();
+    }
 }

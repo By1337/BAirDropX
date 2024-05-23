@@ -18,6 +18,9 @@ public class ObserverManager {
     private final Map<NameKey, ObserverLoader> loaders = new HashMap<>();
 
     public ObserverManager() {
+
+    }
+    public void load(){
         File dir = new File(BAirDropX.getInstance().getDataFolder() + "/listeners");
         if (!dir.exists()) {
             dir.mkdir();

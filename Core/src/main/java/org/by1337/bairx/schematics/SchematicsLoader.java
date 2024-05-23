@@ -54,6 +54,10 @@ public class SchematicsLoader {
         }
     }
 
+    public static void close(){
+        schematics.clear();
+        schematicsCfg.clear();
+    }
     @Nullable
     public static File getSchematic(String key) {
         return schematics.get(key);

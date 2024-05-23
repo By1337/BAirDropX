@@ -79,5 +79,8 @@ public class EffectLoader {
             }
         }
     }
+    public static void close(){
+        creatorMap.clear();
+    }
 
 }
