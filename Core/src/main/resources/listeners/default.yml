@@ -67,15 +67,15 @@ listeners:
       - '[HOLOGRAM] [REMOVE] holoClickWait'
       - '[EFFECT_START] circle circle_particles'
 
-  holoTimeToOpen-updater:
-    description: '&fОбновляет голограмму holoTimeToOpen'
+  holo-updater:
+    description: '&fОбновляет все голограммы'
     event: 'tick'
     requirement:
       check:
         type: 'math'
-        input: '{started} && {clicked} && !{opened}'
+        input: '{started} || {summoned}'
     commands:
-      - '[HOLOGRAM] [UPDATE] holoTimeToOpen'
+      - '[HOLOGRAM] [UPDATE_ALL]'
 
   click_open:
     description: '&fОткрывает инвентарь аирдропа игроку'
@@ -109,26 +109,6 @@ listeners:
       - '[HOLOGRAM] [REMOVE] holoTimeToStart -ifexist'
       - '[HOLOGRAM] [REMOVE] holoClickWait -ifexist'
       - '[HOLOGRAM] [REMOVE] holoTimeStart -ifexist'
-
-  hologramTimeToEnd-updater:
-    description: '&fОбновляет голограмму holoTimeToOpen'
-    event: 'tick'
-    requirement:
-      check:
-        type: 'math'
-        input: '{started} && {opened}'
-    commands:
-      - '[HOLOGRAM] [UPDATE] holoTimeToEnd'
-
-  hologramTimeStart-updater:
-    description: '&fОбновляет голограмму holoTimeStart'
-    event: 'tick'
-    requirement:
-      check:
-        type: 'math'
-        input: '{summoned} && !{started}'
-    commands:
-      - '[HOLOGRAM] [UPDATE] holoTimeStart'
 
   summoned:
     description: '&fСлушает призыв аирдропа'

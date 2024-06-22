@@ -13,18 +13,15 @@ triggered-time-to-open: true
 independent-time-to-end: false
 material-when-closed: RESPAWN_ANCHOR
 material-when-opened: ENDER_CHEST
-required-number-of-players-online: 1
 enable: true
 signed-listeners:
-- default:activate
-- default:open
-- default:start
-- default:end
-- default:holoTimeToOpen-updater
-- default:hologramTimeStart-updater
-- default:click_open
-- default:click_close
-- default:spawn_message
-- default:summoned
-- default:hologramTimeToEnd-updater
+  - default:activate
+  - default:open
+  - default:start
+  - default:end
+  - default:holo-updater
+  - default:click_open
+  - default:click_close
+  - default:spawn_message
+  - default:summoned
 use-default-timer: true

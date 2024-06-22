@@ -3,8 +3,6 @@ package org.by1337.bairx;
 //import net.kyori.adventure.text.minimessage.MiniMessage;
 
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 //import net.kyori.adventure.text.BlockNBTComponent;
 //import net.kyori.adventure.text.Component;
 //import net.kyori.adventure.text.event.ClickEvent;
@@ -20,11 +18,8 @@ import com.google.gson.GsonBuilder;
 import net.kyori.adventure.text.Component;
 //import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.*;
-import org.bukkit.block.ShulkerBox;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.Shulker;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.by1337.bairx.addon.*;
@@ -36,10 +31,8 @@ import org.by1337.bairx.command.bair.ExecuteCommand;
 import org.by1337.bairx.config.adapter.AdapterGeneratorSetting;
 import org.by1337.bairx.config.adapter.AdapterObserver;
 import org.by1337.bairx.config.adapter.AdapterRequirement;
-import org.by1337.bairx.effect.Effect;
-import org.by1337.bairx.effect.EffectCreator;
 import org.by1337.bairx.effect.EffectLoader;
-import org.by1337.bairx.exception.PluginInitializationException;
+import org.by1337.bairx.event.EventListenerManager;
 import org.by1337.bairx.hologram.HologramLoader;
 import org.by1337.bairx.hologram.HologramManager;
 import org.by1337.bairx.hook.metric.Metrics;
@@ -58,7 +51,7 @@ import org.by1337.bairx.timer.TimerManager;
 import org.by1337.bairx.util.ConfigUtil;
 import org.by1337.bairx.util.FileUtil;
 import org.by1337.bairx.util.VersionChecker;
-import org.by1337.bairx.util.plugin.PluginEnablerManager;
+import org.by1337.bairx.util.plugin.PluginEnablePipeline;
 import org.by1337.blib.chat.util.Message;
 import org.by1337.blib.command.Command;
 import org.by1337.blib.command.CommandException;
@@ -71,14 +64,12 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
-import java.util.function.UnaryOperator;
-import java.util.logging.Level;
 
 public final class BAirDropX extends JavaPlugin {
 
@@ -92,7 +83,7 @@ public final class BAirDropX extends JavaPlugin {
     private AddonLoader addonLoader;
     private YamlConfig cfg;
     private PapiHook papiHook;
-    private PluginEnablerManager enablerManager;
+    private PluginEnablePipeline enablePipeline;
 
     @Override
     public void onLoad() {
@@ -108,100 +99,93 @@ public final class BAirDropX extends JavaPlugin {
             addons.mkdir();
         }
         addonLoader = new AddonLoader(new AddonLogger("Addons", this.getClass(), getLogger()), addons);
-        enablerManager = new PluginEnablerManager(this);
-        initManager();
+        enablePipeline = new PluginEnablePipeline(this);
+        initPipeline();
     }
 
     @Override
     public void onEnable() {
-        enablerManager.onEnable();
+        enablePipeline.onEnable();
     }
 
     @Override
     public void onDisable() {
-        enablerManager.onDisable();
+        enablePipeline.onDisable();
     }
 
-    private void initManager() {
-        enablerManager
-                .enable("enable", () -> {
-                })
+    private void initPipeline() {
+        enablePipeline
                 .enable("register adapters", () -> {
                     AdapterRegistry.registerAdapter(GeneratorSetting.class, new AdapterGeneratorSetting());
                     AdapterRegistry.registerAdapter(Requirement.class, new AdapterRequirement());
                     AdapterRegistry.registerAdapter(Observer.class, new AdapterObserver());
-                })
-                .enable("load addons", () -> {
+                }).enable("load addons", () -> {
                     addonLoader.loadAll();
-                    addonLoader.enableAll();
-                })
-                .enable("init commands", this::initCommand)
+                }).enable("init commands", this::initCommand)
                 .enable("cfg save", () -> {
                     ConfigUtil.trySave("listeners/default.yml");
                     ConfigUtil.trySave("config.yml");
-                })
-                .enable("create timer manager", () -> {
+                }).enable("create timer manager", () -> {
                     timerManager = new TimerManager();
-                })
-                .enable("load observer manager", () -> {
+                }).enable("load observers", () -> {
                     observerManager = new ObserverManager();
                     observerManager.load();
-                })
-                .enable("load effects", EffectLoader::load)
-                .enable("load schematics", SchematicsLoader::load)
-                .enable("load holograms", HologramLoader::load)
-                .enable("holograms register commands", HologramManager.INSTANCE::registerCommands)
-                .enable("load config", () -> cfg = new YamlConfig(new File(getDataFolder() + "/config.yml")))
-                .enable("enable summoner manager", () -> {
+                }).enable("load effects", () -> {
+                    EffectLoader.load();
+                }).enable("load schematics", () -> {
+                    SchematicsLoader.load();
+                }).enable("load holograms", () -> {
+                    HologramLoader.load();
+                }).enable("holograms register commands", () -> {
+                    HologramManager.INSTANCE.registerCommands();
+                }).enable("load config", () -> {
+                    cfg = new YamlConfig(new File(getDataFolder() + "/config.yml"));
+                }).enable("enable summoner manager", () -> {
                     SummonerManager.load();
                     SummonerManager.registerBAirCommands();
-                })
-                .enable("load timer manager", () -> {
+                }).enable("load timer manager", () -> {
                     timerManager.load(cfg);
-                })
-                .enable("load airdrops", AirdropLoader::load)
-                .enable("start main tick timer", () -> {
+                }).enable("load airdrops", () -> {
+                    AirdropLoader.load();
+                }).enable("enable addons", () -> {
+                    addonLoader.enableAll();
+                }).enable("start main tick timer", () -> {
                     Bukkit.getScheduler().runTaskTimer(this, this::tick, 0, 1);
-                })
-                .enable("register listeners", () -> {
+                }).enable("register listeners", () -> {
                     Bukkit.getPluginManager().registerEvents(new ClickListener(), this);
-                })
-                .enable("init papi hook", () -> {
+                }).enable("init papi hook", () -> {
                     papiHook = new PapiHook();
                     papiHook.register();
-                })
-                .enable("Metrics & version checker", () -> {
+                }).enable("Metrics & version checker", () -> {
                     new Metrics(this, 21314);
                     new VersionChecker();
                 })
-                // disable
-                .disable("enable", () -> {
+                .disable("unregister", () -> {
                     Bukkit.getScheduler().cancelTasks(this);
                     HandlerList.unregisterAll(this);
-                })
-                .disable("Metrics & version checker", () -> {
+                    EventListenerManager.close();
+                }).disable("unregister papi hook", p -> p.isEnabled("init papi hook"), () -> {
                     papiHook.unregister();
-                })
-                .disable("load airdrops", () -> {
+                }).disable("disable addons", p -> p.isEnabled("enable addons"), () -> {
+                    addonLoader.disableAll();
+                    addonLoader.unloadAll();
+                }).disable("unload airdrops", p -> p.isEnabled("load airdrops"), () -> {
                     for (AirDrop value : airDropMap.values()) {
                         value.forceStop();
                         value.close();
                     }
                     airDropMap.clear();
-                })
-                .disable("load addons", () -> {
-                    addonLoader.disableAll();
-                    addonLoader.unloadAll();
-                })
-                .disable("load effects", EffectLoader::close)
-                .disable("load schematics", SchematicsLoader::close)
-                .disable("load holograms", HologramLoader::close)
-                .disable("register adapters", () -> {
+                }).disable("unload effects", p -> p.isEnabled("load effects"), () -> {
+                    EffectLoader.close();
+                }).disable("unload schematics", p -> p.isEnabled("load schematics"), () -> {
+                    SchematicsLoader.close();
+                }).disable("unload holograms", p -> p.isEnabled("load holograms"), () -> {
+                    HologramLoader.close();
+                }).disable("unregister adapters", () -> {
                     AdapterRegistry.unregisterAdapter(GeneratorSetting.class);
                     AdapterRegistry.unregisterAdapter(Requirement.class);
                     AdapterRegistry.unregisterAdapter(Observer.class);
-                })
-        ;
+                });
     }
 
     private long currentTick;
@@ -242,15 +226,16 @@ public final class BAirDropX extends JavaPlugin {
     private void initCommand() {
         command = new Command<>("bair");
         command.addSubCommand(new Command<CommandSender>("unsafe")
-                        .requires(new RequiresPermission<>("bair.unsafe"))
-                        .addSubCommand(
-                                new Command<CommandSender>("reload")
-                                        .requires(new RequiresPermission<>("bair.reload"))
-                                        .executor(((sender, args) -> {
-                                            enablerManager.onDisable();
-                                            enablerManager.onEnable();
-                                        }))
-                        )
+                .requires(new RequiresPermission<>("bair.unsafe"))
+                .addSubCommand(
+                        new Command<CommandSender>("reload")
+                                .requires(new RequiresPermission<>("bair.reload"))
+                                .executor(((sender, args) -> {
+                                    long x = System.nanoTime();
+                                    enablePipeline.reload();
+                                    message.sendMsg(sender, "&fReloaded in %s ms.", TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - x));
+                                }))
+                )
         );
         command.addSubCommand(
                 new Command<CommandSender>("create")
@@ -473,6 +458,9 @@ public final class BAirDropX extends JavaPlugin {
         return instance.observerManager;
     }
 
+    public static void debug(String s, Object... objects) {
+        debug(() -> String.format(s, objects));
+    }
     public static void debug(Supplier<String> message) {
         if (debug) {
             getMessage().debug(message.get());

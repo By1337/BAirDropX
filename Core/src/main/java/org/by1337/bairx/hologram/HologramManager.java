@@ -9,6 +9,7 @@ import org.by1337.bairx.hook.wg.SchematicPaster;
 import org.by1337.bairx.util.Validate;
 import org.by1337.blib.chat.Placeholderable;
 import org.by1337.blib.command.Command;
+import org.by1337.blib.command.argument.ArgumentBoolean;
 import org.by1337.blib.command.argument.ArgumentSetList;
 import org.by1337.blib.command.argument.ArgumentString;
 import org.by1337.blib.util.NameKey;
@@ -82,6 +83,15 @@ public class HologramManager {
                         .executor(((event, args) -> {
                             String id = (String) args.getOrThrow("id", "[HOLOGRAM] [UPDATE] <id>");
                             updateHologram(id, event.getAirDrop());
+                        }))
+                )
+                .addSubCommand(new Command<Event>("[UPDATE_ALL]")
+                        .executor(((event, args) -> {
+                            for (SpacedNameKey spacedNameKey : hologramMap.keySet()) {
+                                if (spacedNameKey.getSpace().equals(event.getAirDrop().getId())){
+                                    updateHologram(spacedNameKey.getName().getName(), event.getAirDrop());
+                                }
+                            }
                         }))
                 )
                 .addSubCommand(new Command<Event>("[REMOVE]")

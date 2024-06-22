@@ -8,9 +8,7 @@ import java.util.Collection;
 
 public interface Timer {
     NameKey name();
-
     void tick(final long currentTick);
-
     TimerRegistry getType();
 
 }

@@ -19,7 +19,6 @@ import java.util.List;
 public class EventListenerManager implements Listener {
     private static final LockableList<EventListener> listeners = LockableList.createThreadSaveList();
 
-
     @Deprecated
     public static void register(Plugin plugin, EventListener listener) {
         register(listener);
@@ -44,6 +43,9 @@ public class EventListenerManager implements Listener {
             listener.onEvent(event, airDrop);
         }
         listeners.unlock();
+    }
+    public static void close(){
+        listeners.clear();
     }
 
 }

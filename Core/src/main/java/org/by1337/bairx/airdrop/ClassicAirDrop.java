@@ -64,7 +64,6 @@ public class ClassicAirDrop extends Placeholder implements AirDrop, Summonable {
     private boolean independentTimeToEnd;
     private Material materialWhenClosed;
     private Material materialWhenOpened;
-    private int requiredNumberOfPlayersOnline;
     private Set<SpacedNameKey> signedListeners;
     private AirDropMetaData metaData;
     private boolean enable;
@@ -225,7 +224,6 @@ public class ClassicAirDrop extends Placeholder implements AirDrop, Summonable {
         independentTimeToEnd = context.getAsBoolean("independent-time-to-end");
         materialWhenClosed = context.getAsMaterial("material-when-closed");
         materialWhenOpened = context.getAsMaterial("material-when-opened");
-        requiredNumberOfPlayersOnline = context.getAsInteger("required-number-of-players-online");
         enable = context.getAsBoolean("enable");
         signedListeners = new HashSet<>();
         for (String s : context.getList("signed-listeners", String.class)) {
@@ -279,7 +277,6 @@ public class ClassicAirDrop extends Placeholder implements AirDrop, Summonable {
         cfg.set("independent-time-to-end", independentTimeToEnd); // AKA time-stop-event-must-go
         cfg.set("material-when-closed", materialWhenClosed);
         cfg.set("material-when-opened", materialWhenOpened);
-        cfg.set("required-number-of-players-online", requiredNumberOfPlayersOnline);
         cfg.set("enable", enable);
         cfg.set("signed-listeners", signedListeners);
         cfg.set("use-default-timer", useDefaultTimer);
@@ -323,7 +320,6 @@ public class ClassicAirDrop extends Placeholder implements AirDrop, Summonable {
         independentTimeToEnd = false;
         materialWhenClosed = Material.RESPAWN_ANCHOR;
         materialWhenOpened = Material.ENDER_CHEST;
-        requiredNumberOfPlayersOnline = 1;
         signedListeners = new HashSet<>();
         //signedListeners.add(new SpacedNameKey("default:test"));
         enable = true;
@@ -370,8 +366,7 @@ public class ClassicAirDrop extends Placeholder implements AirDrop, Summonable {
 
     @Override
     public boolean canSpawn() {
-        if (started) return false;
-        return Bukkit.getOnlinePlayers().size() >= requiredNumberOfPlayersOnline;
+        return !started;
     }
 
     public void tick() {
@@ -382,7 +377,6 @@ public class ClassicAirDrop extends Placeholder implements AirDrop, Summonable {
         }
 
         if (!started) {
-            if (Bukkit.getOnlinePlayers().size() < requiredNumberOfPlayersOnline) return;
             timeToStart--;
             if (timeToStart <= 0) {
                 timeToStart = 0;
@@ -530,7 +524,6 @@ public class ClassicAirDrop extends Placeholder implements AirDrop, Summonable {
         registerPlaceholder("{independent_time_to_end}", () -> independentTimeToEnd);
         registerPlaceholder("{material_when_closed}", materialWhenClosed::name);
         registerPlaceholder("{material_when_opened}", materialWhenOpened::name);
-        registerPlaceholder("{required_number_of_players_online}", () -> requiredNumberOfPlayersOnline);
         registerPlaceholder("{enable}", () -> enable);
         registerPlaceholder("{started}", () -> started);
         registerPlaceholder("{opened}", () -> opened);

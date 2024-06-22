@@ -171,7 +171,7 @@ public class CommandRegistry {
         );
         registerCommand(new Command<Event>("[LOGG]")
                 .argument(new ArgumentStrings<>("cmd"))
-                .executor((event, args) -> BAirDropX.getMessage().logger((String) args.getOrThrow("cmd", "Отсутствует сообщение!")))
+                .executor((event, args) -> BAirDropX.getMessage().log((String) args.getOrThrow("cmd", "Отсутствует сообщение!")))
         );
         registerCommand(new Command<Event>("[EXECUTE_AT]")
                 .argument(new ArgumentSetList<>("airdrop", () -> BAirDropX.allIdAirdrops().stream().map(NameKey::getName).toList()))
