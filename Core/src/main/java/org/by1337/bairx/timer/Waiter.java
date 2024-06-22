@@ -5,6 +5,8 @@ import org.by1337.bairx.timer.strategy.TimerRegistry;
 import org.by1337.bairx.util.Validate;
 import org.by1337.blib.configuration.YamlContext;
 import org.by1337.blib.util.NameKey;
+import org.by1337.blib.util.Pair;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
@@ -42,6 +44,11 @@ public class Waiter implements Timer {
 
     @Override
     public TimerRegistry getType() {
+        return null;
+    }
+
+    @Override
+    public @Nullable Pair<AirDrop, Long> getNearest() {
         return null;
     }
 

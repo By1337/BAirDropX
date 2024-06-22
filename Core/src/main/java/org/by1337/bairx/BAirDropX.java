@@ -475,4 +475,19 @@ public final class BAirDropX extends JavaPlugin {
     public static AirDrop getAirdropById(NameKey nameKey) {
         return instance.airDropMap.get(nameKey);
     }
+
+    public TimerManager getTimerManager() {
+        return timerManager;
+    }
+
+    public AddonLoader getAddonLoader() {
+        return addonLoader;
+    }
+
+    public long getCurrentTick() {
+        return currentTick;
+    }
+    public static Collection<AirDrop> getAirDrops(){
+        return instance.airDropMap.values();
+    }
 }

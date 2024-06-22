@@ -10,7 +10,6 @@ import org.by1337.bairx.event.EventListenerManager;
 import org.by1337.bairx.event.EventType;
 import org.by1337.bairx.exception.PluginInitializationException;
 import org.by1337.bairx.random.WeightedAirDrop;
-import org.by1337.bairx.random.WeightedItem;
 import org.by1337.bairx.random.WeightedRandomItemSelector;
 import org.by1337.bairx.timer.strategy.TimerRegistry;
 import org.by1337.bairx.util.Validate;
@@ -28,7 +27,7 @@ public class Ticker implements Timer, EventListener {
     @Nullable
     private AirDrop current;
     private final HashSet<AirDrop> bypassed = new HashSet<>();
-    private final HashSet<NameKey> lickedAirDrops = new HashSet<>();
+    private final HashSet<NameKey> linkedAirDrops = new HashSet<>();
     private final NameKey name;
     private int tickSpeed;
     private TickType tickType;
@@ -54,7 +53,7 @@ public class Ticker implements Timer, EventListener {
                 airdrops.add(new WeightedAirDrop(id,
                         Validate.tryMap(value, (obj) -> Integer.parseInt(String.valueOf(obj)), BAirDropX.translate("number.must.be.number"), value)));
             }
-            lickedAirDrops.add(id);
+            linkedAirDrops.add(id);
         }
         if (tickType == TickType.BY_CHANCE) {
             EventListenerManager.register(BAirDropX.getInstance(), this);
@@ -72,17 +71,35 @@ public class Ticker implements Timer, EventListener {
             if (current != null) current.tick();
             bypassed.forEach(AirDrop::tick);
         } else {
-            lickedAirDrops.stream().map(BAirDropX::getAirdropById).filter(Objects::nonNull).forEach(AirDrop::tick);
+            linkedAirDrops.stream().map(BAirDropX::getAirdropById).filter(Objects::nonNull).forEach(AirDrop::tick);
         }
     }
 
+    @Nullable
+    public Pair<AirDrop, Long> getNearest() {
+        List<AirDrop> airDrops = new ArrayList<>();
+        if (tickType == TickType.BY_CHANCE) {
+            if (current != null) {
+                airDrops.add(current);
+            }
+            airDrops.addAll(bypassed);
+        } else {
+            airDrops.addAll(linkedAirDrops.stream().map(BAirDropX::getAirdropById).filter(Objects::nonNull).toList());
+        }
+        airDrops.sort(Comparator.comparingInt(AirDrop::getToSpawn));
+        if (airDrops.isEmpty()) return null;
+        AirDrop airDrop = airDrops.get(0);
+        int toSpawnTicks = airDrop.getToSpawn();
+        return Pair.of(airDrop, ((tickSpeed * 50L) * toSpawnTicks));
+    }
+
     private AirDrop nextAirDrop() {
-        var wair = randomAirdropSelector.getRandomItem();
-        if (wair != null) {
-            var air = BAirDropX.getAirdropById(wair.getId());
+        var randomAir = randomAirdropSelector.getRandomItem();
+        if (randomAir != null) {
+            var air = BAirDropX.getAirdropById(randomAir.getId());
             if (air == null) {
-                BAirDropX.getMessage().warning(BAirDropX.translate("timer.ticker.unknown.airdrop"), name, wair.getChance());
-            } else if (!air.isStarted() && air.canSpawn()) {
+                BAirDropX.getMessage().warning(BAirDropX.translate("timer.ticker.unknown.airdrop"), name, randomAir.getChance());
+            } else if (!air.isStarted()) {
                 return air;
             }
         }
@@ -91,7 +108,7 @@ public class Ticker implements Timer, EventListener {
 
     @Override
     public void onEvent(@NotNull Event event, @NotNull AirDrop airDrop) {
-        if (!lickedAirDrops.contains(airDrop.getId()))
+        if (!linkedAirDrops.contains(airDrop.getId()))
             return;
         if (tickType == TickType.ALL) return;
         if (event.getEventType() == EventType.END) {
@@ -112,7 +129,7 @@ public class Ticker implements Timer, EventListener {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Ticker ticker = (Ticker) o;
-        return tickSpeed == ticker.tickSpeed && Objects.equals(airdrops, ticker.airdrops) && Objects.equals(current, ticker.current) && Objects.equals(bypassed, ticker.bypassed) && Objects.equals(lickedAirDrops, ticker.lickedAirDrops) && Objects.equals(name, ticker.name) && tickType == ticker.tickType;
+        return tickSpeed == ticker.tickSpeed && Objects.equals(airdrops, ticker.airdrops) && Objects.equals(current, ticker.current) && Objects.equals(bypassed, ticker.bypassed) && Objects.equals(linkedAirDrops, ticker.linkedAirDrops) && Objects.equals(name, ticker.name) && tickType == ticker.tickType;
     }
 
 

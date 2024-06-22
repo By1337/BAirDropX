@@ -78,13 +78,13 @@ public class CommandRegistry {
         registerCommand(new Command<Event>("[MESSAGE_ALL]")
                 .argument(new ArgumentStrings<>("message"))
                 .executor((event, args) -> {
-                    BAirDropX.getMessage().sendAllMsg((String) args.getOrThrow("message", "Отсутствует сообщение!"));
+                    BAirDropX.getMessage().sendAllMsg((String) args.getOrDefault("message", ""));
                 })
         );
         registerCommand(new Command<Event>("[MESSAGE]")
                 .argument(new ArgumentStrings<>("message"))
                 .executor((event, args) -> {
-                    BAirDropX.getMessage().sendMsg(Validate.notNull(event.getPlayer(), "В ивенте отсутствует игрок!"), (String) args.getOrThrow("message", "Отсутствует сообщение!"));
+                    BAirDropX.getMessage().sendMsg(Validate.notNull(event.getPlayer(), "В ивенте отсутствует игрок!"), (String) args.getOrDefault("message", ""));
                 })
         );
         registerCommand(new Command<Event>("[TITLE]")

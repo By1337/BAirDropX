@@ -364,10 +364,7 @@ public class ClassicAirDrop extends Placeholder implements AirDrop, Summonable {
         end();
     }
 
-    @Override
-    public boolean canSpawn() {
-        return !started;
-    }
+
 
     public void tick() {
         if (!enable) return;
@@ -754,5 +751,10 @@ public class ClassicAirDrop extends Placeholder implements AirDrop, Summonable {
     @Override
     public void openEditMenu(Player player) {
 
+    }
+
+    @Override
+    public int getToSpawn() {
+        return timeToStart;
     }
 }

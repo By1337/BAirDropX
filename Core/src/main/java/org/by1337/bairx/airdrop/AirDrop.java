@@ -3,7 +3,6 @@ package org.by1337.bairx.airdrop;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.entity.Player;
 import org.by1337.bairx.effect.Effect;
 import org.by1337.bairx.event.Event;
@@ -16,7 +15,6 @@ import org.by1337.blib.util.SpacedNameKey;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 
@@ -24,13 +22,7 @@ import java.util.Set;
  * Main interface for the airdrop.
  */
 public interface AirDrop extends Placeholderable {
-    /**
-     * Should return true if the airdrop can spawn.
-     * Used in timers to skip airdrops that cannot spawn.
-     *
-     * @return true if the airdrop can spawn, false otherwise.
-     */
-    boolean canSpawn();
+
 
     /**
      * Should return the world where the airdrop spawns.
@@ -202,4 +194,5 @@ public interface AirDrop extends Placeholderable {
      */
     boolean isUnloaded();
     void openEditMenu(Player player);
+    int getToSpawn();
 }

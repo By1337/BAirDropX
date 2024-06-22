@@ -40,6 +40,9 @@ public class TimerManager {
         timerMap.remove(timerName);
     }
 
+    public Collection<Timer> getTimers(){
+        return timerMap.values();
+    }
     @Nullable
     public Timer getTimer(NameKey timerName) {
         return timerMap.get(timerName);
