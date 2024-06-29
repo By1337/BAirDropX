@@ -147,16 +147,19 @@ public final class BAirDropX extends JavaPlugin {
                     timerManager.load(cfg);
                 }).enable("load airdrops", () -> {
                     AirdropLoader.load();
+                }).enable("init papi hook", () -> {
+                    papiHook = new PapiHook();
                 }).enable("enable addons", () -> {
                     addonLoader.enableAll();
+                }).enable("enable papi hook", () -> {
+                    papiHook.build();
+                    papiHook.register();
                 }).enable("start main tick timer", () -> {
                     Bukkit.getScheduler().runTaskTimer(this, this::tick, 0, 1);
                 }).enable("register listeners", () -> {
                     Bukkit.getPluginManager().registerEvents(new ClickListener(), this);
-                }).enable("init papi hook", () -> {
-                    papiHook = new PapiHook();
-                    papiHook.register();
-                }).enable("Metrics & version checker", () -> {
+                })
+                .enable("Metrics & version checker", () -> {
                     new Metrics(this, 21314);
                     new VersionChecker();
                 })
@@ -224,6 +227,7 @@ public final class BAirDropX extends JavaPlugin {
     }
 
     private void initCommand() {
+
         command = new Command<>("bair");
         command.addSubCommand(new Command<CommandSender>("unsafe")
                 .requires(new RequiresPermission<>("bair.unsafe"))
@@ -461,6 +465,7 @@ public final class BAirDropX extends JavaPlugin {
     public static void debug(String s, Object... objects) {
         debug(() -> String.format(s, objects));
     }
+
     public static void debug(Supplier<String> message) {
         if (debug) {
             getMessage().debug(message.get());
@@ -487,7 +492,8 @@ public final class BAirDropX extends JavaPlugin {
     public long getCurrentTick() {
         return currentTick;
     }
-    public static Collection<AirDrop> getAirDrops(){
+
+    public static Collection<AirDrop> getAirDrops() {
         return instance.airDropMap.values();
     }
 }

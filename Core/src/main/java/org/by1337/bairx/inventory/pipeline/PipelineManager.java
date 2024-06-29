@@ -1,14 +1,20 @@
 package org.by1337.bairx.inventory.pipeline;
 
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
+import org.by1337.bairx.inventory.InventoryManager;
 import org.by1337.blib.util.Pair;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class PipelineManager<T> {
     private final List<Pair<String, PipelineHandler<T>>> handlers = new ArrayList<>();
+    private final InventoryManager inventoryManager;
 
+    public PipelineManager(InventoryManager inventoryManager) {
+        this.inventoryManager = inventoryManager;
+    }
 
     @CanIgnoreReturnValue
     public PipelineManager<T> add(String name, PipelineHandler<T> handler) {
@@ -25,6 +31,13 @@ public class PipelineManager<T> {
     public PipelineManager<T> addFirst(String name, PipelineHandler<T> handler) {
         handlers.add(0, Pair.of(name, handler));
         return this;
+    }
+    @Nullable
+    public PipelineHandler<T> getByName(String name){
+        for (Pair<String, PipelineHandler<T>> pair : handlers) {
+            if (pair.getLeft().equals(name)) return pair.getRight();
+        }
+        return null;
     }
 
     @CanIgnoreReturnValue
@@ -135,4 +148,7 @@ public class PipelineManager<T> {
         }
     }
 
+    public InventoryManager getInventoryManager() {
+        return inventoryManager;
+    }
 }

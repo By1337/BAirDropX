@@ -19,6 +19,7 @@ import java.util.List;
 
 public class PapiHook extends PlaceholderExpansion {
     private final Placeholder placeholder;
+    private boolean locked;
 
     public PapiHook() {
         placeholder = new Placeholder("bairx");
@@ -48,7 +49,7 @@ public class PapiHook extends PlaceholderExpansion {
                     if (airDrop == null) return "---";
                     return airDrop.replace(String.format("{%s}", str));
                 }));
-        placeholder.build();
+     //   placeholder.build();
     }
 
     @Nullable
@@ -68,6 +69,20 @@ public class PapiHook extends PlaceholderExpansion {
         airs.sort(Comparator.comparingLong(Pair::getRight));
         if (airs.isEmpty()) return null;
         return airs.get(0).getLeft();
+    }
+    public void addSubPlaceholder(Placeholder subPlaceholder){
+        if (locked){
+            throw new IllegalStateException("Not allowed now");
+        }
+        placeholder.addSubPlaceholder(subPlaceholder);
+    }
+
+    public void build(){
+        if (locked){
+            throw new IllegalStateException("Already built");
+        }
+        locked = true;
+        placeholder.build();
     }
 
     @Override
@@ -94,9 +109,5 @@ public class PapiHook extends PlaceholderExpansion {
     @Nullable
     public String onPlaceholderRequest(final Player player, @NotNull final String params) {
         return placeholder.process(player, params.split("_"));
-    }
-
-    public Placeholder getPlaceholder() {
-        return placeholder;
     }
 }

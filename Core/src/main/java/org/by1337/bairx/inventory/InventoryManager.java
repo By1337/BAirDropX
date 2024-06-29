@@ -49,7 +49,7 @@ public class InventoryManager implements PipelineHandler<ItemStack>, Listener {
         this.genItemCount = genItemCount;
         this.invSize = invSize;
         this.invName = invName;
-        inventory = Bukkit.createInventory(null, invSize, BAirDropX.getMessage().messageBuilder(invName));
+        inventory = Bukkit.createInventory(null, invSize, BAirDropX.getMessage().componentBuilder(invName));
         rebuildPipeline();
         reloadExtensions();
         Bukkit.getPluginManager().registerEvents(this, BAirDropX.getInstance());
@@ -204,8 +204,8 @@ public class InventoryManager implements PipelineHandler<ItemStack>, Listener {
     }
 
     public void rebuildPipeline() {
-        clickPipeline = new PipelineManager<>();
-        pipeline = new PipelineManager<>();
+        clickPipeline = new PipelineManager<>(this);
+        pipeline = new PipelineManager<>(this);
         pipeline
                 .add("generator", this)
                 .add("handler", new ItemHandler(inventory, random));
@@ -296,5 +296,9 @@ public class InventoryManager implements PipelineHandler<ItemStack>, Listener {
 
     public void setEmptySlotChance(int emptySlotChance) {
         this.emptySlotChance = emptySlotChance;
+    }
+
+    public PipelineManager<InventoryEvent> getClickPipeline() {
+        return clickPipeline;
     }
 }

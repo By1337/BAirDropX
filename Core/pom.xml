@@ -6,19 +6,19 @@
 
     <groupId>org.by1337.bairx</groupId>
     <artifactId>BAirDropX</artifactId>
-    <version>1.0.2-BETA</version>
+    <version>1.0.3-BETA</version>
     <packaging>jar</packaging>
 
     <distributionManagement>
         <repository>
-            <id>by1337.space</id>
+            <id>by1337.repo.2</id>
             <name>releases</name>
-            <url>https://by1337.space/repository/maven-releases/</url>
+            <url>https://repo.by1337.space/repository/maven-releases/</url>
         </repository>
         <snapshotRepository>
-            <id>by1337.space</id>
+            <id>by1337.repo.2</id>
             <name>snapshots</name>
-            <url>https://by1337.space/repository/maven-snapshots/</url>
+            <url>https://repo.by1337.space/repository/maven-snapshots/</url>
         </snapshotRepository>
     </distributionManagement>
 
