@@ -57,13 +57,15 @@ public class PapiHook extends PlaceholderExpansion {
         List<Pair<AirDrop, Long>> airs = new ArrayList<>();
         for (Timer timer : BAirDropX.getInstance().getTimerManager().getTimers()) {
             var pair = timer.getNearest();
-            if (pair != null){
+            if (pair != null && pair.getRight() > 0) {
                 airs.add(pair);
             }
         }
+
         for (AirDrop airDrop : BAirDropX.getAirDrops()) {
-            if (airDrop.isUseDefaultTimer()){
-                airs.add(Pair.of(airDrop, airDrop.getToSpawn() * 20L * 50L));
+            long timeToSpawn = airDrop.getToSpawn() * 20L * 50L;
+            if (airDrop.isUseDefaultTimer() && timeToSpawn > 0) {
+                airs.add(Pair.of(airDrop, timeToSpawn));
             }
         }
         airs.sort(Comparator.comparingLong(Pair::getRight));
